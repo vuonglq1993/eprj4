@@ -1,0 +1,91 @@
+# Flutter/Dart/Pub related
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+**/doc/api/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.flutter-*
+**/ios/Flutter/ephemeral/
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# Miscellaneous
+**/coverage/
+**/test/.test_coverage.dart
+**/test/.test_coverage.json
+**/test/.test_coverage.lcov
+**/test/.test_coverage.xml
+**/test/.test_coverage.tap
+**/test/.test_coverage.html
+**/test/.test_coverage.txt
+
+# Android
+**/android/.gradle/
+**/android/local.properties
+**/android/gradlew
+**/android/gradlew.bat
+**/android/gradle/wrapper/gradle-wrapper.properties  # optional, nếu bạn commit thì bỏ dòng này
+**/android/app/release/
+**/android/app/debug/
+**/android/app/build/
+**/android/app/src/main/kotlin/**/GeneratedPluginRegistrant.kt  # thường tự gen
+
+# iOS
+**/ios/.generated/
+**/ios/Pods/
+**/ios/Podfile.lock
+**/ios/Runner.xcworkspace/
+**/ios/Runner.xcodeproj/project.xcworkspace/
+**/ios/Runner.xcodeproj/xcshareddata/
+**/ios/Runner/Flutter/AppFrameworkInfo.plist  # tự gen
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# macOS (nếu bạn enable desktop)
+**/macos/Flutter/ephemeral/
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/macos/Runner/GeneratedPluginRegistrant.swift
+
+# Web (nếu enable web)
+**/web/flutter_bootstrap.js
+**/web/index.html  # nếu bạn customize thì có thể commit, nhưng mặc định tự gen
+
+# IDE / Editor files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+
+# Environment / Secrets
+.env
+.env.local
+.env.development
+.env.production
+*.key
+*.pem
+keystore.properties  # nếu dùng signing key
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*~
+
+# Build artifacts
+**/build/
+**/dist/
+**/bin/
+**/obj/
+
+# Generated files from build_runner / json_serializable
+**/*.g.dart
+**/*.freezed.dart
+**/*.mocks.dart
+**/*.inject.summary
+**/*.inject.dart
