@@ -50,7 +50,7 @@ dependencies:
 
   # Audio: playback, recording (luyện nghe/nói)
   just_audio: ^0.9.40     # playback audio từ URL/local
-  record: ^5.1.2          # ghi âm phát âm
+#  record: ^5.1.2          # ghi âm phát âm
   audio_waveforms: ^1.0.5 # waveform visualization khi ghi âm
 
   # Text-to-speech (đọc từ vựng)
@@ -83,6 +83,8 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - assets/images/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
