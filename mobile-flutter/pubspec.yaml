@@ -66,6 +66,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_fonts: ^6.2.1            # font đẹp cho app học ngôn ngữ
 
+  #thêm ảnh
+  image_picker: ^1.1.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

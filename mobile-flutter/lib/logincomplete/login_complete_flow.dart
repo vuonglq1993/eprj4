@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'congratulations_page.dart';
+import '../services/language_service.dart';
 
 class LoginCompleteFlow extends StatefulWidget {
   const LoginCompleteFlow({super.key});
@@ -15,18 +16,10 @@ class _LoginCompleteFlowState extends State<LoginCompleteFlow> {
   final List<Map<String, dynamic>> steps = [
     {
       "title": "What Is Your Mother Language?",
-      "options": [
-        "English",
-        "French",
-        "German",
-        "Hindi",
-        "Korean",
-        "Bengali",
-        "Italian",
-      ]
+      "options": LanguageService.languages.map((e) => e["name"]).toList()
     },
     {
-      "title": "What Is The Main Reason to Learn English?",
+      "title": "What is your main reason for using the Language App?",
       "options": [
         "Travel",
         "School",
@@ -37,11 +30,11 @@ class _LoginCompleteFlowState extends State<LoginCompleteFlow> {
       ]
     },
     {
-      "title": "How much you know about English?",
+      "title": "How much do you know about our Language App?",
       "options": [
-        "Not Much",
-        "Medium",
-        "Expert",
+        "I don't know",
+        "I know a little",
+        "I know a lot",
       ]
     },
     {
@@ -57,7 +50,7 @@ class _LoginCompleteFlowState extends State<LoginCompleteFlow> {
       ]
     },
     {
-      "title": "How much time do you want to learn german?",
+      "title": "How many hours a day can you dedicate to studying with the Language App?",
       "options": [
         "5min/Day",
         "15min/Day",
@@ -122,13 +115,13 @@ class _LoginCompleteFlowState extends State<LoginCompleteFlow> {
         backgroundColor: const Color(0xFF5F2EFF),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: back,
         ),
         centerTitle: true,
         title: Text(
           "Completed ${step + 1}/${steps.length}",
-          style: const TextStyle(fontWeight: FontWeight.w600),
+          style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
       ),
 
@@ -160,6 +153,10 @@ class _LoginCompleteFlowState extends State<LoginCompleteFlow> {
                         setState(() {
                           selectedIndex = index;
                         });
+
+                        if (step == 0) {
+                          LanguageService.selectedLanguage.value = index;
+                        }
                       },
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 15),
@@ -192,7 +189,7 @@ class _LoginCompleteFlowState extends State<LoginCompleteFlow> {
                   children: [
                     const SizedBox(height: 10),
                     const Text(
-                      "Learn listening, speaking, reading and writing in spanish",
+                      "Learn listening, speaking, reading, and writing skills.",
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.grey),
                     ),

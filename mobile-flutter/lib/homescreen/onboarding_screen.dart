@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'onboarding_page.dart';
 import 'dot_indicator.dart';
 import '../page/login_page.dart'; // Đường dẫn chính xác từ homescreen ra page
+import '../page/signup_page.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -51,8 +52,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  onPressed: () {},
-                  child: const Text("Choose a language"),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (
+                            _) => const SignupPage()), // Chuyển đến trang Đăng ký
+                      );
+                    },
+                  child: const Text("Register an account"),
                 ),
               ),
             ),
@@ -64,7 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               },
               child: const Text.rich(
                 TextSpan(
-                  text: "Already a follower user? ",
+                  text: "You already have an account? ",
                   style: TextStyle(color: Colors.black54),
                   children: [
                     TextSpan(text: "Log in", style: TextStyle(color: Color(0xFF5F2EFF), fontWeight: FontWeight.bold)),

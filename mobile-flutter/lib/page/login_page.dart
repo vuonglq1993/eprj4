@@ -21,7 +21,19 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: const Color(0xFFF2F3F7),
       appBar: AppBar(
         backgroundColor: const Color(0xFF5F2EFF),
+        elevation: 0, // Thêm elevation = 0 để phẳng và đẹp hơn
         centerTitle: true,
+
+        // 1. Đổi màu icon (nút back, các icon khác trên AppBar) sang trắng
+        iconTheme: const IconThemeData(color: Colors.white),
+
+        // 2. Đổi màu và style cho chữ tiêu đề "Login" sang trắng
+        titleTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+
         title: const Text("Login"),
       ),
       body: Padding(
@@ -113,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
                   },
                   child: const Text.rich(
                     TextSpan(
-                      text: "Not you member? ",
+                      text: "Register an account? ",
                       style: TextStyle(color: Colors.grey),
                       children: [
                         TextSpan(

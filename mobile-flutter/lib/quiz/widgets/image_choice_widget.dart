@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../homepage/homepagesetting/theme_notifier.dart';
 
 class ImageChoiceWidget extends StatelessWidget {
   final List<String> options;
@@ -12,7 +13,6 @@ class ImageChoiceWidget extends StatelessWidget {
     required this.onSelect,
   });
 
-  // Hàm giả lập icon dựa trên text
   String _getEmoji(String text) {
     if (text == "Men") return "👨";
     if (text == "Women") return "👩";
@@ -23,6 +23,9 @@ class ImageChoiceWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = themeNotifier.value == ThemeMode.dark;
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -36,23 +39,38 @@ class ImageChoiceWidget extends StatelessWidget {
       itemBuilder: (context, index) {
         final option = options[index];
         final isSelected = selectedOption == option;
+        const selectedColor = Color(0xFF6CBC94);
+
         return GestureDetector(
           onTap: () => onSelect(option),
           child: Container(
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF6CBC94).withOpacity(0.2) : Colors.white,
+              color: isSelected ? selectedColor.withOpacity(0.2) : theme.cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isSelected ? const Color(0xFF6CBC94) : Colors.grey.shade200,
+                color: isSelected ? selectedColor : (isDark ? Colors.white10 : Colors.grey.shade200),
                 width: 2,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ],
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(_getEmoji(option), style: const TextStyle(fontSize: 40)),
                 const SizedBox(height: 10),
-                Text(option, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  option,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: theme.textTheme.bodyLarge?.color,
+                  ),
+                ),
               ],
             ),
           ),

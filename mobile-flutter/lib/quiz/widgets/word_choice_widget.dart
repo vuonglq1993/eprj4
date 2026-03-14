@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../homepage/homepagesetting/theme_notifier.dart';
 
 class WordChoiceWidget extends StatelessWidget {
   final List<String> options;
@@ -14,9 +15,13 @@ class WordChoiceWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = themeNotifier.value == ThemeMode.dark;
+
     return Column(
       children: options.map((option) {
         final isSelected = selectedOption == option;
+        const selectedColor = Color(0xFF6CBC94);
 
         return GestureDetector(
           onTap: () => onSelect(option),
@@ -24,30 +29,27 @@ class WordChoiceWidget extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 15),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFF6CBC94).withOpacity(0.2)
-                  : Colors.white,
+              color: isSelected ? selectedColor.withOpacity(0.2) : theme.cardColor,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isSelected
-                    ? const Color(0xFF6CBC94)
-                    : Colors.grey.shade300,
+                color: isSelected ? selectedColor : (isDark ? Colors.white10 : Colors.grey.shade300),
                 width: 2,
               ),
             ),
             child: Row(
               children: [
                 Icon(
-                  isSelected
-                      ? Icons.check_circle
-                      : Icons.radio_button_unchecked,
-                  color: isSelected
-                      ? const Color(0xFF6CBC94)
-                      : Colors.grey,
+                  isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                  color: isSelected ? selectedColor : (isDark ? Colors.grey[600] : Colors.grey),
                 ),
                 const SizedBox(width: 10),
-                Text(option,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  option,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: theme.textTheme.bodyLarge?.color,
+                  ),
+                ),
               ],
             ),
           ),
