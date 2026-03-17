@@ -1,5 +1,4 @@
 package com.languageapp.language_learning_backend.dto.language;
-
 import lombok.*;
 import java.util.UUID;
 

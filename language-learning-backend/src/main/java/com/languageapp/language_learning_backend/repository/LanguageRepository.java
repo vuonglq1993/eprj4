@@ -1,5 +1,4 @@
 package com.languageapp.language_learning_backend.repository;
-
 import com.languageapp.language_learning_backend.entity.Language;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
