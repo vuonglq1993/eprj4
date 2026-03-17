@@ -6,14 +6,19 @@ import lombok.*;
 import org.hibernate.annotations.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
 @Table(name = "subscriptions")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Subscription {
 
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "VARCHAR(36)")
+    @Id
+    @UuidGenerator
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(length = 36)
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)

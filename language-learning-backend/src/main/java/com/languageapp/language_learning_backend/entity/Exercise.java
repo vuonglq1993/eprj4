@@ -5,6 +5,9 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
 @Table(name = "exercises", indexes = {
@@ -15,8 +18,10 @@ import java.util.UUID;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Exercise {
 
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "VARCHAR(36)")
+    @Id
+    @UuidGenerator
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(length = 36)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
