@@ -3,19 +3,14 @@ package com.languageapp.language_learning_backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.*;
-import org.hibernate.type.SqlTypes;
-import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
 @Table(name = "languages")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Language {
 
-    @Id
-    @UuidGenerator
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(length = 36)
+    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     /** ISO 639-1: en, ja, ko, zh, fr, vi */

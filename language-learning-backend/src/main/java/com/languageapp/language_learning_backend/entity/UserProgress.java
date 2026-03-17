@@ -5,9 +5,6 @@ import lombok.*;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.hibernate.type.SqlTypes;
-import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
 @Table(name = "user_progress", indexes = {
@@ -18,10 +15,8 @@ import org.hibernate.annotations.JdbcTypeCode;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class UserProgress {
 
-    @Id
-    @UuidGenerator
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(length = 36)
+    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)

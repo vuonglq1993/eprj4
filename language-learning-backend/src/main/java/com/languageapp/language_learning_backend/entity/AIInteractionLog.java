@@ -6,9 +6,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.hibernate.type.SqlTypes;
-import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
 @Table(name = "ai_interaction_logs", indexes = {
@@ -19,10 +16,8 @@ import org.hibernate.annotations.JdbcTypeCode;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class AIInteractionLog {
 
-    @Id
-    @UuidGenerator
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(length = 36)
+    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)

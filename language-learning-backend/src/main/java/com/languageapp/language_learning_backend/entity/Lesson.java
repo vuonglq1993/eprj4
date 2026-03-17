@@ -8,9 +8,6 @@ import lombok.*;
 import org.hibernate.annotations.*;
 import java.time.LocalDateTime;
 import java.util.*;
-import org.hibernate.type.SqlTypes;
-import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
 @Table(name = "lessons", indexes = {
@@ -21,10 +18,8 @@ import org.hibernate.annotations.JdbcTypeCode;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Lesson {
 
-    @Id
-    @UuidGenerator
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(length = 36)
+    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
