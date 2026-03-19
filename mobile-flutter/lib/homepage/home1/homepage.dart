@@ -8,6 +8,9 @@ import '../home4/activity_page.dart';
 import '../homepagesetting/settings_page.dart';
 import '../homepagesetting/theme_notifier.dart';
 import '../../data/task_question_data.dart';
+import '../../notification/notification_page.dart';
+import '../../models/notification_model.dart';
+import '../../services/notification_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -101,7 +104,48 @@ class _HomePageState extends State<HomePage> {
                         ? FileImage(FakeAuth.avatar!)
                         : const NetworkImage("https://i.pravatar.cc/150?img=3") as ImageProvider,
                   ),
-                  const Icon(Icons.notifications_none, color: Colors.white, size: 26),
+                  // const Icon(Icons.notifications_none, color: Colors.white, size: 26),
+                  //notification
+                  Stack(
+                    children: [
+
+                      IconButton(
+                        icon: const Icon(Icons.notifications_none,
+                            color: Colors.white, size: 26),
+
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationPage(),
+                            ),
+                          ).then((_) {
+                            setState(() {});
+                          });
+                        },
+                      ),
+
+                      if (NotificationService.unreadCount() > 0)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              NotificationService.unreadCount().toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  )
                 ],
               ),
               const SizedBox(height: 20),
