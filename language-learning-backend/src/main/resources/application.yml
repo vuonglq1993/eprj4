@@ -3,10 +3,10 @@ spring:
     name: Language Learning Backend
 
   datasource:
-    url: jdbc:mysql://${DB_HOST}:3306/${DB_NAME}?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
-    username: ${DB_USER}
-    password: ${DB_PASS}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL:jdbc:mysql://localhost:8889/language_learning?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&characterEncoding=UTF-8}
+    username: ${DB_USER:root}
+    password: ${DB_PASS:root}
+
     hikari:
       pool-name: LanguageLearningPool
       maximum-pool-size: 10
@@ -27,23 +27,15 @@ spring:
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
 
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-      password: ${REDIS_PASSWORD}
-      timeout: 5000ms
-      lettuce:
-        pool:
-          max-active: 8
-          max-idle: 4
-          min-idle: 1
+#  data:
+#    redis:
+#      host: ${REDIS_HOST}
+#      port: ${REDIS_PORT}
+#      password: ${REDIS_PASSWORD}
+#      timeout: 5000ms
 
   cache:
     type: simple
-    redis:
-      time-to-live: 300000
-      cache-null-values: false
 
   mail:
     host: smtp.gmail.com
@@ -51,165 +43,13 @@ spring:
     username: ${MAIL_USER}
     password: ${MAIL_PASS}
     properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
-        debug: false
-
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 10MB
-      max-request-size: 10MB
-
-  devtools:
-    restart:
-      enabled: true
-    livereload:
-      enabled: true
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
 server:
   port: 8080
-  servlet:
-    context-path: /
-  error:
-    include-message: always
-    include-binding-errors: always
-    include-stacktrace: never
 
-jwt:
-  secret: ${JWT_SECRET}
-  access-token-expiration: 900000
-  refresh-token-expiration: 2592000000
-
-openai:
-  api-key: ${OPENAI_API_KEY}
-  model: gpt-4o-mini
-  max-tokens: 1000
-
-paypal:
-  client-id: ${PAYPAL_CLIENT_ID}
-  client-secret: ${PAYPAL_CLIENT_SECRET}
-  base-url: https://api-m.sandbox.paypal.com
-
-momo:
-  partner-code: ${MOMO_PARTNER_CODE}
-  access-key: ${MOMO_ACCESS_KEY}
-  secret-key: ${MOMO_SECRET_KEY}
-  ipn-url: ${MOMO_IPN_URL}
-  base-url: https://test-payment.momo.vn
-#
-#app:
-#  frontend-url: ${FRONTEND_URL}
-
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-    tags-sorter: alpha
-    operations-sorter: method
-    display-request-duration: true
-    try-it-out-enabled: true
-  api-docs:
-    path: /v3/api-docs
-  packages-to-scan: com.languageapp.language_learning_backend.controller
-  paths-to-expose: /v3/api-docs, /swagger-ui.html
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info
-  endpoint:
-    health:
-      show-details: when-authorized
-
-logging:
-  level:
-    root: INFO
-    com.languageapp.language_learning_backend: DEBUG
-    org.springframework.security: INFO
-    org.hibernate.SQL: INFO
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-
----
-
-spring:
-  config:
-    activate:
-      on-profile: dev
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-
-logging:
-  level:
-    com.languageapp.language_learning_backend: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-
----
-
-spring:
-  config:
-    activate:
-      on-profile: prod
-  jpa:
-    show-sql: false
-    hibernate:
-      ddl-auto: validate
-  devtools:
-    restart:
-      enabled: false
-
-paypal:
-  base-url: https://api-m.paypal.com
-
-momo:
-  base-url: https://payment.momo.vn
-
-springdoc:
-  swagger-ui:
-    enabled: false
-  api-docs:
-    enabled: false
-
-logging:
-  level:
-    root: WARN
-    com.languageapp.language_learning_backend: INFO
-
----
-
-spring:
-  config:
-    activate:
-      on-profile: test
-  datasource:
-    url: jdbc:h2:mem:language_learning_test;DB_CLOSE_DELAY=-1;MODE=MySQL
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-  data:
-    redis:
-      host: localhost
-      port: 6370
-
-jwt:
-  secret: test-secret-key-for-unit-tests-only-32-chars-min
-  access-token-expiration: 900000
-  refresh-token-expiration: 2592000000
-
-logging:
-  level:
-    com.languageapp.language_learning_backend: DEBUG
+#jwt:
+#  secret: ${JWT_SECRET}
+#  access-token-expiration: 900000
+#  refresh-token-expiration: 2592000000
