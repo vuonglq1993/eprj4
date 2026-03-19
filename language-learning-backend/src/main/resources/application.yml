@@ -101,9 +101,9 @@ momo:
   secret-key: ${MOMO_SECRET_KEY}
   ipn-url: ${MOMO_IPN_URL}
   base-url: https://test-payment.momo.vn
-
-app:
-  frontend-url: ${FRONTEND_URL}
+#
+#app:
+#  frontend-url: ${FRONTEND_URL}
 
 springdoc:
   swagger-ui:
