@@ -43,7 +43,7 @@ public class CourseController {
     }
 
     @Operation(summary = "Tạo khoá học — Teacher / Admin")
-    @SecurityRequirement(name = "bearerAuth") //@PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PostMapping
     public ResponseEntity<CourseResponse> create(
             @Valid @RequestBody CourseRequest req, @AuthenticationPrincipal UserPrincipal p) {
@@ -51,7 +51,7 @@ public class CourseController {
     }
 
     @Operation(summary = "Cập nhật khoá học — chủ sở hữu / Admin")
-    @SecurityRequirement(name = "bearerAuth") //@PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PutMapping("/{id}")
     public ResponseEntity<CourseResponse> update(
             @PathVariable UUID id, @Valid @RequestBody CourseRequest req,
@@ -60,7 +60,7 @@ public class CourseController {
     }
 
     @Operation(summary = "Publish / Unpublish khoá học")
-    @SecurityRequirement(name = "bearerAuth")// @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth")@PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PatchMapping("/{id}/publish")
     public ResponseEntity<CourseResponse> togglePublish(
             @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal p) {
@@ -68,7 +68,7 @@ public class CourseController {
     }
 
     @Operation(summary = "Xoá khoá học — chủ sở hữu / Admin")
-    @SecurityRequirement(name = "bearerAuth") //@PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal p) {
