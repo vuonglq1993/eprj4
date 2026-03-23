@@ -1,0 +1,199 @@
+package com.languageapp.language_learning_backend.service;
+
+import com.languageapp.language_learning_backend.dto.progress.*;
+import com.languageapp.language_learning_backend.dto.progress.DashboardResponse.*;
+import com.languageapp.language_learning_backend.dto.progress.DashboardResponse.WeeklySummary.DailyStudy;
+import com.languageapp.language_learning_backend.entity.*;
+import com.languageapp.language_learning_backend.entity.Lesson.LessonType;
+import com.languageapp.language_learning_backend.entity.UserProgress.ProgressStatus;
+import com.languageapp.language_learning_backend.exception.GlobalExceptionHandler.*;
+import com.languageapp.language_learning_backend.repository.*;
+import com.languageapp.language_learning_backend.security.UserPrincipal;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.*;
+import org.springframework.data.domain.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.*;
+import java.time.format.TextStyle;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class ProgressService {
+
+    private final UserProgressRepository progressRepo;
+    private final StudyLogRepository     studyLogRepo;
+    private final CourseRepository       courseRepo;
+    private final UserRepository         userRepo;
+
+    // ── DASHBOARD ─────────────────────────────────────────────
+    @Cacheable(value = "dashboard", key = "#p.userId")
+    @Transactional(readOnly = true)
+    public DashboardResponse getDashboard(UserPrincipal p) {
+        UUID uid  = p.getUserId();
+        List<UserProgress> all = progressRepo.findByUserId(uid);
+        long completed = all.stream().filter(pr -> pr.getStatus() == ProgressStatus.COMPLETED).count();
+        int[] streak   = calcStreak(uid);
+
+        return DashboardResponse.builder()
+                .totalCoursesEnrolled((int) all.stream().map(pr -> pr.getCourse().getId()).distinct().count())
+                .totalLessonsCompleted((int) completed)
+                .totalExercisesDone((int) progressRepo.sumAttempts(uid))
+                .currentStreak(streak[0]).longestStreak(streak[1])
+                .totalStudyMinutes((int)(studyLogRepo.sumSeconds(uid,
+                        LocalDate.now().minusYears(10), LocalDate.now()) / 60))
+                .averageScore(round(progressRepo.avgScore(uid)))
+                .activeCourses(buildActiveCourses(uid, all))
+                .thisWeek(buildWeekly(uid))
+                .skills(buildSkills(uid))
+                .build();
+    }
+
+    // ── COURSE PROGRESS ───────────────────────────────────────
+    @Transactional(readOnly = true)
+    public List<ProgressResponse> getCourseProgress(UUID courseId, UserPrincipal p) {
+        courseRepo.findById(courseId).orElseThrow(() -> new NotFoundException("Course not found"));
+        return progressRepo.findByUserIdAndCourseId(p.getUserId(), courseId).stream()
+                .map(pr -> ProgressResponse.builder()
+                        .lessonId(pr.getLesson().getId()).lessonTitle(pr.getLesson().getTitle())
+                        .lessonType(pr.getLesson().getType().name()).status(pr.getStatus())
+                        .score(pr.getScore()).attempts(pr.getAttempts())
+                        .timeSpentMinutes(pr.getTimeSpentSeconds() / 60)
+                        .completedAt(pr.getCompletedAt()).updatedAt(pr.getUpdatedAt()).build())
+                .collect(Collectors.toList());
+    }
+
+    // ── STATS ─────────────────────────────────────────────────
+    @Transactional(readOnly = true)
+    public StatsResponse getStats(String period, UserPrincipal p) {
+        UUID uid      = p.getUserId();
+        LocalDate to  = LocalDate.now();
+        LocalDate from = switch (period.toUpperCase()) {
+            case "MONTH" -> to.minusDays(29);
+            case "YEAR"  -> to.minusMonths(11).withDayOfMonth(1);
+            default      -> to.minusDays(6);
+        };
+        Map<LocalDate, Long> sm = studyLogRepo.dailySeconds(uid, from, to)
+                .stream().collect(Collectors.toMap(r -> (LocalDate) r[0], r -> (Long) r[1]));
+        Map<LocalDate, Long> cm = studyLogRepo.dailyCount(uid, from, to)
+                .stream().collect(Collectors.toMap(r -> (LocalDate) r[0], r -> (Long) r[1]));
+
+        List<StatsResponse.PeriodStat> data = new ArrayList<>();
+        for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {
+            data.add(StatsResponse.PeriodStat.builder()
+                    .date(d).label(d.getDayOfMonth() + " " + d.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH))
+                    .studyMinutes((int)(sm.getOrDefault(d, 0L) / 60))
+                    .lessonsCompleted(cm.getOrDefault(d, 0L).intValue()).build());
+        }
+        return StatsResponse.builder().period(period.toUpperCase())
+                .totalMinutes((int)(sm.values().stream().mapToLong(Long::longValue).sum() / 60))
+                .totalLessons((int) cm.values().stream().mapToLong(Long::longValue).sum())
+                .averageScore(round(progressRepo.avgScore(uid))).data(data).build();
+    }
+
+    // ── CERTIFICATE ───────────────────────────────────────────
+    @Transactional(readOnly = true)
+    public CertificateResponse getCertificate(UUID courseId, UserPrincipal p) {
+        UUID uid    = p.getUserId();
+        Course c    = courseRepo.findById(courseId).orElseThrow(() -> new NotFoundException("Course not found"));
+        int pct     = progressRepo.calculateProgress(uid, courseId, c.getTotalLessons());
+        if (pct < 100) throw new BadRequestException("Course not completed yet. Progress: " + pct + "%");
+
+        User user   = userRepo.findById(uid).orElseThrow(() -> new NotFoundException("User not found"));
+        double avg  = progressRepo.findByUserIdAndCourseId(uid, courseId)
+                .stream().mapToInt(UserProgress::getScore).average().orElse(0);
+        LocalDateTime completedAt = progressRepo.findByUserIdAndCourseId(uid, courseId)
+                .stream().map(UserProgress::getCompletedAt).filter(Objects::nonNull)
+                .max(Comparator.naturalOrder()).orElse(LocalDateTime.now());
+
+        return CertificateResponse.builder()
+                .courseId(courseId).courseTitle(c.getTitle()).languageName(c.getLanguage().getName())
+                .userName(user.getFullName()).finalScore(round(avg))
+                .cefrLevel(toCefr((int) avg)).completedAt(completedAt)
+                .certificateCode("LN-" + uid.toString().replace("-","").substring(0,6).toUpperCase()
+                        + "-" + courseId.toString().replace("-","").substring(0,6).toUpperCase()
+                        + "-" + LocalDate.now().getYear())
+                .build();
+    }
+
+    // ── PRIVATE HELPERS ───────────────────────────────────────
+    private int[] calcStreak(UUID uid) {
+        Set<LocalDate> dates = new HashSet<>(studyLogRepo.studyDates(uid, LocalDate.now().minusDays(365)));
+        if (dates.isEmpty()) return new int[]{0, 0};
+        LocalDate today = LocalDate.now();
+        int cur = 0;
+        LocalDate check = dates.contains(today) ? today : (dates.contains(today.minusDays(1)) ? today.minusDays(1) : null);
+        if (check != null) { for (; dates.contains(check); check = check.minusDays(1)) cur++; }
+        List<LocalDate> sorted = new ArrayList<>(dates); Collections.sort(sorted);
+        int longest = 1, tmp = 1;
+        for (int i = 1; i < sorted.size(); i++) {
+            tmp = sorted.get(i).equals(sorted.get(i-1).plusDays(1)) ? tmp + 1 : 1;
+            longest = Math.max(longest, tmp);
+        }
+        return new int[]{cur, Math.max(longest, cur)};
+    }
+
+    private List<CourseProgressSummary> buildActiveCourses(UUID uid, List<UserProgress> all) {
+        return all.stream().collect(Collectors.groupingBy(pr -> pr.getCourse().getId()))
+                .entrySet().stream().map(e -> {
+                    Course c   = e.getValue().get(0).getCourse();
+                    long done  = e.getValue().stream().filter(pr -> pr.getStatus() == ProgressStatus.COMPLETED).count();
+                    int pct    = c.getTotalLessons() > 0 ? (int)(done * 100 / c.getTotalLessons()) : 0;
+                    double avg = e.getValue().stream().mapToInt(UserProgress::getScore).average().orElse(0);
+                    Page<Lesson> np = progressRepo.nextLesson(uid, e.getKey(), PageRequest.of(0, 1));
+                    Lesson next = np.isEmpty() ? null : np.getContent().get(0);
+                    return CourseProgressSummary.builder()
+                            .courseId(e.getKey()).courseTitle(c.getTitle())
+                            .languageName(c.getLanguage().getName()).thumbnailUrl(c.getThumbnailUrl())
+                            .totalLessons(c.getTotalLessons()).completedLessons((int) done)
+                            .progressPercent(pct).averageScore(round(avg))
+                            .nextLessonId(next != null ? next.getId() : null)
+                            .nextLessonTitle(next != null ? next.getTitle() : null).build();
+                })
+                .sorted(Comparator.comparingInt(CourseProgressSummary::getProgressPercent).reversed())
+                .limit(5).collect(Collectors.toList());
+    }
+
+    private WeeklySummary buildWeekly(UUID uid) {
+        LocalDate monday = LocalDate.now().with(DayOfWeek.MONDAY);
+        LocalDate today  = LocalDate.now();
+        Map<LocalDate, Long> sm = studyLogRepo.dailySeconds(uid, monday, today)
+                .stream().collect(Collectors.toMap(r -> (LocalDate) r[0], r -> (Long) r[1]));
+        Map<LocalDate, Long> cm = studyLogRepo.dailyCount(uid, monday, today)
+                .stream().collect(Collectors.toMap(r -> (LocalDate) r[0], r -> (Long) r[1]));
+        List<DailyStudy> daily = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            LocalDate d = monday.plusDays(i);
+            daily.add(DailyStudy.builder().date(d)
+                    .dayLabel(d.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH))
+                    .studyMinutes((int)(sm.getOrDefault(d, 0L) / 60))
+                    .lessonsCompleted(cm.getOrDefault(d, 0L).intValue()).build());
+        }
+        return WeeklySummary.builder()
+                .studyMinutes((int)(sm.values().stream().mapToLong(Long::longValue).sum() / 60))
+                .lessonsCompleted((int) cm.values().stream().mapToLong(Long::longValue).sum())
+                .averageScore(round(progressRepo.avgScore(uid))).daily(daily).build();
+    }
+
+    private SkillBreakdown buildSkills(UUID uid) {
+        Map<LessonType, double[]> m = new HashMap<>();
+        progressRepo.avgScoreByType(uid).forEach(r ->
+                m.put((LessonType) r[0], new double[]{((Number) r[1]).doubleValue(), ((Number) r[2]).doubleValue()}));
+        return SkillBreakdown.builder()
+                .listening(skill(LessonType.LISTENING, m)).speaking(skill(LessonType.SPEAKING, m))
+                .reading(skill(LessonType.READING, m)).writing(skill(LessonType.WRITING, m))
+                .vocabulary(skill(LessonType.VOCABULARY, m)).grammar(skill(LessonType.GRAMMAR, m)).build();
+    }
+
+    private SkillBreakdown.SkillScore skill(LessonType t, Map<LessonType, double[]> m) {
+        double[] s = m.getOrDefault(t, new double[]{0, 0});
+        double avg = round(s[0]);
+        return SkillBreakdown.SkillScore.builder().averageScore(avg).lessonsCompleted((int) s[1])
+                .level(avg >= 80 ? "Advanced" : avg >= 60 ? "Intermediate" : "Beginner").build();
+    }
+
+    private double round(double v) { return Math.round(v * 10.0) / 10.0; }
+    private String toCefr(int s)   { return s>=90?"C1":s>=75?"B2":s>=60?"B1":s>=45?"A2":"A1"; }
+}
