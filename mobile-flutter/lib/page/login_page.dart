@@ -367,28 +367,44 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => isLoading = true);
 
     final token = await ApiService.login(
-      email: emailController.text,
-      password: passwordController.text,
+      email: emailController.text.trim(),
+      password: passwordController.text.trim(),
     );
 
-    setState(() => isLoading = false);
+    if (!mounted) return;
 
     if (token != null) {
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Đăng nhập thành công")),
-      );
+      // 🔥 Test token bằng API /me
+      final profile = await ApiService.getProfile();
 
-      // 👉 TODO: lưu token (bước sau mình làm cho bạn)
+      setState(() => isLoading = false);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const LoginCompleteFlow(),
-        ),
-      );
+      if (profile != null) {
+
+        print("USER: $profile");
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Đăng nhập thành công")),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const LoginCompleteFlow(),
+          ),
+        );
+
+      } else {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Token lỗi hoặc hết hạn")),
+        );
+      }
 
     } else {
+
+      setState(() => isLoading = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Sai email hoặc mật khẩu")),

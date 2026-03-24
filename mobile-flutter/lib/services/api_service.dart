@@ -60,8 +60,12 @@ class ApiService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
-      // ⚠️ tùy backend bạn trả về field gì
-      return data["accessToken"];
+      String token = data["accessToken"];
+
+      // 🔥 BẮT BUỘC PHẢI CÓ
+      await TokenService.saveToken(token);
+
+      return token;
     }
 
     return null;
@@ -72,9 +76,12 @@ class ApiService {
 
     final token = await TokenService.getToken();
 
+    if (token == null) return null; // 🔥 thêm dòng này
+
     final response = await http.get(
       Uri.parse("$baseUrl/users/me"),
       headers: {
+        "Content-Type": "application/json",
         "Authorization": "Bearer $token",
       },
     );

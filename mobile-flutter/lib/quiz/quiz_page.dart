@@ -285,3 +285,155 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 }
+
+
+
+//
+// import 'package:flutter/material.dart';
+// import '../../services/course_service.dart';
+// import '../../models/question_model.dart';
+//
+// class QuizPage extends StatefulWidget {
+//   final String courseId;
+//   final String lessonId;
+//   final List<Question> taskQuestions;
+//
+//   const QuizPage({
+//     super.key,
+//     required this.courseId,
+//     required this.lessonId,
+//     required this.taskQuestions,
+//   });
+//
+//   @override
+//   State<QuizPage> createState() => _QuizPageState();
+// }
+//
+// class _QuizPageState extends State<QuizPage> {
+//   int currentIndex = 0;
+//   bool isChecked = false;
+//   bool? isCorrect;
+//
+//   Map<int, String> userAnswers = {};
+//   late List<Question> quizData;
+//
+//   final TextEditingController inputController =
+//   TextEditingController();
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     quizData = widget.taskQuestions;
+//   }
+//
+//   Future<void> submitAnswer(String answer) async {
+//     final q = quizData[currentIndex];
+//
+//     final res = await CourseService.submit(
+//       widget.courseId,
+//       widget.lessonId,
+//       q.id,
+//       answer,
+//     );
+//
+//     setState(() {
+//       isChecked = true;
+//       isCorrect = res["correct"];
+//     });
+//   }
+//
+//   void _handleCheck() async {
+//     final q = quizData[currentIndex];
+//
+//     String answer = q.type == QuestionType.inputField
+//         ? inputController.text.trim()
+//         : userAnswers[currentIndex] ?? "";
+//
+//     if (answer.isEmpty) return;
+//
+//     await submitAnswer(answer);
+//   }
+//
+//   void _handleNext() {
+//     if (currentIndex < quizData.length - 1) {
+//       setState(() {
+//         currentIndex++;
+//         isChecked = false;
+//         isCorrect = null;
+//       });
+//     } else {
+//       Navigator.pop(context);
+//     }
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final q = quizData[currentIndex];
+//
+//     return Scaffold(
+//       appBar: AppBar(title: Text("${currentIndex + 1}/${quizData.length}")),
+//       body: Column(
+//         children: [
+//           Expanded(
+//             child: Padding(
+//               padding: const EdgeInsets.all(20),
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Text(q.title,
+//                       style: const TextStyle(fontSize: 22)),
+//
+//                   const SizedBox(height: 20),
+//
+//                   if (q.type == QuestionType.wordChoice)
+//                     Column(
+//                       children: q.options.map((option) {
+//                         return ListTile(
+//                           title: Text(option),
+//                           leading: Radio(
+//                             value: option,
+//                             groupValue:
+//                             userAnswers[currentIndex],
+//                             onChanged: (val) {
+//                               setState(() {
+//                                 userAnswers[currentIndex] =
+//                                     q.options
+//                                         .indexOf(option)
+//                                         .toString();
+//                               });
+//                             },
+//                           ),
+//                         );
+//                       }).toList(),
+//                     )
+//                   else
+//                     TextField(controller: inputController),
+//                 ],
+//               ),
+//             ),
+//           ),
+//
+//           if (isChecked)
+//             Column(
+//               children: [
+//                 Text(
+//                   isCorrect == true ? "Correct" : "Wrong",
+//                   style: TextStyle(
+//                       color: isCorrect == true
+//                           ? Colors.green
+//                           : Colors.red),
+//                 ),
+//                 ElevatedButton(
+//                     onPressed: _handleNext,
+//                     child: const Text("Next")),
+//               ],
+//             )
+//           else
+//             ElevatedButton(
+//                 onPressed: _handleCheck,
+//                 child: const Text("Check")),
+//         ],
+//       ),
+//     );
+//   }
+// }
