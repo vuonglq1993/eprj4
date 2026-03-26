@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "943935351696",
+    "project_id": "eprj4-notification-49748",
+    "storage_bucket": "eprj4-notification-49748.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:943935351696:android:c6a2ad72c525c48333a115",
+        "android_client_info": {
+          "package_name": "com.languageapp.language_learning"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAra9hxONojgQLn2bB_Tqv_6VL6lql-1Js"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+//
