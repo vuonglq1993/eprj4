@@ -447,9 +447,12 @@ class _HomePageState extends State<HomePage> {
         return ProgressPage(onBack: () => setState(() => currentIndex = 0));
       case 3:
         return ProfilePage(
-          onBack: () {
-            _loadUser(); // 🔥 reload lại user sau khi đổi avatar
-            setState(() => currentIndex = 0);
+          onBack: () async {
+            // 🔥 Quan trọng: Gọi fetch lại dữ liệu mới nhất từ server
+            await _loadUser();
+            setState(() {
+              currentIndex = 0;
+            });
           },
           onOpenActivity: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ActivityPage())),
           onOpenSettings: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage())),
