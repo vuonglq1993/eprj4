@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../home4/profile_page.dart';
 import 'language_selection_page.dart';
 import 'invite_page.dart';
 import 'edit_profile_page.dart';
@@ -7,6 +8,7 @@ import 'help_chat_page.dart';
 import 'app_settings_page.dart';
 // Đảm bảo import theme_notifier
 import 'theme_notifier.dart';
+import 'Profile.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -41,8 +43,8 @@ class SettingsPage extends StatelessWidget {
           body: ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              _buildSettingsItem(context, "Edit Profile", Icons.person_outline, Colors.blue, () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfilePage()));
+              _buildSettingsItem(context, "Profile", Icons.person_outline, Colors.blue, () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const Profile()));
               }),
               _buildSettingsItem(context, "Settings", Icons.settings_outlined, Colors.orange, () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const AppSettingsPage()));

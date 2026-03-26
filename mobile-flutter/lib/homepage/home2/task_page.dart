@@ -215,3 +215,108 @@ class TaskPage extends StatelessWidget {
     );
   }
 }
+
+
+
+//
+// import 'package:flutter/material.dart';
+// import '../../services/course_service.dart';
+// import '../home3/lesson_list_page.dart';
+// import '../homepagesetting/theme_notifier.dart';
+//
+// class TaskPage extends StatefulWidget {
+//   final VoidCallback onBack;
+//
+//   const TaskPage({super.key, required this.onBack});
+//
+//   @override
+//   State<TaskPage> createState() => _TaskPageState();
+// }
+//
+// class _TaskPageState extends State<TaskPage> {
+//   List courses = [];
+//   bool isLoading = true;
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     loadCourses();
+//   }
+//
+//   Future<void> loadCourses() async {
+//     try {
+//       final data = await CourseService.getCourses();
+//       setState(() {
+//         courses = data;
+//         isLoading = false;
+//       });
+//     } catch (e) {
+//       print(e);
+//       setState(() => isLoading = false);
+//     }
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return ValueListenableBuilder<ThemeMode>(
+//       valueListenable: themeNotifier,
+//       builder: (context, mode, child) {
+//         final theme = Theme.of(context);
+//
+//         return Scaffold(
+//           backgroundColor: theme.scaffoldBackgroundColor,
+//           appBar: AppBar(
+//             title: const Text("Task"),
+//             backgroundColor: const Color(0xFF4B00D1),
+//             leading: IconButton(
+//               icon: const Icon(Icons.arrow_back),
+//               onPressed: widget.onBack,
+//             ),
+//           ),
+//           body: isLoading
+//               ? const Center(child: CircularProgressIndicator())
+//               : ListView.builder(
+//             padding: const EdgeInsets.all(20),
+//             itemCount: courses.length,
+//             itemBuilder: (context, index) {
+//               final c = courses[index];
+//
+//               return GestureDetector(
+//                 onTap: () {
+//                   // 👉 mở lesson giống Home
+//                   Navigator.push(
+//                     context,
+//                     MaterialPageRoute(
+//                       builder: (_) => LessonListPage(course: c),
+//                     ),
+//                   );
+//                 },
+//                 child: Container(
+//                   margin: const EdgeInsets.only(bottom: 15),
+//                   padding: const EdgeInsets.all(15),
+//                   decoration: BoxDecoration(
+//                     color: theme.cardColor,
+//                     borderRadius: BorderRadius.circular(16),
+//                   ),
+//                   child: Row(
+//                     children: [
+//                       const Icon(Icons.language,
+//                           color: Color(0xFF5F2EFF)),
+//                       const SizedBox(width: 15),
+//                       Expanded(
+//                         child: Text(c.title,
+//                             style: const TextStyle(
+//                                 fontWeight: FontWeight.bold)),
+//                       ),
+//                       Text("${c.progressPercent ?? 0}%"),
+//                     ],
+//                   ),
+//                 ),
+//               );
+//             },
+//           ),
+//         );
+//       },
+//     );
+//   }
+// }

@@ -32,14 +32,14 @@ public class LanguageController {
     }
 
     @Operation(summary = "Thêm ngôn ngữ mới — Admin only")
-    @SecurityRequirement(name = "bearerAuth") //@PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<LanguageResponse> create(@Valid @RequestBody LanguageRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(req));
     }
 
     @Operation(summary = "Cập nhật ngôn ngữ — Admin only")
-    @SecurityRequirement(name = "bearerAuth") //@PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<LanguageResponse> update(
             @PathVariable UUID id, @Valid @RequestBody LanguageRequest req) {
@@ -47,7 +47,7 @@ public class LanguageController {
     }
 
     @Operation(summary = "Xoá ngôn ngữ (chỉ khi không có course) — Admin only")
-    @SecurityRequirement(name = "bearerAuth")// @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         service.delete(id);

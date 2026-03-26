@@ -6,15 +6,15 @@ import com.languageapp.language_learning_backend.repository.UserRepository;
 import com.languageapp.language_learning_backend.security.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.languageapp.language_learning_backend.exception.GlobalExceptionHandler.*;
 import com.languageapp.language_learning_backend.entity.User.Role;
 import com.languageapp.language_learning_backend.entity.User.AuthProvider;
+
 import java.util.UUID;
-import com.languageapp.language_learning_backend.security.UserPrincipal;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -23,18 +23,13 @@ public class UserService {
     private final UserRepository userRepo;
     private final PasswordEncoder encoder;
 
-    // TODO enable JWT when authentication module is fully configured
-    // private final JwtTokenProvider jwt;
+    // ✅ JWT ENABLED
+    private final JwtTokenProvider jwt;
 
-    private final StringRedisTemplate redis;
+    // ❌ Redis removed completely
 
     // TODO enable email OTP verification later
     // private final EmailService emailService;
-
-    // Redis keys (currently unused)
-    // private static final String REFRESH = "refresh:";
-    // private static final String OTP_VER = "otp:verify:";
-    // private static final String OTP_RST = "otp:reset:";
 
     // ── REGISTER ──────────────────────────────────────────────
     @Transactional
@@ -109,14 +104,9 @@ public class UserService {
         throw new UnsupportedOperationException("Refresh token feature is disabled");
     }
 
-    // ── LOGOUT (DISABLED) ─────────────────────────────────────
+    // ── LOGOUT (CLIENT SIDE ONLY) ─────────────────────────────
     public void logout(UUID userId) {
-
-        /*
-        redis.delete(REFRESH + userId);
-        */
-
-        log.warn("Logout called but refresh-token system is disabled");
+        log.warn("Logout handled on client side (no Redis)");
     }
 
     // ── VERIFY EMAIL (DISABLED) ───────────────────────────────
@@ -156,7 +146,7 @@ public class UserService {
                 });
         */
 
-        log.warn("Forgot password requested but OTP reset is disabled");
+        log.warn("Forgot password requested but OTP is disabled");
     }
 
     // ── RESET PASSWORD (DISABLED) ─────────────────────────────
@@ -234,21 +224,22 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
-    // JWT token creation (currently simplified)
+    // ✅ JWT WORKING
     private AuthResponse buildTokens(User user) {
 
-        /*
-        String at = jwt.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name());
+        String at = jwt.generateAccessToken(
+                user.getId(),
+                user.getEmail(),
+                user.getRole().name()
+        );
+
         String rt = jwt.generateRefreshToken(user.getId());
 
-        redis.opsForValue().set(REFRESH + user.getId(), rt,
-                Duration.ofMillis(jwt.getRefreshExp()));
-        */
-
         return AuthResponse.builder()
-                .accessToken("disabled")
-                .refreshToken("disabled")
-                .expiresIn(0L)
+                .accessToken(at)
+                .refreshToken(rt)
+                .tokenType("Bearer")
+                .expiresIn(900L)
                 .user(AuthResponse.UserInfo.builder()
                         .id(user.getId())
                         .email(user.getEmail())

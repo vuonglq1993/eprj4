@@ -35,7 +35,7 @@ public class UserController {
         return ResponseEntity.ok(userService.login(req));
     }
 
-    /*
+
     // JWT refresh token (currently disabled)
 
     @Operation(summary = "Làm mới access token bằng refresh token")
@@ -54,7 +54,7 @@ public class UserController {
         userService.logout(p.getUserId());
         return ResponseEntity.noContent().build();
     }
-    */
+
 
     /*
     // Email OTP verification (currently disabled)

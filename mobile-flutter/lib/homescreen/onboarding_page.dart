@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 class OnboardingPage extends StatelessWidget {
   final String title;
   final String subtitle;
+  final String imagePath;
 
   const OnboardingPage({
     super.key,
     required this.title,
     required this.subtitle,
+    required this.imagePath,
   });
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -17,8 +18,12 @@ class OnboardingPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.language,
-              size: 120, color: Colors.orange),
+          // Thay thế Icon bằng Image
+          Image.asset(
+            imagePath,
+            height: 240, // Đặt chiều cao phù hợp cho hình ảnh
+            fit: BoxFit.contain, // Đảm bảo hình ảnh không bị méo
+          ),
           const SizedBox(height: 40),
           Text(
             title,
