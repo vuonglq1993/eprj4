@@ -449,27 +449,30 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   Widget _loginLink() {
-    return Center(
-      child: GestureDetector(
-        onTap: () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const LoginPage()),
-          );
-        },
-        child: const Text.rich(
-          TextSpan(
-            text: "Already have account? ",
-            style: TextStyle(color: Colors.grey),
-            children: [
-              TextSpan(
-                text: "Login",
-                style: TextStyle(
-                  color: Color(0xFF5F2EFF),
-                  fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20.0), // Chỉnh số này để đẩy cao lên
+      child: Center(
+        child: GestureDetector(
+          onTap: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginPage()),
+            );
+          },
+          child: const Text.rich(
+            TextSpan(
+              text: "Already have account? ",
+              style: TextStyle(color: Colors.grey),
+              children: [
+                TextSpan(
+                  text: "Login",
+                  style: TextStyle(
+                    color: Color(0xFF5F2EFF),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -25,15 +25,15 @@ class Course {
 
   factory Course.fromJson(Map<String, dynamic> json) {
     return Course(
-      id: json['id'],
-      title: json['title'],
+      id: json['id'] ?? '',
+      title: json['title'] ?? '',
       description: json['description'] ?? '',
-      languageCode: json['languageCode'],
-      languageName: json['languageName'],
-      level: json['level'],
+      languageCode: json['languageCode'] ?? '',
+      languageName: json['languageName'] ?? '',
+      level: json['level'] ?? '',
       thumbnailUrl: json['thumbnailUrl'] ?? '',
-      isPublished: json['isPublished'],
-      totalLessons: json['totalLessons'],
+      isPublished: json['isPublished'] ?? false,
+      totalLessons: json['totalLessons'] ?? 0,
       progressPercent: json['progressPercent'] ?? 0,
     );
   }
