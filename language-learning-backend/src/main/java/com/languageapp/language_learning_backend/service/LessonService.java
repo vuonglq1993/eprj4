@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -107,5 +108,23 @@ public class LessonService {
                 .createdAt(l.getCreatedAt())
                 .progressStatus(pr != null ? pr.getStatus().name() : "NOT_STARTED")
                 .score(pr != null ? pr.getScore() : 0).build();
+    }
+    // ── GET LIST LESSONS ────────────────────────────────
+    @Transactional(readOnly = true)
+    public List<LessonDetailResponse> getLessons(UUID courseId, UserPrincipal p) {
+        Course course = courseService.findOrThrow(courseId);
+
+        boolean isPremium = isPremium(p);
+
+        // lấy lesson theo quyền (free hoặc premium)
+        var lessons = lessonRepo.findAccessible(courseId, isPremium);
+
+        return lessons.stream().map(l -> {
+            UserProgress pr = (p != null)
+                    ? progressRepo.findByUserIdAndLessonId(p.getUserId(), l.getId()).orElse(null)
+                    : null;
+
+            return toDetailResponse(l, pr);
+        }).toList();
     }
 }
