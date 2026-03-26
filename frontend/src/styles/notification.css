@@ -1,0 +1,119 @@
+.notification-page {
+  background-color: #f4f7fe;
+  min-height: 100vh;
+  padding: 30px 60px;
+  font-family: 'Public Sans', sans-serif;
+}
+
+/* Header & Search */
+.notification-top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.nav-brand {
+  font-size: 26px;
+  font-weight: 800;
+  color: #6366f1;
+}
+
+.search-container {
+  position: relative;
+  width: 350px;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: 50px;
+  border: 1px solid #e2e8f0;
+  outline: none;
+}
+
+.search-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+/* Common Card Style */
+.alert-card, .toast-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto 30px auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.section-desc {
+  color: #94a3b8;
+  font-size: 15px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+/* Alert Styles */
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.alert-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: white;
+}
+
+.alert-item a { color: inherit; text-decoration: underline; }
+.close-icon { cursor: pointer; font-size: 18px; }
+
+/* Alert Colors */
+.alert-primary { background-color: #dbe2ff; color: #6366f1; }
+.alert-secondary { background-color: #6366f1; }
+.alert-success { background-color: #4f46e5; }
+.alert-danger { background-color: #ef4444; }
+.alert-warning { background-color: #06b6d4; }
+.alert-info { background-color: #e0d7ff; color: #8b5cf6; }
+.alert-light { background-color: #cbd5e1; color: #475569; }
+
+/* Toast Grid */
+.toast-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.toast-box {
+  height: 120px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 900px) {
+  .toast-grid { grid-template-columns: 1fr 1fr; }
+}

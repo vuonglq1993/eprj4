@@ -1,0 +1,138 @@
+/* src/styles/report.css */
+
+/* --- Body page --- */
+.report-page {
+  padding: 30px;
+  background-color: #f5f6fa;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  color: #111827;
+}
+
+/* --- Stats card --- */
+.report-stats {
+  display: flex;
+  justify-content: space-between;
+  background-color: #ffffff;
+  padding: 25px 35px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  margin-bottom: 40px;
+  gap: 20px; /* thêm khoảng cách giữa các ô */
+}
+
+.report-stat {
+  flex: 1;
+  min-height: 180px; /* chiều cao tối thiểu */
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* căn giữa theo ngang */
+  justify-content: center; /* căn giữa theo dọc */
+  text-align: center;
+}
+
+.report-stat h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 5px;
+}
+
+.report-stat p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Divider between stats */
+.report-stat:not(:last-child) {
+  border-right: 1px solid #e5e7eb;
+  padding-right: 25px;
+  margin-right: 25px;
+}
+
+/* --- Chart card --- */
+.report-chart {
+  background-color: #ffffff;
+  padding: 25px 35px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+/* Chart header */
+.report-chart__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.report-chart__subtitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0;
+}
+
+.report-chart__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  margin: 4px 0 0 0;
+}
+
+/* --- Recharts Bars --- */
+.recharts-wrapper {
+  margin-top: 10px;
+}
+
+/* Rounded bars and gradient effect */
+.recharts-bar-rectangle {
+  fill: url(#barGradient);
+  rx: 8; /* bo tròn 2 góc trên */
+  ry: 8;
+}
+
+/* Tooltip style */
+.recharts-tooltip-wrapper {
+  font-size: 13px;
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px;
+  color: #111827;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* --- Avatar row under bars --- */
+.recharts-cartesian-axis-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.bar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  object-fit: cover;
+  margin-top: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .report-stats {
+    flex-direction: column;
+    gap: 15px;
+  }
+  .report-stat:not(:last-child) {
+    border-right: none;
+    padding-right: 0;
+    margin-right: 0;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 15px;
+  }
+  
+  
+}
