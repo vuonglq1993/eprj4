@@ -1,0 +1,230 @@
+/* Container và Nền */
+.all-projects-page {
+    background-color: #f4f7fe;
+    /* Màu nền xám xanh nhạt */
+    min-height: 100vh;
+    padding: 40px 50px;
+    font-family: 'Public Sans', sans-serif;
+}
+
+/* Header & Breadcrumb */
+.breadcrumb-title {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.purple-text {
+    color: #6d4aff;
+}
+
+.slash {
+    margin: 0 10px;
+    color: #cbd5e1;
+}
+
+.dark-text {
+    color: #1e293b;
+}
+
+.search-container {
+    position: relative;
+    width: 320px;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 10px 20px;
+    border-radius: 30px;
+    border: 1px solid #e2e8f0;
+    outline: none;
+    font-size: 14px;
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+/* Wrapper chính */
+.main-content-wrapper {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 30px;
+}
+
+/* Thanh User Info */
+.user-avatar-rect {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.user-role {
+    font-size: 13px;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.tab-btn {
+    padding: 8px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: 0.3s ease;
+}
+
+.tab-btn.active {
+    background: #6d4aff;
+    color: white;
+    border: none;
+}
+
+.tab-btn.outline {
+    background: white;
+    color: #6d4aff;
+    border: 1px solid #6d4aff;
+}
+
+/* Tiêu đề mục dự án với nền xám */
+.section-header-gray {
+    background-color: #f4f7fe;
+    padding: 15px 25px;
+    border-radius: 12px;
+    margin: 30px 0 20px 0;
+}
+
+.section-header-gray h5 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #475569;
+    margin: 0;
+}
+
+/* Card Dự án */
+.project-card-item {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 15px;
+    padding: 25px;
+    height: 100%;
+    transition: transform 0.2s;
+}
+
+.project-card-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Icons */
+.icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pink {
+    background: #ffe4e6;
+}
+
+.text-pink {
+    color: #f43f5e;
+    font-weight: 800;
+}
+
+.blue-dark {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.light-pink {
+    background: #fae8ff;
+    color: #d946ef;
+}
+
+.indigo-bg {
+    background: #6d4aff;
+}
+
+.orange-bg {
+    background: #fff7ed;
+    color: #f97316;
+}
+
+.project-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.more-icon-btn {
+    color: #cbd5e1;
+    cursor: pointer;
+}
+
+/* Avatar Stack */
+.avatar-group-stack {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.avatar-group-stack img {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid white;
+    margin-right: -8px;
+}
+
+.project-description-text {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.5;
+    min-height: 42px;
+}
+
+.card-divider {
+    border-top: 1px solid #f1f5f9;
+    margin: 15px 0;
+}
+
+.info-value {
+    display: block;
+    font-weight: 700;
+    color: #334155;
+    font-size: 14px;
+}
+
+.info-subtitle {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* Thẻ Dự án mới trống */
+.empty-new-project-btn {
+    border: 1px solid #e2e8f0;
+    border-radius: 15px;
+    min-height: 280px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #94a3b8;
+    cursor: pointer;
+    background: white;
+}
+
+.empty-new-project-btn:hover {
+    border-color: #6d4aff;
+    color: #6d4aff;
+}

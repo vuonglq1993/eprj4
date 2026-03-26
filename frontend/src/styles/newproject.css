@@ -1,0 +1,111 @@
+/* Tùy chỉnh màu sắc và phông chữ bám sát hình ảnh */
+.new-project-bg {
+  background-color: #f4f7fe; /* Nền xám nhạt như ảnh */
+  min-height: 100vh;
+}
+
+.project-card {
+  width: 100%;
+  max-width: 850px;
+  padding: 50px;
+  border-radius: 20px;
+  border: none;
+}
+
+.title-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.subtitle-text {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-top: 5px;
+}
+
+.label-bold {
+  font-weight: 600;
+  font-size: 14px;
+  color: #475569;
+}
+
+/* Kiểu dáng Input & Select */
+.input-styled {
+  background-color: #f8fafc !important; /* Nền input xám rất nhẹ */
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 14px 18px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.input-styled:focus {
+  border-color: #6d4aff !important;
+  box-shadow: 0 0 0 3px rgba(109, 74, 255, 0.1) !important;
+  background-color: #ffffff !important;
+}
+
+.select-text-purple {
+  color: #6d4aff;
+  font-weight: 500;
+}
+
+/* Khu vực Upload tệp */
+.upload-container {
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 15px;
+  background-color: #ffffff;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.upload-container:hover {
+  border-color: #6d4aff;
+  background-color: #f5f3ff;
+}
+
+.upload-icon {
+  font-size: 35px;
+  color: #6d4aff;
+}
+
+.purple-link {
+  color: #6d4aff;
+  font-weight: 600;
+}
+
+.file-info {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* Nút hành động */
+.btn-create {
+  background-color: #6d4aff;
+  color: #fff;
+  padding: 10px 30px;
+  border-radius: 10px;
+  font-weight: 600;
+  border: none;
+  transition: 0.3s;
+}
+
+.btn-create:hover {
+  background-color: #5839e0;
+  box-shadow: 0 4px 15px rgba(109, 74, 255, 0.3);
+}
+
+.btn-cancel {
+  background-color: #fff;
+  color: #6d4aff;
+  border: 1px solid #6d4aff;
+  padding: 10px 30px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.btn-cancel:hover {
+  background-color: #f5f3ff;
+}
