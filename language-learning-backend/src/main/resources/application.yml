@@ -48,6 +48,10 @@ spring:
 
 server:
   port: 8080
+frontend:
+    url: ${FRONTEND_URL}
+backend:
+    url: ${BACKEND_URL}
 
 jwt:
  secret: ${JWT_SECRET}
