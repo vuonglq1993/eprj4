@@ -2,14 +2,19 @@ package com.languageapp.language_learning_backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication
 public class LanguageLearningBackendApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(LanguageLearningBackendApplication.class, args);
+		ConfigurableApplicationContext context =
+				SpringApplication.run(LanguageLearningBackendApplication.class, args);
 
-		String url = "http://localhost:8080/swagger-ui.html";
+		String backendUrl = context.getEnvironment()
+				.getProperty("backend.url");
+
+		String url = backendUrl + "/swagger-ui.html";
 
 		System.out.println("\n=====================================");
 		System.out.println("🚀 APPLICATION STARTED SUCCESSFULLY!");
