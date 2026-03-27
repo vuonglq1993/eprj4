@@ -4,27 +4,29 @@ import '../../homepage/homepagesetting/theme_notifier.dart';
 class ImageChoiceWidget extends StatelessWidget {
   final List<String> options;
   final String? selectedOption;
-  final Function(String) onSelect;
+  final Function(String)? onSelect; // Đổi sang nullable cho linh hoạt
 
   const ImageChoiceWidget({
     super.key,
     required this.options,
     required this.selectedOption,
-    required this.onSelect,
+    this.onSelect,
   });
 
   String _getEmoji(String text) {
-    if (text == "Men") return "👨";
-    if (text == "Women") return "👩";
-    if (text == "Boy") return "👦";
-    if (text == "Girl") return "👧";
-    return "❓";
+    final emojis = {
+      "Men": "👨",
+      "Women": "👩",
+      "Boy": "👦",
+      "Girl": "👧",
+    };
+    return emojis[text] ?? "❓";
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = themeNotifier.value == ThemeMode.dark;
+    final isDark = theme.brightness == Brightness.dark;
 
     return GridView.builder(
       shrinkWrap: true,
@@ -42,13 +44,15 @@ class ImageChoiceWidget extends StatelessWidget {
         const selectedColor = Color(0xFF6CBC94);
 
         return GestureDetector(
-          onTap: () => onSelect(option),
+          onTap: onSelect == null ? null : () => onSelect!(option),
           child: Container(
             decoration: BoxDecoration(
               color: isSelected ? selectedColor.withOpacity(0.2) : theme.cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isSelected ? selectedColor : (isDark ? Colors.white10 : Colors.grey.shade200),
+                color: isSelected
+                    ? selectedColor
+                    : (isDark ? Colors.white10 : Colors.grey.shade200),
                 width: 2,
               ),
               boxShadow: [
