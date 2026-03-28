@@ -416,26 +416,6 @@
 }
 
 @media (max-width: 720px) {
-  .app-layout {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .sidebar__nav {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .app-layout__content {
-    padding: 16px;
-  }
-
   .dashboard-grid--stats {
     grid-template-columns: minmax(0, 1fr);
   }

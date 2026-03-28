@@ -27,7 +27,9 @@ import Kanban from "./pages/Kanban"
 import Wizard from "./pages/Wizard"
 import DataTables from "./pages/DataTables"
 import Calendar from "./pages/Calendar"
-
+import NewProduct from "./pages/NewProduct"
+import EditProduct from "./pages/EditProduct"
+import ProductList from "./pages/ProductList"
 
 
 import './styles/layout.css'
@@ -50,6 +52,9 @@ import './styles/Kanban.css'
 import './styles/wizard.css'
 import './styles/DataTables.css'
 import './styles/calendar.css'
+import './styles/newproduct.css'
+import './styles/editproduct.css'
+import './styles/productlist.css'
 
 
 
@@ -246,7 +251,33 @@ function CalendarRoute() {
     </ProtectedRoute>
   )
 }
-
+function NewProductRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <NewProduct/>
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+function EditProductRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <EditProduct/>
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+function ProductListRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <ProductList />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
 
 function LoginRoute() {
   const { isAuthenticated } = useAuth()
@@ -289,6 +320,9 @@ function App() {
           <Route path="/wizard" element={<WizardRoute />} />
           <Route path="/datatables" element={<DataTablesRoute />} />
           <Route path="/calendar" element={<CalendarRoute />} />
+          <Route path="/new-product" element={<NewProductRoute />} />
+           <Route path="/edit-product" element={<EditProductRoute />} />
+          <Route path="/product-list" element={<ProductListRoute />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

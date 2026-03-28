@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom'
 import { IoSearch } from 'react-icons/io5'
+import { MdMenu } from 'react-icons/md'
 
 const PAGE_TITLES = {
   '/': 'Dashboard',
@@ -21,17 +22,29 @@ const PAGE_TITLES = {
   '/security': 'Account / Security',
   '/kanban': 'Kanban',
   '/datatables': 'Data Tables',
-
-
+  '/wizard': 'Wizard',
+  '/calendar': 'Calendar',
+  '/new-product': 'New Product',
 }
 
-function Topbar() {
+
+function Topbar({ onOpenNav }) {
   const { pathname } = useLocation()
   const title = PAGE_TITLES[pathname] ?? 'Dashboard'
 
   return (
     <header className="topbar">
-      <h1 className="topbar__title">{title}</h1>
+      <div className="topbar__leading">
+        <button
+          type="button"
+          className="topbar__menu-btn"
+          aria-label="Mở menu"
+          onClick={() => onOpenNav?.()}
+        >
+          <MdMenu size={22} aria-hidden />
+        </button>
+        <h1 className="topbar__title">{title}</h1>
+      </div>
 
       <div className="topbar__search">
         <input
