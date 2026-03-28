@@ -1,6 +1,5 @@
 package com.languageapp.language_learning_backend.config;
-// Truy cập: http://localhost:8080/swagger-ui.html
-// JSON spec: http://localhost:8080/v3/api-docs
+
 
 import io.swagger.v3.oas.models.*;
 import io.swagger.v3.oas.models.info.*;
@@ -15,8 +14,8 @@ import java.util.List;
 @Configuration
 public class SwaggerConfig {
 
-    @Value("${app.frontend-url:http://localhost:3000}")
-    private String frontendUrl;
+    @Value("${backend.url}")
+    private String backendUrl;
 
     @Bean
     public OpenAPI openAPI() {
@@ -66,8 +65,7 @@ public class SwaggerConfig {
     // ── SERVERS ───────────────────────────────────────────────
     private List<Server> servers() {
         return List.of(
-                new Server().url("http://localhost:8080").description("Local Development"),
-                new Server().url("https://api.linguanext.com").description("Production")
+                new Server().url(backendUrl).description("Current Environment")
         );
     }
 

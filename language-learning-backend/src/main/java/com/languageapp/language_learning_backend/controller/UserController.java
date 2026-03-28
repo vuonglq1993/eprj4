@@ -21,7 +21,7 @@ public class UserController {
 
     private final UserService userService;
 
-    // ── AUTH endpoints (public) ───────────────────────────────
+    // ── AUTH (public) ─────────────────────────────────────────
 
     @Operation(summary = "Đăng ký tài khoản")
     @PostMapping("/api/v1/auth/register")
@@ -35,57 +35,16 @@ public class UserController {
         return ResponseEntity.ok(userService.login(req));
     }
 
-
-    // JWT refresh token (currently disabled)
-
-    @Operation(summary = "Làm mới access token bằng refresh token")
-    @PostMapping("/api/v1/auth/refresh")
-    public ResponseEntity<AuthResponse> refresh(@RequestParam String refreshToken) {
-        return ResponseEntity.ok(userService.refresh(refreshToken));
-    }
-
-    // Logout requires JWT authentication
-
-    @Operation(summary = "Đăng xuất — thu hồi refresh token")
+    @Operation(summary = "Đăng xuất")
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/api/v1/auth/logout")
-    public ResponseEntity<Void> logout(@AuthenticationPrincipal UserPrincipal p) {
+    public ResponseEntity<Map<String, String>> logout(@AuthenticationPrincipal UserPrincipal p) {
         userService.logout(p.getUserId());
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
-
-    /*
-    // Email OTP verification (currently disabled)
-
-    @Operation(summary = "Xác thực email bằng OTP 6 chữ số")
-    @PostMapping("/api/v1/auth/verify-email")
-    public ResponseEntity<Map<String,String>> verifyEmail(
-            @RequestParam String email, @RequestParam String otp) {
-        userService.verifyEmail(email, otp);
-        return ResponseEntity.ok(Map.of("message", "Email verified"));
-    }
-
-    @Operation(summary = "Gửi OTP reset mật khẩu qua email")
-    @PostMapping("/api/v1/auth/forgot-password")
-    public ResponseEntity<Map<String,String>> forgotPassword(@RequestParam String email) {
-        userService.forgotPassword(email);
-        return ResponseEntity.ok(Map.of("message", "If email exists, OTP has been sent"));
-    }
-
-    @Operation(summary = "Đặt lại mật khẩu với OTP")
-    @PostMapping("/api/v1/auth/reset-password")
-    public ResponseEntity<Map<String,String>> resetPassword(
-            @RequestParam String token,
-            @RequestParam @jakarta.validation.constraints.Size(min=8) String newPassword) {
-        userService.resetPassword(token, newPassword);
-        return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
-    }
-    */
-
-    // ── USER profile endpoints (authenticated) ────────────────
-    // NOTE: Requires JWT authentication when security is enabled
+    // ── USER PROFILE (authenticated) ─────────────────────────
 
     @Operation(summary = "Lấy profile của chính mình")
     @SecurityRequirement(name = "bearerAuth")
@@ -109,7 +68,7 @@ public class UserController {
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("isAuthenticated()")
     @PatchMapping("/api/v1/users/me/password")
-    public ResponseEntity<Map<String,String>> changePassword(
+    public ResponseEntity<Map<String, String>> changePassword(
             @Valid @RequestBody ChangePasswordRequest req,
             @AuthenticationPrincipal UserPrincipal p) {
         userService.changePassword(req, p);

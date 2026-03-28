@@ -2,6 +2,7 @@ package com.languageapp.language_learning_backend.config;
 
 import com.languageapp.language_learning_backend.security.JwtFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -13,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.*;
+
 import java.util.List;
 
 @Configuration
@@ -22,6 +24,13 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
+    @Value("${backend.url}")
+    private String backendUrl;
+    @Value("${android.url}")
+    private String androidUrl;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -33,25 +42,31 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/courses/**", "/api/v1/languages/**").permitAll()
                         .requestMatchers("/api/v1/payments/webhook/**").permitAll()
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/static/**", "/*.html").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
-    @Bean public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(12); }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
+    }
 
     @Bean
     public CorsConfigurationSource corsSource() {
         var cfg = new CorsConfiguration();
-        cfg.setAllowedOriginPatterns(List.of("http://localhost:3000", "https://*.linguanext.com"));
-        cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        cfg.setAllowedHeaders(List.of("*")); cfg.setAllowCredentials(true);
+        cfg.setAllowedOriginPatterns(List.of(
+                frontendUrl,
+                backendUrl,
+                androidUrl
+        ));
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setAllowCredentials(true);
         var src = new UrlBasedCorsConfigurationSource();
-        src.registerCorsConfiguration("/**", cfg); return src;
+        src.registerCorsConfiguration("/**", cfg);
+        return src;
     }
 }

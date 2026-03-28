@@ -2,7 +2,8 @@ package com.languageapp.language_learning_backend.dto.lesson;
 
 import com.languageapp.language_learning_backend.entity.Lesson.LessonType;
 import lombok.*;
-import java.time.LocalDateTime;
+
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -18,7 +19,7 @@ public class LessonDetailResponse {
     private Integer       durationMinutes;
     private Boolean       isFree;
     private Integer       totalExercises;
-    private LocalDateTime createdAt;
+    private Instant       createdAt;
     // Populated nếu user đã login
     private String        progressStatus;
     private Integer       score;

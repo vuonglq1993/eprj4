@@ -8,6 +8,7 @@ import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -64,7 +65,7 @@ public class AIInteractionLog {
     @Column(columnDefinition = "VARCHAR(36)")
     private UUID lessonId;
 
-    @CreationTimestamp private LocalDateTime createdAt;
+    @CreationTimestamp private Instant createdAt;
 
     public enum InteractionType {
         CHAT_EXPLAIN, GRAMMAR_CHECK, PRONUNCIATION, RECOMMENDATION, PLACEMENT_TEST

@@ -46,7 +46,9 @@ public class StudyLog {
     @Column(length = 30)
     private ActivityType activityType;
 
-    @CreationTimestamp private LocalDateTime createdAt;
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
 
     public enum ActivityType {
         LESSON_VIEW, EXERCISE_SUBMIT, AI_CHAT, PRONUNCIATION_PRACTICE

@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import java.time.LocalDateTime;
+
+import java.time.Instant;
 import java.util.UUID;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -58,8 +59,8 @@ public class User {
     @Column(nullable = false) @Builder.Default private Boolean emailVerified = false;
     @Column(nullable = false) @Builder.Default private Boolean isActive      = true;
 
-    @CreationTimestamp @Column(updatable = false) private LocalDateTime createdAt;
-    @UpdateTimestamp private LocalDateTime updatedAt;
+    @CreationTimestamp @Column(updatable = false) private Instant createdAt;
+    @UpdateTimestamp private Instant updatedAt;
 
     // Quan hệ — lazy để tránh N+1
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
