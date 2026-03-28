@@ -8,8 +8,7 @@ import jakarta.persistence.Table;
 import lombok.*;
 import org.hibernate.annotations.*;
 import org.hibernate.type.SqlTypes;
-
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 
 @Entity
@@ -57,8 +56,11 @@ public class Course {
     @Builder.Default
     private List<Lesson> lessons = new ArrayList<>();
 
-    @CreationTimestamp private LocalDateTime createdAt;
-    @UpdateTimestamp   private LocalDateTime updatedAt;
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
 
+    @UpdateTimestamp
+    private Instant updatedAt;
     public enum Level { BEGINNER, ELEMENTARY, INTERMEDIATE, UPPER_INTERMEDIATE, ADVANCED }
 }

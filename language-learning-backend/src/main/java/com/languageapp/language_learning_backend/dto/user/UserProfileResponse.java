@@ -1,6 +1,8 @@
 package com.languageapp.language_learning_backend.dto.user;
 
 import lombok.*;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -15,7 +17,7 @@ public class UserProfileResponse {
     private String        provider;
     private Boolean       emailVerified;
     private Boolean       isActive;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
     private String        subscriptionPlan;
     private Boolean       isPremium;
 }

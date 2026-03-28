@@ -8,7 +8,7 @@ import lombok.*;
 import org.hibernate.annotations.*;
 import org.hibernate.type.SqlTypes;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 
 @Entity
@@ -52,8 +52,12 @@ public class Lesson {
     @Builder.Default
     private List<Exercise> exercises = new ArrayList<>();
 
-    @CreationTimestamp private LocalDateTime createdAt;
-    @UpdateTimestamp   private LocalDateTime updatedAt;
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    private Instant updatedAt;
 
     public enum LessonType { VOCABULARY, GRAMMAR, LISTENING, SPEAKING, READING, WRITING, MIXED }
 }
