@@ -7,6 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -46,9 +47,13 @@ public class UserProgress {
     @Column(nullable = false) @Builder.Default private Integer attempts         = 0;
     @Column(nullable = false) @Builder.Default private Integer timeSpentSeconds = 0;
 
-    private LocalDateTime completedAt;
 
-    @UpdateTimestamp private LocalDateTime updatedAt;
+    private Instant startedAt;
+    private Instant completedAt;
+
+    @UpdateTimestamp
+    private Instant updatedAt;
+
 
     public enum ProgressStatus { NOT_STARTED, IN_PROGRESS, COMPLETED }
 }
