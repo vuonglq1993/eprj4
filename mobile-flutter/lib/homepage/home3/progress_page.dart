@@ -1345,51 +1345,6 @@ class _ProgressPageState extends State<ProgressPage> {
     );
   }
 
-  // --- WIDGET: Biểu đồ tuần (THỨ 2 -> CN) ---
-  // Widget _buildWeeklyChart(ThemeData theme) {
-  //   DateTime now = DateTime.now();
-  //   // Tìm ngày Thứ 2 của tuần này (Monday = 1)
-  //   DateTime monday = now.subtract(Duration(days: now.weekday - 1));
-  //   monday = DateTime(monday.year, monday.month, monday.day);
-  //
-  //   return Row(
-  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //     crossAxisAlignment: CrossAxisAlignment.end,
-  //     children: List.generate(7, (index) {
-  //       // Tạo ngày từ Thứ 2 (index 0) đến Chủ Nhật (index 6)
-  //       DateTime date = monday.add(Duration(days: index));
-  //       bool isStudied = _isDateStudied(date);
-  //       bool isToday = date.day == now.day && date.month == now.month && date.year == now.year;
-  //       String dayName = DateFormat('E').format(date); // Mon, Tue...
-  //
-  //       return Column(
-  //         children: [
-  //           Container(
-  //             width: 35,
-  //             height: isStudied ? 80 : 25, // Có học thì cột cao, không thì lùn
-  //             decoration: BoxDecoration(
-  //               color: isStudied ? Colors.orange : Colors.grey.withOpacity(0.2),
-  //               borderRadius: BorderRadius.circular(8),
-  //               border: isToday ? Border.all(color: Colors.blueAccent, width: 2) : null, // Viền xanh cho hôm nay
-  //             ),
-  //             child: isStudied ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
-  //           ),
-  //           const SizedBox(height: 8),
-  //           Text(
-  //             dayName,
-  //             style: TextStyle(
-  //               fontSize: 12,
-  //               fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-  //               color: isToday ? Colors.blueAccent : Colors.grey,
-  //             ),
-  //           ),
-  //         ],
-  //       );
-  //     }),
-  //   );
-  // }
-
-
 
   Widget _buildWeeklyChart(ThemeData theme) {
     DateTime now = DateTime.now();
