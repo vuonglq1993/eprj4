@@ -1,0 +1,100 @@
+.productlist-page {
+  background-color: #f4f7fe;
+  font-family: 'Public Sans', sans-serif;
+  min-height: 100%;
+}
+
+.productlist-inner {
+  max-width: 1100px;
+}
+
+.productlist-title {
+  color: #1e293b;
+  font-size: 1.5rem;
+}
+
+.pl-table-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #edf2f7;
+  overflow: hidden;
+}
+
+.pl-table {
+  --pl-row-border: #eef2f7;
+}
+
+.pl-table thead {
+  background-color: #f8fafc;
+}
+
+.pl-table th {
+  padding: 1rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  border-bottom: 1px solid var(--pl-row-border);
+  vertical-align: middle;
+}
+
+.pl-table td {
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+  color: #334155;
+  border-bottom: 1px solid var(--pl-row-border);
+  vertical-align: middle;
+}
+
+.pl-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pl-table tbody tr:hover {
+  background-color: #fafafa;
+}
+
+.pl-product-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.pl-product-name {
+  color: #1e293b;
+  font-size: 0.875rem;
+}
+
+.pl-cell-muted {
+  color: #64748b;
+}
+
+.pl-salary {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.pl-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.pl-status--in {
+  color: #15803d;
+  background-color: #dcfce7;
+}
+
+.pl-status--out {
+  color: #be123c;
+  background-color: #ffe4e6;
+}

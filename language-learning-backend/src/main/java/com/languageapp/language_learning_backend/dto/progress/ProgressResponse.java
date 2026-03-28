@@ -2,6 +2,8 @@ package com.languageapp.language_learning_backend.dto.progress;
 
 import com.languageapp.language_learning_backend.entity.UserProgress.ProgressStatus;
 import lombok.*;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,6 +16,6 @@ public class ProgressResponse {
     private Integer        score;
     private Integer        attempts;
     private Integer        timeSpentMinutes;
-    private LocalDateTime  completedAt;
-    private LocalDateTime  updatedAt;
+    private Instant completedAt;
+    private Instant  updatedAt;
 }

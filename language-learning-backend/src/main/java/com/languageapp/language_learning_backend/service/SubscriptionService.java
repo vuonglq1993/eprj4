@@ -46,14 +46,14 @@ public class SubscriptionService {
                 .orElse(Subscription.builder().user(user).build());
 
         Subscription.Plan plan = (txPlan == Plan.MONTHLY) ? Subscription.Plan.MONTHLY : Subscription.Plan.YEARLY;
-        LocalDateTime now      = LocalDateTime.now();
-        LocalDateTime start    = (sub.getEndDate() != null && sub.getEndDate().isAfter(now))
-                ? sub.getEndDate() : now;   // nối tiếp nếu còn hạn
+        Instant now      = Instant.now();
+        LocalDate start    = LocalDate.from((sub.getEndDate() != null && sub.getEndDate().isAfter(now))
+                ? sub.getEndDate() : now);   // nối tiếp nếu còn hạn
 
         sub.setPlan(plan);
         sub.setStatus(SubStatus.ACTIVE);
-        sub.setStartDate(start);
-        sub.setEndDate(txPlan == Plan.MONTHLY ? start.plusMonths(1) : start.plusYears(1));
+        sub.setStartDate(Instant.from(start));
+        sub.setEndDate(Instant.from(txPlan == Plan.MONTHLY ? start.plusMonths(1) : start.plusYears(1)));
         subRepo.save(sub);
         log.info("Subscription activated: userId={} plan={} until={}", user.getId(), plan, sub.getEndDate());
     }

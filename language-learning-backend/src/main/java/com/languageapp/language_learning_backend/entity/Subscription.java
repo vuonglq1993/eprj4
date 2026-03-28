@@ -4,9 +4,10 @@ import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
 import org.hibernate.annotations.*;
+import org.hibernate.grammars.hql.HqlParser;
 import org.hibernate.type.SqlTypes;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -34,8 +35,8 @@ public class Subscription {
     @Builder.Default
     private SubStatus status = SubStatus.ACTIVE;
 
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private Instant startDate;
+    private Instant endDate;
 
     @Column(nullable = false) @Builder.Default
     private Boolean autoRenew = false;
@@ -44,13 +45,13 @@ public class Subscription {
     @Column(length = 100)
     private String externalSubscriptionId;
 
-    @CreationTimestamp private LocalDateTime createdAt;
-    @UpdateTimestamp   private LocalDateTime updatedAt;
+    @CreationTimestamp private Instant createdAt;
+    @UpdateTimestamp   private Instant updatedAt;
 
     public boolean isPremium() {
         return plan != Plan.FREE
                 && status == SubStatus.ACTIVE
-                && (endDate == null || endDate.isAfter(LocalDateTime.now()));
+                && (endDate == null || endDate.isAfter(Instant.now()));
     }
 
     public enum Plan      { FREE, MONTHLY, YEARLY }

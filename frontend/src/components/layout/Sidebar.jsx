@@ -107,9 +107,9 @@ const menuConfig = [
         id: 'products',
         label: 'Products',
         children: [
-          { id: 'new-product', label: 'New Product' },
-          { id: 'edit-product', label: 'Edit Product' },
-          { id: 'product-list', label: 'Product List' },
+          { id: 'new-product', label: 'New Product',path: '/new-product' },
+          { id: 'edit-product', label: 'Edit Product',path: '/edit-product' },
+          { id: 'product-list', label: 'Product List', path: '/product-list' },
         ],
       },
       { id: 'orders', label: 'Orders' },
@@ -122,13 +122,14 @@ const menuConfig = [
   },
 ]
 
-function Sidebar() {
+function Sidebar({ onNavigate }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { logout } = useAuth()
   const [expandedIds, setExpandedIds] = useState(new Set(['home', 'pages', 'profile']))
 
   const handleLogout = () => {
+    onNavigate?.()
     logout()
     navigate('/login', { replace: true })
   }
@@ -170,7 +171,7 @@ function Sidebar() {
     return (
       <div key={item.id} className="sidebar__group">
         {hasPath ? (
-          <Link to={item.path} className={baseClass}>
+          <Link to={item.path} className={baseClass} onClick={() => onNavigate?.()}>
             {content}
           </Link>
         ) : (
