@@ -1,0 +1,258 @@
+:root {
+  --bg-page: #f5f5fb;
+  --bg-surface: #ffffff;
+  --border-subtle: #e4e4f0;
+  --text-main: #0f172a;
+  --text-muted: #6b7280;
+  --primary: #6c4ef6;
+  --primary-soft: #f2ecff;
+  --sidebar-hover-bg: #eadcff;
+  --radius-lg: 16px;
+  --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg-page);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--text-main);
+}
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-layout__content {
+  flex: 1;
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 280px;
+  min-width: 280px;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar__logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding: 0 8px;
+}
+
+.sidebar__logo-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #9b5cfd, var(--primary));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.sidebar__logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar__group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar__children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.sidebar__group .sidebar__children .sidebar__children {
+  margin-top: 4px;
+}
+
+/* Menu item base */
+.sidebar__nav-item {
+  border: none;
+  outline: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+/* Hover: light purple background + purple text (như hình) */
+.sidebar__nav-item:hover {
+  background: var(--sidebar-hover-bg);
+  color: var(--primary);
+}
+
+.sidebar__nav-item:hover .sidebar__nav-icon,
+.sidebar__nav-item:hover .sidebar__nav-chevron {
+  color: var(--primary);
+}
+
+/* Active / selected state (giống hover) */
+.sidebar__nav-item--active,
+.sidebar__nav-item[aria-expanded="true"] {
+  background: var(--sidebar-hover-bg);
+  color: var(--primary);
+}
+
+.sidebar__nav-item--active .sidebar__nav-icon,
+.sidebar__nav-item--active .sidebar__nav-chevron,
+.sidebar__nav-item[aria-expanded="true"] .sidebar__nav-icon,
+.sidebar__nav-item[aria-expanded="true"] .sidebar__nav-chevron {
+  color: var(--primary);
+}
+
+.sidebar__nav-label {
+  flex: 1;
+}
+
+.sidebar__nav-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+.sidebar__nav-chevron {
+  font-size: 20px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+/* Child items: indentation (mục con thụt vào như hình) */
+.sidebar__nav-item--child {
+  padding-left: 12px;
+}
+
+.sidebar__nav-item--depth-1 {
+  padding-left: 40px;
+  font-size: 13px;
+}
+
+.sidebar__nav-item--depth-2 {
+  padding-left: 52px;
+  font-size: 13px;
+}
+
+.sidebar__nav-item--depth-3 {
+  padding-left: 64px;
+  font-size: 13px;
+}
+
+/* Mục con không có icon — dùng khoảng trống để căn chữ */
+.sidebar__nav-item--depth-1 .sidebar__nav-icon,
+.sidebar__nav-item--depth-2 .sidebar__nav-icon,
+.sidebar__nav-item--depth-3 .sidebar__nav-icon {
+  width: 20px;
+  min-width: 20px;
+  visibility: hidden;
+}
+
+.sidebar__footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.sidebar__nav-item--logout {
+  color: var(--text-muted);
+}
+
+/* Topbar */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.topbar__title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.topbar__search {
+  min-width: 260px;
+  position: relative;
+}
+
+.topbar__search-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.topbar__search-input {
+  width: 100%;
+  padding-right: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  padding: 9px 16px;
+  font-size: 14px;
+  outline: none;
+  background: #f9fafb;
+}
+
+.topbar__search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.topbar__search-input:focus {
+  background: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px rgba(108, 78, 246, 0.12);
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+

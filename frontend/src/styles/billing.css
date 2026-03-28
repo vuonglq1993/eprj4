@@ -1,0 +1,256 @@
+.billing-page {
+    background-color: #f4f7fe;
+    padding: 40px 50px;
+    font-family: 'Public Sans', sans-serif;
+    color: #1e293b;
+}
+
+/* Header */
+.billing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.purple-text {
+    color: #6366f1;
+    font-weight: 700;
+    font-size: 24px;
+}
+
+.slash {
+    margin: 0 10px;
+    color: #cbd5e1;
+    font-size: 24px;
+}
+
+.dark-text {
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 24px;
+}
+
+.search-wrapper {
+    position: relative;
+    width: 320px;
+}
+
+.search-wrapper input {
+    width: 100%;
+    padding: 12px 20px;
+    border-radius: 30px;
+    border: 1px solid #e2e8f0;
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+/* Section Common */
+h2 {
+    font-size: 24px;
+    margin: 0;
+}
+
+.subtitle {
+    color: #94a3b8;
+    font-size: 14px;
+    margin: 8px 0 25px 0;
+}
+
+/* Plans Grid */
+.plans-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.billing-card {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.basic-plan-card {
+    position: relative;
+}
+
+.plan-info h3 {
+    font-size: 28px;
+    margin: 0;
+}
+
+.plan-price {
+    position: absolute;
+    right: 30px;
+    top: 30px;
+    text-align: right;
+}
+
+.plan-price .amount {
+    font-size: 32px;
+    font-weight: 700;
+    display: block;
+}
+
+.plan-price .period {
+    font-size: 14px;
+    color: #94a3b8;
+}
+
+.user-avatars {
+    display: flex;
+    margin-top: 15px;
+}
+
+.user-avatars img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid white;
+    margin-right: -10px;
+}
+
+.text-btn {
+    background: none;
+    border: none;
+    color: #6366f1;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: auto;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Payment Method Card */
+.visa-box {
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.visa-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.visa-icon {
+    font-size: 40px;
+    color: #1a1f71;
+}
+
+.visa-name {
+    font-weight: 600;
+    margin: 0;
+}
+
+.visa-expiry {
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.edit-btn {
+    background: #6366f1;
+    color: white;
+    border: none;
+    padding: 8px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Billing History Table */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.download-all-btn {
+    background: #6366f1;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.history-table-container {
+    background: white;
+    border-radius: 16px;
+    padding: 10px;
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.billing-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.billing-table th {
+    text-align: left;
+    padding: 20px;
+    color: #475569;
+    font-size: 14px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.billing-table td {
+    padding: 20px;
+    font-size: 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #64748b;
+}
+
+.billing-id {
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pdf-icon {
+    font-size: 18px;
+    color: #334155;
+}
+
+.status-tag {
+    color: #64748b;
+}
+
+.download-row-btn {
+    background: #334155;
+    color: white;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.more-icon {
+    cursor: pointer;
+    color: #94a3b8;
+}

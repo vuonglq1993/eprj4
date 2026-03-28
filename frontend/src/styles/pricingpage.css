@@ -1,0 +1,165 @@
+.pricing-container {
+  background-color: #f4f7fe;
+  min-height: 100vh;
+  padding: 30px 60px;
+  font-family: 'Public Sans', sans-serif;
+  text-align: left;
+}
+
+/* Nav & Search */
+.pricing-top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.nav-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #6366f1;
+}
+
+.nav-title span {
+  color: #4338ca;
+}
+
+.search-box {
+  position: relative;
+  width: 350px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: 50px;
+  border: 1px solid #e2e8f0;
+  outline: none;
+}
+
+.search-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+/* Intro Text */
+.pricing-intro h2 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 10px;
+}
+
+.pricing-intro p {
+  color: #94a3b8;
+  font-size: 15px;
+  margin-bottom: 40px;
+}
+
+/* Grid Layout */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.pricing-card {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header h3 {
+  font-size: 32px;
+  color: #334155;
+  margin: 0;
+  font-weight: 600;
+}
+
+.card-header .subtitle {
+  color: #94a3b8;
+  font-size: 14px;
+  display: block;
+  margin-top: 8px;
+  margin-bottom: 30px;
+}
+
+/* Buttons */
+.plan-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 40px;
+  transition: 0.3s;
+}
+
+.btn-outline {
+  background: #5a39e0;
+  border: 1px solid #e2e8f0;
+  color: #94a3b8;
+}
+
+.btn-primary {
+  background: #6d4aff;
+  border: none;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #3b3838;
+}
+
+/* Features */
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.check-box {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #00d2ff;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.check-box.active {
+  background-color: #00d2ff;
+  color: white;
+}
+
+.feature-text {
+  font-size: 13px;
+  color: #475569;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-container {
+    padding: 20px;
+  }
+  
+}
