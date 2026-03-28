@@ -3,6 +3,8 @@ package com.languageapp.language_learning_backend.dto.course;
 import com.languageapp.language_learning_backend.entity.Course.Level;
 import com.languageapp.language_learning_backend.dto.lesson.LessonSummaryResponse;
 import lombok.*;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -18,7 +20,7 @@ public class CourseDetailResponse {
     private Boolean                    isPublished;
     private Integer                    totalLessons;
     private String                     createdByName;
-    private LocalDateTime              createdAt;
+    private Instant                    createdAt;
     private List<LessonSummaryResponse> lessons;
     private Integer                    progressPercent;
 }

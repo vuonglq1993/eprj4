@@ -2,6 +2,8 @@ package com.languageapp.language_learning_backend.dto.course;
 
 import com.languageapp.language_learning_backend.entity.Course.Level;
 import lombok.*;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +20,7 @@ public class CourseResponse {
     private Boolean       isPublished;
     private Integer       totalLessons;
     private String        createdByName;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant       createdAt;
+    private Instant       updatedAt;
     private Integer       progressPercent;   // null nếu chưa login
 }
