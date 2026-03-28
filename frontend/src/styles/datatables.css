@@ -1,0 +1,106 @@
+.datatables-page {
+    background-color: #fcfcfd;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+
+.page-title {
+    color: #1e293b;
+}
+
+/* Control Buttons */
+.btn-action {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    transition: 0.3s;
+}
+
+.btn-action.active {
+    background: #6366f1;
+    color: white;
+    border-color: #6366f1;
+}
+
+/* Search bar */
+.search-container {
+    position: relative;
+    max-width: 400px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.table-search-input {
+    width: 100%;
+    padding: 10px 15px 10px 45px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    outline: none;
+    font-size: 14px;
+}
+
+/* Table Design */
+.table-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #f1f5f9;
+}
+
+.custom-table thead {
+    background-color: #f8fafc;
+}
+
+.custom-table th {
+    padding: 16px 20px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.custom-table td {
+    padding: 16px 20px;
+    vertical-align: middle;
+    font-size: 14px;
+    color: #475569;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.custom-table tr:hover {
+    background-color: #f1f0ff;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-more {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    padding: 5px;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.btn-more:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}

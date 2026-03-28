@@ -1,6 +1,8 @@
 package com.languageapp.language_learning_backend.controller;
 
 import com.languageapp.language_learning_backend.dto.exercise.*;
+import com.languageapp.language_learning_backend.entity.ExerciseAttempt;
+import com.languageapp.language_learning_backend.entity.User;
 import com.languageapp.language_learning_backend.security.UserPrincipal;
 import com.languageapp.language_learning_backend.service.ExerciseService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -67,4 +69,23 @@ public class ExerciseController {
             @Valid @RequestBody SubmitRequest req, @AuthenticationPrincipal UserPrincipal p) {
         return ResponseEntity.ok(service.submit(courseId, lessonId, req, p));
     }
+
+
+        private final ExerciseService exerciseService;
+
+        @PostMapping("/{id}/submit")
+        public ResponseEntity<?> submit(
+                @PathVariable UUID id,
+                @RequestBody SubmitRequest request,
+                @AuthenticationPrincipal User user
+        ) {
+            ExerciseAttempt attempt = exerciseService.submitExercise(
+                    user.getId(),
+                    id,
+                    request.getAnswer()
+            );
+
+            return ResponseEntity.ok(attempt);
+        }
+
 }

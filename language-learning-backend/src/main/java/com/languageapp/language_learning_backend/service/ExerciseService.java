@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,6 +31,10 @@ public class ExerciseService {
     private final CourseService          courseService;
     private final LessonService          lessonService;
     private final ObjectMapper           mapper;
+    private final ExerciseRepository exerciseRepository;
+    private final ExerciseAttemptRepository attemptRepository;
+    private final UserProgressRepository progressRepository;
+
 
     // ── LIST ──────────────────────────────────────────────────
     @Transactional(readOnly = true)
@@ -140,4 +147,70 @@ public class ExerciseService {
                 .orderIndex(e.getOrderIndex()).points(e.getPoints())
                 .timeLimitSeconds(e.getTimeLimitSeconds()).build();
     }
-}
+
+
+
+        public ExerciseAttempt submitExercise(UUID userId, UUID exerciseId, String userAnswer) {
+
+            Exercise exercise = exerciseRepository.findById(exerciseId)
+                    .orElseThrow(() -> new RuntimeException("Exercise not found"));
+
+            UserProgress progress = progressRepository
+                    .findByUserIdAndLessonId(userId, exercise.getLesson().getId())
+                    .orElseThrow(() -> new RuntimeException("Progress not found"));
+
+            Instant now = Instant.now();
+
+            // ❗ nếu chưa start thì set start
+            if (progress.getStartedAt() == null) {
+                progress.setStartedAt(now);
+            }
+
+            // ⏱ tính thời gian
+            Duration duration = Duration.between(progress.getStartedAt(), now);
+            int seconds = (int) duration.getSeconds();
+
+            // ❗ check timeout
+            boolean isTimeout = seconds > exercise.getTimeLimitSeconds();
+
+            // 🎯 check đúng sai (tùy bạn parse JSON)
+            boolean isCorrect = checkAnswer(exercise, userAnswer);
+
+            int score = isTimeout ? 0 : (isCorrect ? exercise.getPoints() : 0);
+
+            // 💾 lưu attempt
+            ExerciseAttempt attempt = ExerciseAttempt.builder()
+                    .user(progress.getUser())
+                    .exercise(exercise)
+                    .progress(progress)
+                    .startedAt(progress.getStartedAt())
+                    .submittedAt(now)
+                    .durationSeconds(seconds)
+                    .isCorrect(isCorrect)
+                    .score(score)
+                    .isTimeout(isTimeout)
+                    .userAnswer(userAnswer)
+                    .build();
+
+            attemptRepository.save(attempt);
+
+            // 🔥 update progress
+            progress.setTimeSpentSeconds(progress.getTimeSpentSeconds() + seconds);
+            progress.setAttempts(progress.getAttempts() + 1);
+
+            if (!isTimeout && isCorrect) {
+                progress.setScore(progress.getScore() + score);
+            }
+
+            progress.setCompletedAt(now);
+            progressRepository.save(progress);
+
+            return attempt;
+        }
+
+        private boolean checkAnswer(Exercise exercise, String userAnswer) {
+            // TODO: parse JSON questionData
+            return true;
+        }
+    }
+

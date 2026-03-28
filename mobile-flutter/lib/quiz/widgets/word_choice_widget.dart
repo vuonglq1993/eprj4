@@ -4,19 +4,21 @@ import '../../homepage/homepagesetting/theme_notifier.dart';
 class WordChoiceWidget extends StatelessWidget {
   final List<String> options;
   final String? selectedOption;
-  final Function(String) onSelect;
+  final Function(String)? onSelect;
 
   const WordChoiceWidget({
     super.key,
     required this.options,
     required this.selectedOption,
-    required this.onSelect,
+    // required this.onSelect,
+    this.onSelect, // Bỏ required
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = themeNotifier.value == ThemeMode.dark;
+    // Sử dụng theme trực tiếp để check dark mode sẽ chuẩn hơn là gọi notifier
+    final isDark = theme.brightness == Brightness.dark;
 
     return Column(
       children: options.map((option) {
@@ -24,7 +26,8 @@ class WordChoiceWidget extends StatelessWidget {
         const selectedColor = Color(0xFF6CBC94);
 
         return GestureDetector(
-          onTap: () => onSelect(option),
+          // Nếu onSelect null thì vô hiệu hóa onTap
+          onTap: onSelect == null ? null : () => onSelect!(option),
           child: Container(
             margin: const EdgeInsets.only(bottom: 15),
             padding: const EdgeInsets.all(16),
@@ -32,7 +35,9 @@ class WordChoiceWidget extends StatelessWidget {
               color: isSelected ? selectedColor.withOpacity(0.2) : theme.cardColor,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isSelected ? selectedColor : (isDark ? Colors.white10 : Colors.grey.shade300),
+                color: isSelected
+                    ? selectedColor
+                    : (isDark ? Colors.white10 : Colors.grey.shade300),
                 width: 2,
               ),
             ),

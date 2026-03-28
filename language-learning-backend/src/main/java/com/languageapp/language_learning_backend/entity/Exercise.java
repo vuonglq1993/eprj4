@@ -6,7 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
-
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -60,8 +60,9 @@ public class Exercise {
     @Column(nullable = false) @Builder.Default private Integer points           = 10;
     @Column(nullable = false) @Builder.Default private Integer timeLimitSeconds = 0;
 
-    @CreationTimestamp private LocalDateTime createdAt;
-
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
     public enum ExerciseType {
         MULTIPLE_CHOICE, FILL_IN_BLANK, LISTENING_CHOICE, SPEAKING, TRANSLATION, MATCHING
     }

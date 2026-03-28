@@ -1,0 +1,137 @@
+/* Tùy chỉnh màu sắc và phông chữ bám sát hình ảnh */
+.security-settings-page {
+  background-color: #f4f7fe; /* Nền xám nhạt như ảnh */
+  min-height: 100vh;
+  font-family: 'Public Sans', sans-serif; /* Phông chữ chuyên nghiệp, gần giống ảnh */
+  color: #1e293b;
+}
+
+.main-page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #334155;
+}
+
+/* Base style cho các Card */
+.settings-card, .devices-card {
+  border-radius: 16px;
+  border: none;
+}
+
+.bg-gray-light {
+  background-color: #f8fafc; /* Nền khối Rules */
+}
+
+/* Typography */
+.settings-card-title {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.settings-card-subtitle {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Kiểu dáng Input bám sát hình ảnh */
+.custom-input {
+  background-color: #f8fafc !important; /* Nền input xám rất nhẹ */
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  padding: 14px 18px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.custom-input:focus {
+  border-color: #6366f1 !important; /* Viền tím khi focus */
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+  background-color: #ffffff !important;
+}
+
+/* List rules */
+.password-rules-list {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.password-rules-list li {
+  position: relative;
+  padding-left: 25px;
+  margin-bottom: 12px;
+}
+
+/* Chấm tròn đầu dòng chuyên nghiệp */
+.password-rules-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  background-color: #94a3b8;
+  border-radius: 50%;
+}
+
+/* Divider mờ */
+.divider {
+  height: 1px;
+  background-color: #e2e8f0;
+}
+
+/* Kiểu dáng các nút bấm bám sát hình ảnh */
+.btn-sign-out-all {
+  background-color: #6366f1; /* Màu tím đặc trưng như ảnh */
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.btn-sign-out-all:hover {
+  background-color: #4f46e5;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-more-actions {
+  background: none;
+  border: none;
+  font-size: 18px;
+}
+
+.btn-need-help {
+  background-color: #e2e8f0; /* Màu xám nhạt như ảnh 2 */
+  color: #475569;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.btn-need-help:hover {
+  background-color: #cbd5e1;
+}
+
+/* Device list styling */
+.device-item {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.device-item:last-child {
+  border-bottom: none;
+}
+
+.device-name {
+  font-size: 15px;
+  color: #1e293b;
+}
+
+.device-meta {
+  font-size: 12px;
+}

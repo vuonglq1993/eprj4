@@ -1,0 +1,186 @@
+.setting-container {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  padding: 40px;
+  font-family: 'Inter', sans-serif;
+  text-align: left;
+}
+
+/* Header */
+.setting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.header-info h1 {
+  font-size: 24px;
+  color: #111827;
+  margin: 0;
+}
+
+.header-info p {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.header-actions button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-cancel {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  margin-right: 12px;
+}
+
+.btn-save {
+  background: #4f46e5;
+  border: none;
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Main Layout */
+.setting-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #f3f4f6;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.card-title {
+  font-size: 18px;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.input-group input, .input-group textarea {
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  outline: none;
+}
+
+.input-group input:focus {
+  border-color: #4f46e5;
+  background: white;
+}
+
+.full-width {
+  margin-top: 20px;
+}
+
+/* Photo Section */
+.photo-edit {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.photo-controls p {
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0;
+}
+
+.photo-controls button {
+  background: none;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  margin-right: 10px;
+}
+
+.text-update { color: #4f46e5; font-weight: bold; }
+.text-delete { color: #9ca3af; }
+
+.upload-box {
+  border: 2px dashed #e5e7eb;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  background: #f5f7ff;
+}
+
+.upload-icon {
+  background: #4f46e5;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  line-height: 32px;
+  margin: 0 auto 10px;
+}
+
+/* Google Card */
+.google-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.google-logo {
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: -1px;
+}
+
+.status-badge {
+  background: #ecfdf5;
+  color: #059669;
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+/* Mobile Responsive */
+@media (max-width: 992px) {
+  .setting-content { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+}
