@@ -244,6 +244,7 @@ import 'package:flutter/material.dart';
 import 'signup_page.dart';
 import '../services/api_service.dart';
 import '../logincomplete/login_complete_flow.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -257,7 +258,91 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    serverClientId: '943935351696-9du7rcddd4iushgsg8nsb78ahqufvsll.apps.googleusercontent.com',
+    scopes: ['email'],
+  );
 
+  Future<void> _loginWithGoogle() async {
+
+    try {
+
+      setState(() => isLoading = true);
+
+      // 🔥 B1: chọn tài khoản Google
+      final account = await _googleSignIn.signIn();
+
+      if (account == null) {
+        setState(() => isLoading = false);
+        return;
+      }
+
+      // 🔥 B2: lấy idToken
+      final auth = await account.authentication;
+
+      final idToken = auth.idToken;
+
+      if (idToken == null) {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Không lấy được idToken")),
+        );
+        return;
+      }
+
+      // 🔥 B3: gửi lên backend
+      final token = await ApiService.loginWithGoogle(idToken);
+
+      if (!mounted) return;
+
+      if (token != null) {
+
+        // test API
+        final profile = await ApiService.getProfile();
+
+        setState(() => isLoading = false);
+
+        if (profile != null) {
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Login Google thành công")),
+          );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const LoginCompleteFlow(),
+            ),
+          );
+
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Token lỗi")),
+          );
+        }
+
+      } else {
+
+        setState(() => isLoading = false);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Google login thất bại")),
+        );
+      }
+
+    } catch (e) {
+
+      setState(() => isLoading = false);
+
+      print("GOOGLE ERROR: $e");
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Lỗi đăng nhập Google")),
+      );
+    }
+  }
+
+  bool _isPasswordVisible = false; // Thêm dòng này để kiểm soát ẩn/hiện
   bool isLoading = false;
 
   @override
@@ -320,6 +405,31 @@ class _LoginPageState extends State<LoginPage> {
               GestureDetector(
                 onTap: isLoading ? null : _login,
                 child: _button(isLoading ? "Loading..." : "Login"),
+              ),
+
+              const SizedBox(height: 15),
+
+              GestureDetector(
+                onTap: _loginWithGoogle,
+                child: Container(
+                  height: 55,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.g_mobiledata, color: Colors.red, size: 30),
+                      SizedBox(width: 10),
+                      Text(
+                        "Login with Google",
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      )
+                    ],
+                  ),
+                ),
               ),
 
               const SizedBox(height: 25),
@@ -415,38 +525,85 @@ class _LoginPageState extends State<LoginPage> {
 
   // ================= UI =================
 
-  Widget _input(TextEditingController controller, bool isPassword) {
+  // Widget _input(TextEditingController controller, bool isPassword) {
+  //
+  //   return TextFormField(
+  //     controller: controller,
+  //     obscureText: isPassword,
+  //
+  //     decoration: InputDecoration(
+  //       hintText: isPassword ? "••••••••" : "example@mail.com",
+  //       filled: true,
+  //       fillColor: const Color(0xFFE9EAF0),
+  //
+  //       border: OutlineInputBorder(
+  //         borderRadius: BorderRadius.circular(14),
+  //         borderSide: BorderSide.none,
+  //       ),
+  //     ),
+  //
+  //     validator: (value) {
+  //
+  //       if (value == null || value.isEmpty) {
+  //         return "Không được để trống";
+  //       }
+  //
+  //       if (!isPassword) {
+  //         final emailRegex =
+  //         RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+  //
+  //         if (!emailRegex.hasMatch(value)) {
+  //           return "Email không hợp lệ";
+  //         }
+  //       }
+  //
+  //       return null;
+  //     },
+  //   );
+  // }
 
+
+
+  Widget _input(TextEditingController controller, bool isPassword) {
     return TextFormField(
       controller: controller,
-      obscureText: isPassword,
+      // Nếu là password thì ẩn/hiện dựa theo biến _isPasswordVisible
+      obscureText: isPassword ? !_isPasswordVisible : false,
 
       decoration: InputDecoration(
         hintText: isPassword ? "••••••••" : "example@mail.com",
         filled: true,
         fillColor: const Color(0xFFE9EAF0),
-
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
+        // Thêm icon con mắt vào đây
+        suffixIcon: isPassword
+            ? IconButton(
+          icon: Icon(
+            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+            color: Colors.grey,
+          ),
+          onPressed: () {
+            setState(() {
+              _isPasswordVisible = !_isPasswordVisible;
+            });
+          },
+        )
+            : null,
       ),
 
       validator: (value) {
-
         if (value == null || value.isEmpty) {
           return "Không được để trống";
         }
-
         if (!isPassword) {
-          final emailRegex =
-          RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-
+          final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
           if (!emailRegex.hasMatch(value)) {
             return "Email không hợp lệ";
           }
         }
-
         return null;
       },
     );

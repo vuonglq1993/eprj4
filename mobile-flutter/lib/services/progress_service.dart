@@ -29,4 +29,20 @@ class ProgressApiService {
     }
     return null;
   }
+
+  static Future<Map<String, dynamic>?> getDashboard() async {
+    final token = await TokenService.getToken();
+    final response = await http.get(
+      Uri.parse("$baseUrl/dashboard"),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(utf8.decode(response.bodyBytes));
+    }
+    return null;
+  }
 }

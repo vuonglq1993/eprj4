@@ -215,7 +215,8 @@ class _LessonListPageState extends State<LessonListPage> {
   @override
   void initState() {
     super.initState();
-    _loadLessons();
+    // _loadLessons();
+    _lessonsFuture = LessonService.getLessonsByCourse(widget.courseId);
   }
 
   void _loadLessons() {
