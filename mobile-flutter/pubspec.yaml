@@ -78,6 +78,9 @@ dependencies:
   audioplayers: ^6.6.0
   fl_chart: ^1.2.0
 
+  #singin gg
+  google_sign_in: ^6.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

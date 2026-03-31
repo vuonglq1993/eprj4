@@ -227,6 +227,8 @@ class _PasswordPageState extends State<PasswordPage> {
   final passwordController = TextEditingController();
   final confirmController = TextEditingController();
 
+  bool _isPasswordVisible = false;      // Cho ô mật khẩu 1
+  bool _isConfirmVisible = false;       // Cho ô xác nhận mật khẩu
   bool isLoading = false;
 
   @override
@@ -240,6 +242,11 @@ class _PasswordPageState extends State<PasswordPage> {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
         title: const Text("Signup"),
       ),
 
@@ -261,8 +268,10 @@ class _PasswordPageState extends State<PasswordPage> {
 
               const SizedBox(height: 30),
 
+              _label("Password"),
               _input(passwordController),
               const SizedBox(height: 16),
+              _label("Confirm Password"),
               _input(confirmController, isConfirm: true),
 
               const SizedBox(height: 40),
@@ -316,11 +325,62 @@ class _PasswordPageState extends State<PasswordPage> {
     }
   }
 
+  // Widget _input(TextEditingController controller, {bool isConfirm = false}) {
+  //
+  //   return TextFormField(
+  //     controller: controller,
+  //     obscureText: true,
+  //
+  //     decoration: InputDecoration(
+  //       hintText: "••••••••",
+  //       filled: true,
+  //       fillColor: const Color(0xFFE9EAF0),
+  //       border: OutlineInputBorder(
+  //         borderRadius: BorderRadius.circular(14),
+  //         borderSide: BorderSide.none,
+  //       ),
+  //     ),
+  //
+  //     validator: (value) {
+  //
+  //       if (value == null || value.isEmpty)
+  //         return "Nhập mật khẩu";
+  //
+  //       if (value.length < 8)
+  //         return "Ít nhất 8 ký tự";
+  //
+  //       if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)').hasMatch(value))
+  //         return "Phải có chữ và số";
+  //
+  //       if (isConfirm && value != passwordController.text)
+  //         return "Không khớp";
+  //
+  //       return null;
+  //     },
+  //   );
+  // }
+
+  Widget _label(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          color: Colors.black87,
+        ),
+      ),
+    );
+  }
+
   Widget _input(TextEditingController controller, {bool isConfirm = false}) {
+    // Xác định xem ô này đang dùng biến ẩn/hiện nào
+    bool isVisible = isConfirm ? _isConfirmVisible : _isPasswordVisible;
 
     return TextFormField(
       controller: controller,
-      obscureText: true,
+      obscureText: !isVisible, // Ẩn nếu isVisible là false
 
       decoration: InputDecoration(
         hintText: "••••••••",
@@ -330,26 +390,37 @@ class _PasswordPageState extends State<PasswordPage> {
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
+        // Nút con mắt
+        suffixIcon: IconButton(
+          icon: Icon(
+            isVisible ? Icons.visibility : Icons.visibility_off,
+            color: Colors.grey,
+          ),
+          onPressed: () {
+            setState(() {
+              // Cập nhật đúng biến cho từng ô
+              if (isConfirm) {
+                _isConfirmVisible = !_isConfirmVisible;
+              } else {
+                _isPasswordVisible = !_isPasswordVisible;
+              }
+            });
+          },
+        ),
       ),
 
       validator: (value) {
-
-        if (value == null || value.isEmpty)
-          return "Nhập mật khẩu";
-
-        if (value.length < 8)
-          return "Ít nhất 8 ký tự";
-
-        if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)').hasMatch(value))
-          return "Phải có chữ và số";
-
-        if (isConfirm && value != passwordController.text)
-          return "Không khớp";
-
+        if (value == null || value.isEmpty) return "Nhập mật khẩu";
+        if (value.length < 8) return "Ít nhất 8 ký tự";
+        if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)').hasMatch(value)) return "Phải có chữ và số";
+        if (isConfirm && value != passwordController.text) return "Không khớp";
         return null;
       },
     );
   }
+
+
+
 
   Widget _button(String text) {
     return Container(

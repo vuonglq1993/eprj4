@@ -1,12 +1,39 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../models/question_model.dart';
 import 'token_service.dart';
+
+class SubmitResponse {
+  final bool correct;
+  final int pointsEarned;
+  final String? correctAnswer;
+  final String? explanation;
+  final int totalLessonScore;
+
+  SubmitResponse({
+    required this.correct,
+    required this.pointsEarned,
+    this.correctAnswer,
+    this.explanation,
+    required this.totalLessonScore,
+  });
+
+  factory SubmitResponse.fromJson(Map<String, dynamic> json) {
+    return SubmitResponse(
+      correct: json['correct'] ?? false,
+      pointsEarned: json['pointsEarned'] ?? 0,
+      correctAnswer: json['correctAnswer'],
+      explanation: json['explanation'],
+      totalLessonScore: json['totalLessonScore'] ?? 0,
+    );
+  }
+}
 
 class ExerciseService {
   static const String baseUrl = "http://10.0.2.2:8080/api/v1";
 
-  // Lấy danh sách câu hỏi của một bài học
-  static Future<List<dynamic>> getExercises(String courseId, String lessonId) async {
+  // Lấy danh sách bài tập của một bài học
+  static Future<List<Question>> getExercises(String courseId, String lessonId) async {
     final token = await TokenService.getToken();
     final response = await http.get(
       Uri.parse("$baseUrl/courses/$courseId/lessons/$lessonId/exercises"),
@@ -17,30 +44,14 @@ class ExerciseService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(utf8.decode(response.bodyBytes));
+      final List data = jsonDecode(utf8.decode(response.bodyBytes));
+      return data.map((e) => Question.fromExercise(e)).toList();
     } else {
       throw Exception("Không thể tải bài tập");
     }
   }
 
-  // Nộp bài để Backend lưu tiến độ (Status: COMPLETED)
-  // static Future<bool> submitQuiz(String courseId, String lessonId, List<Map<String, dynamic>> answers) async {
-  //   final token = await TokenService.getToken();
-  //   final response = await http.post(
-  //     Uri.parse("$baseUrl/courses/$courseId/lessons/$lessonId/exercises/submit"),
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       if (token != null) "Authorization": "Bearer $token",
-  //     },
-  //     body: jsonEncode({
-  //       "answers": answers, // Khớp với SubmitRequest.java ở Backend
-  //     }),
-  //   );
-  //
-  //   return response.statusCode == 200;
-  // }
-
-  static Future<bool> submitSingle(
+  static Future<SubmitResponse> submitSingle(
       String courseId,
       String lessonId,
       String exerciseId,
@@ -60,14 +71,10 @@ class ExerciseService {
       }),
     );
 
-    print("SUBMIT BODY: ${jsonEncode({
-      "exerciseId": exerciseId,
-      "answer": answer,
-    })}");
-
-    print("STATUS: ${response.statusCode}");
-    print("RESPONSE: ${response.body}");
-
-    return response.statusCode == 200;
+    if (response.statusCode == 200) {
+      return SubmitResponse.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
+    } else {
+      throw Exception("Submit failed");
+    }
   }
 }
