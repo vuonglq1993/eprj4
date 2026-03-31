@@ -32,7 +32,7 @@ public class StudyLogService {
 
         User user = userRepo.getReferenceById(p.getUserId());
 
-        // ✅ SAVE STUDY LOG
+        // SAVE STUDY LOG
         logRepo.save(StudyLog.builder()
                 .user(user)
                 .lesson(lesson)
@@ -56,16 +56,12 @@ public class StudyLogService {
         progress.setTimeSpentSeconds(
                 progress.getTimeSpentSeconds() + req.getDurationSeconds()
         );
-
-// update attempts
         progress.setAttempts(progress.getAttempts() + 1);
 
 // update score
         if (req.getScore() >= 0) {
             progress.setScore(req.getScore());
         }
-
-// 🔥 LOGIC CHUẨN
         if (req.getScore() >= 80) {
             progress.setStatus(UserProgress.ProgressStatus.COMPLETED);
             progress.setCompletedAt(Instant.now());
