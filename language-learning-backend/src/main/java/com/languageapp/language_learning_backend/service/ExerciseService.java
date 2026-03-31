@@ -95,8 +95,22 @@ public class ExerciseService {
                         .lesson(lessonRepo.getReferenceById(lessonId)).build());
 
         progress.setAttempts(progress.getAttempts() + 1);
-        progress.setScore(Math.max(progress.getScore(), grade.points()));
-        progress.setStatus(ProgressStatus.COMPLETED);
+        // cộng điểm
+        progress.setScore(progress.getScore() + grade.points());
+
+// lấy tổng điểm lesson
+        int totalPoints = exerciseRepo.sumPointsByLessonId(lessonId);
+
+// check hoàn thành (>=80%)
+        if (progress.getScore() >= totalPoints * 0.8) {
+            progress.setStatus(ProgressStatus.COMPLETED);
+            progress.setCompletedAt(Instant.now());
+        } else {
+            progress.setStatus(ProgressStatus.IN_PROGRESS);
+            if (progress.getStartedAt() == null) {
+                progress.setStartedAt(Instant.now());
+            }
+        }
         progressRepo.save(progress);
 
         return SubmitResponse.builder()
