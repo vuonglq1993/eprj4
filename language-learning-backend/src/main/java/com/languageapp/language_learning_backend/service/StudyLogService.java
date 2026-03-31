@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.*;
-
+import com.languageapp.language_learning_backend.entity.UserProgress;
+import com.languageapp.language_learning_backend.entity.UserProgress.ProgressStatus;
+import java.time.Instant;
 @Service
 @RequiredArgsConstructor
 public class StudyLogService {
@@ -19,6 +21,7 @@ public class StudyLogService {
     private final StudyLogRepository logRepo;
     private final LessonRepository   lessonRepo;
     private final UserRepository     userRepo;
+    private final UserProgressRepository progressRepo;
 
     // ── LOG PHIÊN HỌC ─────────────────────────────────────────
     @Transactional
@@ -27,14 +30,49 @@ public class StudyLogService {
         Lesson lesson = lessonRepo.findById(req.getLessonId())
                 .orElseThrow(() -> new NotFoundException("Lesson not found"));
 
+        User user = userRepo.getReferenceById(p.getUserId());
+
+        // SAVE STUDY LOG
         logRepo.save(StudyLog.builder()
-                .user(userRepo.getReferenceById(p.getUserId()))
-                .lesson(lesson).course(lesson.getCourse())
+                .user(user)
+                .lesson(lesson)
+                .course(lesson.getCourse())
                 .studyDate(LocalDate.now())
                 .durationSeconds(req.getDurationSeconds())
                 .score(req.getScore())
                 .activityType(req.getActivityType())
                 .build());
+        Course course = lesson.getCourse();
+        UserProgress progress = progressRepo
+                .findByUserIdAndLessonId(user.getId(), lesson.getId())
+                .orElse(UserProgress.builder()
+                        .user(user)
+                        .lesson(lesson)
+                        .course(course)
+                        .build()
+                );
+
+// update time
+        progress.setTimeSpentSeconds(
+                progress.getTimeSpentSeconds() + req.getDurationSeconds()
+        );
+        progress.setAttempts(progress.getAttempts() + 1);
+
+// update score
+        if (req.getScore() >= 0) {
+            progress.setScore(req.getScore());
+        }
+        if (req.getScore() >= 80) {
+            progress.setStatus(UserProgress.ProgressStatus.COMPLETED);
+            progress.setCompletedAt(Instant.now());
+        } else {
+            progress.setStatus(UserProgress.ProgressStatus.IN_PROGRESS);
+            if (progress.getStartedAt() == null) {
+                progress.setStartedAt(Instant.now());
+            }
+        }
+
+        progressRepo.save(progress);
     }
 
     // ── STREAK ────────────────────────────────────────────────
