@@ -56,20 +56,11 @@ public class StudyLogService {
         progress.setTimeSpentSeconds(
                 progress.getTimeSpentSeconds() + req.getDurationSeconds()
         );
+
         progress.setAttempts(progress.getAttempts() + 1);
 
-// update score
-        if (req.getScore() >= 0) {
-            progress.setScore(req.getScore());
-        }
-        if (req.getScore() >= 80) {
-            progress.setStatus(UserProgress.ProgressStatus.COMPLETED);
-            progress.setCompletedAt(Instant.now());
-        } else {
-            progress.setStatus(UserProgress.ProgressStatus.IN_PROGRESS);
-            if (progress.getStartedAt() == null) {
-                progress.setStartedAt(Instant.now());
-            }
+        if (progress.getStartedAt() == null) {
+            progress.setStartedAt(Instant.now());
         }
 
         progressRepo.save(progress);
