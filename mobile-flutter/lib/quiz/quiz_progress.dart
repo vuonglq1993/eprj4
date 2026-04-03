@@ -104,6 +104,8 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
   int currentIndex = 0;
   bool isLoading = true;
   String? errorMessage;
+  DateTime? startTime;
+  bool isSubmitting = false;
 
   // --- Quản lý trạng thái câu hỏi hiện tại ---
   bool isChecked = false;
@@ -112,13 +114,13 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   // --- Dữ liệu ---
-  List<dynamic> rawExercises = [];
+  List<Question> questions = [];
   Map<int, String> userAnswers = {}; // Lưu câu trả lời của user theo index câu hỏi
-  List<Map<String, dynamic>> submitAnswers = []; // Dữ liệu để submit lên backend
 
   @override
   void initState() {
     super.initState();
+    // startTime = DateTime.now(); // ⏱ bắt đầu học
     _fetchData();
   }
 
@@ -136,9 +138,10 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
       final data = await ExerciseService.getExercises(widget.courseId, widget.lessonId);
       if (mounted) {
         setState(() {
-          rawExercises = data;
+          questions = data;
           isLoading = false;
-          if (rawExercises.isEmpty) {
+          startTime = DateTime.now();
+          if (questions.isEmpty) {
             errorMessage = "Bài học này chưa có bài tập.";
           }
         });
@@ -163,32 +166,22 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
     }
   }
 
-  void _playAudio(String url) async {
-    await _audioPlayer.play(UrlSource(url));
-  }
-
-  // Giải mã JSON questionData từ DB
-  Map<String, dynamic> _getQuestionData(dynamic exercise) {
-    var data = exercise['questionData'];
-    if (data is String) return jsonDecode(data);
-    return data;
+  void _playAudio(String text) async {
+    // Backend chưa gửi URL thật, đây là text-to-speech giả lập
+    // Nếu có URL audio thật thì dùng UrlSource(url)
+    // await _audioPlayer.play(UrlSource(url));
+    print("Playing audio for: $text");
   }
 
   // --- 3. Logic Check đúng sai & Lưu câu trả lời ---
   void _handleCheck() {
-    final exercise = rawExercises[currentIndex];
-    final qData = _getQuestionData(exercise);
-    final type = exercise['type'];
-
+    final q = questions[currentIndex];
     String userAnswer = "";
-    String correctAnswer = "";
 
-    if (type == 'MULTIPLE_CHOICE' || type == 'LISTENING_CHOICE') {
-      userAnswer = userAnswers[currentIndex] ?? "";
-      correctAnswer = qData['options'][qData['correctIndex']].toString();
-    } else if (type == 'FILL_IN_BLANK' || type == 'TRANSLATION') {
+    if (q.type == QuestionType.inputField) {
       userAnswer = inputController.text.trim();
-      correctAnswer = qData['answer'].toString();
+    } else {
+      userAnswer = userAnswers[currentIndex] ?? "";
     }
 
     if (userAnswer.isEmpty) {
@@ -198,100 +191,98 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
       return;
     }
 
-    bool correct = userAnswer.toLowerCase() == correctAnswer.toLowerCase();
+    final correct = userAnswer.toLowerCase() == q.correctAnswer.toLowerCase();
 
     setState(() {
       isChecked = true;
       isCorrect = correct;
-
-      // Lưu lại answer cho UI
       userAnswers[currentIndex] = userAnswer;
     });
   }
 
   // --- 4. Logic Next / Hoàn thành ---
-  void _handleNext() async {
-    final exercise = rawExercises[currentIndex];
-    final qData = _getQuestionData(exercise);
-    final type = exercise['type'];
+  Future<void> _handleNext() async {
+    if (isSubmitting) return;
 
+    setState(() {
+      isSubmitting = true;
+    });
+
+    final q = questions[currentIndex];
     String answer = "";
 
-    // 👉 convert answer đúng format backend
-    if (type == 'MULTIPLE_CHOICE' || type == 'LISTENING_CHOICE') {
-      int index = qData['options'].indexOf(userAnswers[currentIndex]);
-      answer = index.toString(); // ⚠️ backend cần index
-    } else {
-      answer = userAnswers[currentIndex] ?? inputController.text.trim();
-    }
+    // ✅ Mapping đúng backend format
+    if (q.type == QuestionType.imageChoice || q.type == QuestionType.wordChoice) {
+      // Backend cần index của đáp án trong list options
+      // int index = q.options.indexOf(userAnswers[currentIndex] ?? "");
+      // answer = index.toString();
 
-    // 👉 CALL API MỖI CÂU
-    bool success = await ExerciseService.submitSingle(
-      widget.courseId,
-      widget.lessonId,
-      exercise['id'],
-      answer,
-    );
+      int index = q.options.indexOf(userAnswers[currentIndex] ?? "");
 
-    if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Lỗi nộp câu hỏi")),
-      );
-      return;
-    }
-
-    // 👉 sang câu tiếp theo
-    // if (currentIndex < rawExercises.length - 1) {
-    //   _pageController.nextPage(
-    //     duration: const Duration(milliseconds: 300),
-    //     curve: Curves.easeInOut,
-    //   );
-    // } else {
-    //   // 👉 HOÀN THÀNH
-    //   Navigator.pushReplacement(
-    //     context,
-    //     MaterialPageRoute(
-    //       builder: (_) => const LessonCompletedPage(),
-    //     ),
-    //   );
-    // }
-
-
-    if (currentIndex < rawExercises.length - 1) {
-      _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-    } else {
-      // 👉 KHI BẤM FINISH: Gọi API ghi nhận phiên học
-      await StudyLogService.logStudySession(
-        lessonId: widget.lessonId,
-        durationSeconds: 300, // Bạn có thể tính thời gian thật nếu muốn
-        score: 100,
-        activityType: "EXERCISE_SUBMIT",
-      );
-
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const LessonCompletedPage()),
+      if (index == -1) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Lỗi chọn đáp án")),
         );
+        return;
+      }
+
+      answer = index.toString();
+    } else {
+      answer = userAnswers[currentIndex] ?? "";
+    }
+
+    try {
+      // ✅ Submit backend từng câu một
+      await ExerciseService.submitSingle(
+        widget.courseId,
+        widget.lessonId,
+        q.id,
+        answer,
+      );
+
+      if (currentIndex < questions.length - 1) {
+        // Chuyển sang câu tiếp theo
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        // 👉 KHI HOÀN THÀNH CÂU CUỐI: Gọi API ghi nhận phiên học (Study Log)
+        int durationSeconds = DateTime.now().difference(startTime!).inSeconds;
+        await StudyLogService.logStudySession(
+          lessonId: widget.lessonId,
+          durationSeconds: durationSeconds,
+          score: 1000000, // Có thể tính điểm thực tế nếu muốn
+          activityType: "EXERCISE_SUBMIT",
+        );
+
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const LessonCompletedPage()),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi submit: $e")),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => isSubmitting = false);
       }
     }
   }
 
   // --- 5. Biểu diễn Widget Bài tập dựa theo Type ---
-  Widget _buildExerciseContent(dynamic exercise, ThemeData theme) {
-    final qData = _getQuestionData(exercise);
-    final type = exercise['type'];
-
-    // Lấy tiêu đề câu hỏi từ JSON
-    String questionText = qData['question'] ?? "Chọn đáp án đúng";
-
-    switch (type) {
-      case 'MULTIPLE_CHOICE':
+  Widget _buildExerciseContent(Question q, ThemeData theme) {
+    switch (q.type) {
+      case QuestionType.wordChoice:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              questionText,
+              q.subTitle ?? "Chọn đáp án đúng",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -299,9 +290,8 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
               ),
             ),
             const SizedBox(height: 20),
-
             WordChoiceWidget(
-              options: List<String>.from(qData['options']),
+              options: q.options,
               selectedOption: userAnswers[currentIndex],
               onSelect: isChecked
                   ? null
@@ -310,14 +300,12 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
           ],
         );
 
-      case 'LISTENING_CHOICE':
-        String? audioUrl = qData['audioUrl'];
-
+      case QuestionType.imageChoice:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              questionText,
+              q.subTitle ?? "Nghe và chọn đáp án",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -325,15 +313,13 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
               ),
             ),
             const SizedBox(height: 20),
-
-            if (audioUrl != null)
+            if (q.audioText != null)
               IconButton(
-                icon: const Icon(Icons.volume_up, size: 40),
-                onPressed: () => _playAudio(audioUrl),
+                icon: const Icon(Icons.volume_up, size: 40, color: Color(0xFF5F2EFF)),
+                onPressed: () => _playAudio(q.audioText!),
               ),
-
             WordChoiceWidget(
-              options: List<String>.from(qData['options']),
+              options: q.options,
               selectedOption: userAnswers[currentIndex],
               onSelect: isChecked
                   ? null
@@ -342,27 +328,138 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
           ],
         );
 
-      case 'FILL_IN_BLANK':
-      case 'TRANSLATION':
-      // Điền từ thì hiện câu hỏi dạng "T____ student" hoặc "Dịch câu..."
+      case QuestionType.inputField:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(questionText, style: TextStyle(fontSize: 18, color: theme.textTheme.bodyLarge?.color)),
+            Text(
+              q.subTitle ?? "Điền vào chỗ trống",
+              style: TextStyle(
+                fontSize: 18,
+                color: theme.textTheme.bodyLarge?.color,
+              ),
+            ),
             const SizedBox(height: 20),
             InputFieldWidget(
               controller: inputController,
-              enabled: !isChecked, // Khóa nếu đã check
+              enabled: !isChecked,
             ),
           ],
         );
 
       default:
-        return Text("Loại bài tập $type chưa được hỗ trợ giao diện.");
+        return Text("Loại bài tập chưa được hỗ trợ giao diện.");
     }
   }
 
   // --- 6. Build Main UI ---
+  // @override
+  // Widget build(BuildContext context) {
+  //   return ValueListenableBuilder<ThemeMode>(
+  //     valueListenable: themeNotifier,
+  //     builder: (context, mode, child) {
+  //       final theme = Theme.of(context);
+  //
+  //       if (isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+  //       if (errorMessage != null) return Scaffold(body: Center(child: Text(errorMessage!)));
+  //
+  //       final totalQuestions = questions.length;
+  //
+  //       return Scaffold(
+  //         backgroundColor: theme.scaffoldBackgroundColor,
+  //         appBar: AppBar(
+  //           elevation: 0,
+  //           backgroundColor: const Color(0xFF4B00D1),
+  //           leading: IconButton(
+  //             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+  //             onPressed: _goBack,
+  //           ),
+  //           actions: [
+  //             IconButton(
+  //               icon: const Icon(Icons.close, color: Colors.white),
+  //               onPressed: () => Navigator.pop(context),
+  //             ),
+  //           ],
+  //           title: Row(
+  //             mainAxisSize: MainAxisSize.min,
+  //             children: [
+  //               Stack(
+  //                 alignment: Alignment.center,
+  //                 children: [
+  //                   SizedBox(
+  //                     width: 40,
+  //                     height: 40,
+  //                     child: CircularProgressIndicator(
+  //                       value: (currentIndex + 1) / totalQuestions,
+  //                       strokeWidth: 4,
+  //                       backgroundColor: Colors.white24,
+  //                       valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+  //                     ),
+  //                   ),
+  //                   Text(
+  //                     "${((currentIndex + 1) / totalQuestions * 100).toInt()}%",
+  //                     style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+  //                   ),
+  //                 ],
+  //               ),
+  //               const SizedBox(width: 12),
+  //               Text(
+  //                 "Question ${currentIndex + 1}/$totalQuestions",
+  //                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+  //               ),
+  //             ],
+  //           ),
+  //           centerTitle: true,
+  //         ),
+  //         body: Column(
+  //           children: [
+  //             Expanded(
+  //               child: PageView.builder(
+  //                 controller: _pageController,
+  //                 physics: const NeverScrollableScrollPhysics(),
+  //                 onPageChanged: (index) {
+  //                   setState(() {
+  //                     currentIndex = index;
+  //                     isChecked = false;
+  //                     isCorrect = null;
+  //                     inputController.text = userAnswers[index] ?? "";
+  //                   });
+  //                 },
+  //                 itemCount: totalQuestions,
+  //                 itemBuilder: (context, index) {
+  //                   final q = questions[index];
+  //                   return SingleChildScrollView(
+  //                     padding: const EdgeInsets.all(24),
+  //                     child: Column(
+  //                       crossAxisAlignment: CrossAxisAlignment.start,
+  //                       children: [
+  //                         Text(
+  //                           q.title,
+  //                           style: TextStyle(
+  //                             fontSize: 24,
+  //                             fontWeight: FontWeight.bold,
+  //                             color: theme.textTheme.titleLarge?.color,
+  //                           ),
+  //                         ),
+  //                         const SizedBox(height: 30),
+  //                         _buildExerciseContent(q, theme),
+  //                       ],
+  //                     ),
+  //                   );
+  //                 },
+  //               ),
+  //             ),
+  //             isChecked
+  //                 ? _buildResultBottom(theme)
+  //                 : _buildCheckBottom(),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ThemeMode>(
@@ -373,78 +470,103 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
         if (isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
         if (errorMessage != null) return Scaffold(body: Center(child: Text(errorMessage!)));
 
-        final totalQuestions = rawExercises.length;
+        final totalQuestions = questions.length;
+        // Tính toán tỉ lệ hoàn thành cho thanh progress ngang
+        double progressValue = (currentIndex + 1) / totalQuestions;
 
         return Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
           appBar: AppBar(
             elevation: 0,
             backgroundColor: const Color(0xFF4B00D1),
-            leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20), onPressed: _goBack),
+            // Nút quay lại (mũi tên)
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+              onPressed: _goBack,
+            ),
+            // Nút X để thoát
             actions: [
-              IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.pop(context)),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
             ],
-            // Progress Bar đẹp trai trên AppBar
+            // Phần tiêu đề chứa thanh Progress ngang và số câu
             title: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
+                const SizedBox(height: 10),
+                // Thanh progress ngang với bo góc
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: (currentIndex + 1) / totalQuestions,
-                    minHeight: 8,
-                    backgroundColor: Colors.white24,
-                    color: Colors.white,
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.6, // Độ dài thanh
+                    height: 10, // Độ dày thanh
+                    child: LinearProgressIndicator(
+                      value: progressValue,
+                      backgroundColor: Colors.white24,
+                      // Màu của thanh chạy (màu trắng hoặc xanh nhạt cho nổi)
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 5),
-                Text("${currentIndex + 1}/$totalQuestions", style: const TextStyle(fontSize: 12, color: Colors.white)),
+                const SizedBox(height: 8),
+                // Hiển thị số câu ngay bên dưới thanh progress
+                Text(
+                  "${currentIndex + 1}/$totalQuestions",
+                  style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white
+                  ),
+                ),
               ],
             ),
             centerTitle: true,
           ),
           body: Column(
             children: [
-              // --- Phần nội dung câu hỏi (PageView) ---
+              // Phần nội dung câu hỏi (PageView)
               Expanded(
                 child: PageView.builder(
                   controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(), // Khóa không cho vuốt tay, bắt bấm nút
+                  physics: const NeverScrollableScrollPhysics(),
                   onPageChanged: (index) {
                     setState(() {
                       currentIndex = index;
                       isChecked = false;
                       isCorrect = null;
-                      // Load lại câu trả lời cũ nếu có (cho Fill blank)
                       inputController.text = userAnswers[index] ?? "";
                     });
                   },
                   itemCount: totalQuestions,
                   itemBuilder: (context, index) {
-                    final exercise = rawExercises[index];
+                    final q = questions[index];
                     return SingleChildScrollView(
                       padding: const EdgeInsets.all(24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Tiêu đề lớn (Ví dụ: "Translate", "Listening MCQ")
                           Text(
-                            exercise['title'] ?? "Exercise",
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: theme.textTheme.titleLarge?.color),
+                            q.title,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: theme.textTheme.titleLarge?.color,
+                            ),
                           ),
                           const SizedBox(height: 30),
-                          // Nội dung bài tập thật
-                          _buildExerciseContent(exercise, theme),
+                          _buildExerciseContent(q, theme),
                         ],
                       ),
                     );
                   },
                 ),
               ),
-
-              // --- Phần Bottom (Nút bấm & Kết quả) ---
+              // Phần nút Check hoặc Kết quả đúng/sai ở dưới cùng
               isChecked
-                  ? _buildResultBottom(theme) // Hiện kết quả đúng/sai
-                  : _buildCheckBottom(), // Hiện nút Check
+                  ? _buildResultBottom(theme)
+                  : _buildCheckBottom(),
             ],
           ),
         );
@@ -452,7 +574,12 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
     );
   }
 
-  // Widget hiển thị nút Check
+
+
+
+
+
+
   Widget _buildCheckBottom() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -476,14 +603,13 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
     );
   }
 
-  // Widget hiển thị kết quả Correct/Wrong (Bê nguyên màu fake sang)
   Widget _buildResultBottom(ThemeData theme) {
     bool correct = isCorrect == true;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: correct ? const Color(0xFF5B6EFF) : const Color(0xFFD81B60), // Xanh dương cho đúng, Hồng cho sai
+        color: correct ? const Color(0xFF5B6EFF) : const Color(0xFFD81B60),
       ),
       child: SafeArea(
         child: Column(
@@ -505,7 +631,7 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
-                onPressed: correct ? _handleNext : () => setState(() => isChecked = false), // Sai thì cho chọn lại
+                onPressed: correct ? _handleNext : () => setState(() => isChecked = false),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: correct ? const Color(0xFF5B6EFF) : const Color(0xFFD81B60),
@@ -513,7 +639,7 @@ class _QuizProgressPageState extends State<QuizProgressPage> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
                 child: Text(
-                  correct ? (currentIndex == rawExercises.length - 1 ? "Finish" : "Continue") : "Try again",
+                  correct ? (currentIndex == questions.length - 1 ? "Finish" : "Continue") : "Try again",
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),

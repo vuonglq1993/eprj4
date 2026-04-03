@@ -1,22 +1,44 @@
+// class StatsResponse {
+//   final int totalStudyMinutes;
+//   final int lessonsCompleted;
+//   final double averageScore;
+//   final List<DailyStudy> daily;
+//
+//   StatsResponse({
+//     required this.totalStudyMinutes,
+//     required this.lessonsCompleted,
+//     required this.averageScore,
+//     required this.daily,
+//   });
+//
+//   factory StatsResponse.fromJson(Map<String, dynamic> json) {
+//     return StatsResponse(
+//       totalStudyMinutes: json['totalStudyMinutes'] ?? 0,
+//       lessonsCompleted: json['lessonsCompleted'] ?? 0,
+//       averageScore: (json['averageScore'] ?? 0).toDouble(),
+//       daily: (json['daily'] as List? ?? []).map((i) => DailyStudy.fromJson(i)).toList(),
+//     );
+//   }
+// }
+
+
+
 class StatsResponse {
-  final int totalStudyMinutes;
-  final int lessonsCompleted;
+  final int totalMinutes;
+  final int totalLessons;
   final double averageScore;
-  final List<DailyStudy> daily;
 
   StatsResponse({
-    required this.totalStudyMinutes,
-    required this.lessonsCompleted,
+    required this.totalMinutes,
+    required this.totalLessons,
     required this.averageScore,
-    required this.daily,
   });
 
   factory StatsResponse.fromJson(Map<String, dynamic> json) {
     return StatsResponse(
-      totalStudyMinutes: json['totalStudyMinutes'] ?? 0,
-      lessonsCompleted: json['lessonsCompleted'] ?? 0,
+      totalMinutes: json['totalMinutes'] ?? 0,
+      totalLessons: json['totalLessons'] ?? 0,
       averageScore: (json['averageScore'] ?? 0).toDouble(),
-      daily: (json['daily'] as List).map((i) => DailyStudy.fromJson(i)).toList(),
     );
   }
 }
