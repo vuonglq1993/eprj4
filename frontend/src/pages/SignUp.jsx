@@ -1,31 +1,44 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import AuthLayout from '../layouts/AuthLayout'
-import { FiEye, FiEyeOff } from 'react-icons/fi'
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import AuthLayout from '../layouts/AuthLayout';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { register } from '../services/authService';
 
 function SignUp() {
-  const navigate = useNavigate()
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setError('')
-    if (!fullName.trim() || !email.trim() || !password) {
-      setError('Vui lòng điền đầy đủ thông tin.')
-      return
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!firstName.trim() || !email.trim() || !phone.trim() || !password) {
+      setError('Vui lòng điền đầy đủ thông tin.');
+      return;
     }
-    setLoading(true)
-    // Demo: không lưu user mới, chỉ redirect sang login
-    setTimeout(() => {
-      setLoading(false)
-      navigate('/login', { replace: true })
-    }, 600)
-  }
+
+    if (password.length < 8) {
+      setError('Mật khẩu phải có ít nhất 8 ký tự.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await register({ firstName, lastName, email, phone, password });
+      navigate('/login', { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <AuthLayout
@@ -49,10 +62,21 @@ function SignUp() {
             <input
               type="text"
               className="auth-form__input"
-              placeholder="Full Name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              autoComplete="name"
+              placeholder="First Name *"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              autoComplete="given-name"
+            />
+          </div>
+
+          <div className="auth-form__field">
+            <input
+              type="text"
+              className="auth-form__input"
+              placeholder="Last Name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              autoComplete="family-name"
             />
           </div>
 
@@ -60,10 +84,21 @@ function SignUp() {
             <input
               type="email"
               className="auth-form__input"
-              placeholder="Email Address"
+              placeholder="Email Address *"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
+            />
+          </div>
+
+          <div className="auth-form__field">
+            <input
+              type="tel"
+              className="auth-form__input"
+              placeholder="Phone Number *"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              autoComplete="tel"
             />
           </div>
 
@@ -71,7 +106,7 @@ function SignUp() {
             <input
               type={showPassword ? 'text' : 'password'}
               className="auth-form__input"
-              placeholder="Password"
+              placeholder="Password (min 8 characters) *"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="new-password"
@@ -110,7 +145,7 @@ function SignUp() {
         </p>
       </div>
     </AuthLayout>
-  )
+  );
 }
 
-export default SignUp
+export default SignUp;
