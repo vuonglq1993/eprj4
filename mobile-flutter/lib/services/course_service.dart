@@ -21,7 +21,7 @@ class CourseService {
     if (response.statusCode == 200) {
       final data = jsonDecode(utf8.decode(response.bodyBytes));
       // Vì Backend dùng PageResponse, nên list nằm trong field 'content'
-      final List list = data['content'];
+      final List list = data['content'] ?? [];
       return list.map((e) => Course.fromJson(e)).toList();
     } else {
       throw Exception("Lỗi khi tải danh sách khóa học");

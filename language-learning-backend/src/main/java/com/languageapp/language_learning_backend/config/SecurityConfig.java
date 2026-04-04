@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/courses/**", "/api/v1/languages/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/courses/**", "/api/v1/languages/**","/api/v1/subscription-plans/**").permitAll()
                         .requestMatchers("/api/v1/payments/webhook/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/static/**", "/*.html").permitAll()

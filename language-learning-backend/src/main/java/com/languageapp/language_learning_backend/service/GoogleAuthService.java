@@ -5,8 +5,8 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.languageapp.language_learning_backend.dto.auth.GoogleAuthRequest;
-import com.languageapp.language_learning_backend.dto.user.AuthResponse;
 import com.languageapp.language_learning_backend.entity.User;
+import com.languageapp.language_learning_backend.dto.user.AuthResponse;
 import com.languageapp.language_learning_backend.entity.User.*;
 import com.languageapp.language_learning_backend.exception.GlobalExceptionHandler.*;
 import com.languageapp.language_learning_backend.repository.UserRepository;
@@ -14,7 +14,6 @@ import com.languageapp.language_learning_backend.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -13,4 +13,7 @@ public interface ExerciseRepository extends JpaRepository<Exercise, UUID> {
 
     @Query("SELECT COUNT(e) FROM Exercise e WHERE e.lesson.id = :lessonId")
     int countByLesson(@Param("lessonId") UUID lessonId);
+    @Query("SELECT SUM(e.points) FROM Exercise e WHERE e.lesson.id = :lessonId")
+    Integer sumPointsByLessonId(UUID lessonId);
+
 }

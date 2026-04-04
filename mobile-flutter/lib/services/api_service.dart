@@ -71,6 +71,41 @@ class ApiService {
     return null;
   }
 
+
+  // ================= GOOGLE LOGIN =================
+  static Future<String?> loginWithGoogle(String idToken) async {
+
+    final url = Uri.parse("$baseUrl/auth/google");
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "idToken": idToken,
+      }),
+    );
+
+    print("GOOGLE STATUS: ${response.statusCode}");
+    print("GOOGLE BODY: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      String token = data["accessToken"];
+
+      // 🔥 lưu token giống login thường
+      await TokenService.saveToken(token);
+
+      return token;
+    }
+
+    return null;
+  }
+
+
+
   // GET PROFILE
   static Future<Map<String, dynamic>?> getProfile() async {
 

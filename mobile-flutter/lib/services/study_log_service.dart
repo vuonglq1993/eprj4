@@ -54,4 +54,27 @@ class StudyLogService {
     }
     return null;
   }
+
+
+
+
+
+
+  static Future<List<dynamic>> getStudyHistoryRaw() async {
+    final token = await TokenService.getToken();
+
+    final response = await http.get(
+      Uri.parse(baseUrl),
+      headers: {
+        "Content-Type": "application/json",
+        if (token != null) "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(utf8.decode(response.bodyBytes));
+    } else {
+      throw Exception("Không lấy được study logs");
+    }
+  }
 }

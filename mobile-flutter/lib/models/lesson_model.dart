@@ -66,21 +66,43 @@ class Lesson {
     required this.score,
   });
 
+  // factory Lesson.fromJson(Map<String, dynamic> json) {
+  //   return Lesson(
+  //     id: json['id']?.toString() ?? '',
+  //     courseId: json['courseId']?.toString() ?? '',
+  //     title: json['title'] ?? '',
+  //     content: json['content'] ?? '',
+  //     type: json['type'] ?? 'READING',
+  //     videoUrl: json['videoUrl'],
+  //     audioUrl: json['audioUrl'],
+  //     // Ép kiểu an toàn để tránh lỗi String/int
+  //     durationMinutes: json['durationMinutes'] is int
+  //         ? json['durationMinutes']
+  //         : int.tryParse(json['durationMinutes']?.toString() ?? '0') ?? 0,
+  //     progressStatus: json['progressStatus'] ?? 'NOT_STARTED',
+  //     score: json['score'] is int
+  //         ? json['score']
+  //         : int.tryParse(json['score']?.toString() ?? '0') ?? 0,
+  //   );
+  // }
+
+
   factory Lesson.fromJson(Map<String, dynamic> json) {
     return Lesson(
       id: json['id']?.toString() ?? '',
       courseId: json['courseId']?.toString() ?? '',
-      title: json['title'] ?? '',
+      title: json['title'] ?? 'Chưa có tiêu đề',
       content: json['content'] ?? '',
       type: json['type'] ?? 'READING',
       videoUrl: json['videoUrl'],
       audioUrl: json['audioUrl'],
-      // Ép kiểu an toàn để tránh lỗi String/int
-      durationMinutes: json['durationMinutes'] is int
+      // Backend trả về durationMinutes là Integer
+      durationMinutes: (json['durationMinutes'] is int)
           ? json['durationMinutes']
           : int.tryParse(json['durationMinutes']?.toString() ?? '0') ?? 0,
+      // Backend trả về progressStatus từ Enum (NOT_STARTED, IN_PROGRESS, COMPLETED)
       progressStatus: json['progressStatus'] ?? 'NOT_STARTED',
-      score: json['score'] is int
+      score: (json['score'] is int)
           ? json['score']
           : int.tryParse(json['score']?.toString() ?? '0') ?? 0,
     );
