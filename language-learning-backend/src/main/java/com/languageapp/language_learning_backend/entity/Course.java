@@ -62,5 +62,19 @@ public class Course {
 
     @UpdateTimestamp
     private Instant updatedAt;
+    /** Danh sách chủ đề của khoá học */
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "course_topics",
+            joinColumns        = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "topic_id")
+    )
+    @Builder.Default
+    private List<Topic> topics = new ArrayList<>();
+
+    /** Các bước lộ trình chứa khoá học này */
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<LearningPathStep> learningPathSteps = new ArrayList<>();
     public enum Level { BEGINNER, ELEMENTARY, INTERMEDIATE, UPPER_INTERMEDIATE, ADVANCED }
 }
