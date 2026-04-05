@@ -1,7 +1,6 @@
 package com.languageapp.language_learning_backend.controller;
 
 import com.languageapp.language_learning_backend.dto.exercise.*;
-import com.languageapp.language_learning_backend.entity.ExerciseAttempt;
 import com.languageapp.language_learning_backend.entity.User;
 import com.languageapp.language_learning_backend.security.UserPrincipal;
 import com.languageapp.language_learning_backend.service.ExerciseService;
@@ -25,7 +24,8 @@ public class ExerciseController {
     private final ExerciseService service;
 
     @Operation(summary = "Danh sách bài tập trong bài học")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<List<ExerciseResponse>> list(
             @PathVariable UUID courseId, @PathVariable UUID lessonId,
@@ -34,7 +34,8 @@ public class ExerciseController {
     }
 
     @Operation(summary = "Thêm bài tập — Teacher / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PostMapping
     public ResponseEntity<ExerciseResponse> create(
             @PathVariable UUID courseId, @PathVariable UUID lessonId,
@@ -43,7 +44,8 @@ public class ExerciseController {
     }
 
     @Operation(summary = "Cập nhật bài tập — Teacher / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PutMapping("/{exerciseId}")
     public ResponseEntity<ExerciseResponse> update(
             @PathVariable UUID courseId, @PathVariable UUID lessonId, @PathVariable UUID exerciseId,
@@ -52,7 +54,8 @@ public class ExerciseController {
     }
 
     @Operation(summary = "Xoá bài tập — Teacher / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @DeleteMapping("/{exerciseId}")
     public ResponseEntity<Void> delete(
             @PathVariable UUID courseId, @PathVariable UUID lessonId, @PathVariable UUID exerciseId,
@@ -62,30 +65,12 @@ public class ExerciseController {
     }
 
     @Operation(summary = "Nộp bài tập — tự động chấm điểm và lưu vào user_progress")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/submit")
     public ResponseEntity<SubmitResponse> submit(
             @PathVariable UUID courseId, @PathVariable UUID lessonId,
             @Valid @RequestBody SubmitRequest req, @AuthenticationPrincipal UserPrincipal p) {
         return ResponseEntity.ok(service.submit(courseId, lessonId, req, p));
     }
-
-
-        private final ExerciseService exerciseService;
-
-        @PostMapping("/{id}/submit")
-        public ResponseEntity<?> submit(
-                @PathVariable UUID id,
-                @RequestBody SubmitRequest request,
-                @AuthenticationPrincipal User user
-        ) {
-            ExerciseAttempt attempt = exerciseService.submitExercise(
-                    user.getId(),
-                    id,
-                    request.getAnswer()
-            );
-
-            return ResponseEntity.ok(attempt);
-        }
-
 }
