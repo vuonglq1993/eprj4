@@ -32,7 +32,6 @@ public class ExerciseService {
     private final LessonService          lessonService;
     private final ObjectMapper           mapper;
     private final ExerciseRepository exerciseRepository;
-    private final ExerciseAttemptRepository attemptRepository;
     private final UserProgressRepository progressRepository;
 
 
@@ -144,6 +143,26 @@ public class ExerciseService {
                             q.has("explanation") ? q.get("explanation").asText() : null);
                 }
                 case SPEAKING -> new GradeResult(true, ex.getPoints(), "N/A", "Graded by AI pronunciation check");
+                case DRAG_DROP -> {
+                    String type = q.has("type") ? q.get("type").asText() : "FILL_BLANK";
+
+                    if ("WORD_ORDER".equals(type)) {
+                        // Answer là chuỗi index cách nhau bởi dấu phẩy: "1,2,0,4,3"
+                        String correctOrder = q.get("correctOrder").toString()
+                                .replaceAll("[\\[\\] ]", ""); // bỏ dấu ngoặc, space
+                        boolean ok = correctOrder.equals(answer.trim());
+                        yield new GradeResult(ok, ok ? ex.getPoints() : 0,
+                                q.get("correctSentence").asText(),
+                                q.has("explanation") ? q.get("explanation").asText() : null);
+                    } else {
+                        // FILL_BLANK — answer là index của option đúng
+                        int ci = q.get("correctIndex").asInt();
+                        boolean ok = ci == Integer.parseInt(answer.trim());
+                        yield new GradeResult(ok, ok ? ex.getPoints() : 0,
+                                q.get("options").get(ci).asText(),
+                                q.has("explanation") ? q.get("explanation").asText() : null);
+                    }
+                }
                 default       -> new GradeResult(false, 0, "N/A", null);
             };
         } catch (Exception e) {
@@ -161,70 +180,5 @@ public class ExerciseService {
                 .orderIndex(e.getOrderIndex()).points(e.getPoints())
                 .timeLimitSeconds(e.getTimeLimitSeconds()).build();
     }
-
-
-
-        public ExerciseAttempt submitExercise(UUID userId, UUID exerciseId, String userAnswer) {
-
-            Exercise exercise = exerciseRepository.findById(exerciseId)
-                    .orElseThrow(() -> new RuntimeException("Exercise not found"));
-
-            UserProgress progress = progressRepository
-                    .findByUserIdAndLessonId(userId, exercise.getLesson().getId())
-                    .orElseThrow(() -> new RuntimeException("Progress not found"));
-
-            Instant now = Instant.now();
-
-            // ❗ nếu chưa start thì set start
-            if (progress.getStartedAt() == null) {
-                progress.setStartedAt(now);
-            }
-
-            // ⏱ tính thời gian
-            Duration duration = Duration.between(progress.getStartedAt(), now);
-            int seconds = (int) duration.getSeconds();
-
-            // ❗ check timeout
-            boolean isTimeout = seconds > exercise.getTimeLimitSeconds();
-
-            // 🎯 check đúng sai (tùy bạn parse JSON)
-            boolean isCorrect = checkAnswer(exercise, userAnswer);
-
-            int score = isTimeout ? 0 : (isCorrect ? exercise.getPoints() : 0);
-
-            // 💾 lưu attempt
-            ExerciseAttempt attempt = ExerciseAttempt.builder()
-                    .user(progress.getUser())
-                    .exercise(exercise)
-                    .progress(progress)
-                    .startedAt(progress.getStartedAt())
-                    .submittedAt(now)
-                    .durationSeconds(seconds)
-                    .isCorrect(isCorrect)
-                    .score(score)
-                    .isTimeout(isTimeout)
-                    .userAnswer(userAnswer)
-                    .build();
-
-            attemptRepository.save(attempt);
-
-            // 🔥 update progress
-            progress.setTimeSpentSeconds(progress.getTimeSpentSeconds() + seconds);
-            progress.setAttempts(progress.getAttempts() + 1);
-
-            if (!isTimeout && isCorrect) {
-                progress.setScore(progress.getScore() + score);
-            }
-
-            progress.setCompletedAt(now);
-            progressRepository.save(progress);
-
-            return attempt;
-        }
-
-        private boolean checkAnswer(Exercise exercise, String userAnswer) {
-            // TODO: parse JSON questionData
-            return true;
-        }
     }
 
