@@ -81,6 +81,16 @@ public class ExerciseService {
         Exercise ex = findOrThrow(req.getExerciseId(), lessonId);
 
         GradeResult grade = grade(ex, req.getAnswer());
+        // Check timeout
+        boolean isTimeout = false;
+        if (ex.getTimeLimitSeconds() > 0
+                && req.getClientStartTime() != null
+                && req.getClientSubmitTime() != null) {
+            long elapsed = (req.getClientSubmitTime() - req.getClientStartTime()) / 1000;
+            isTimeout = elapsed > ex.getTimeLimitSeconds();
+        }
+
+        int pointsEarned = isTimeout ? 0 : grade.points();
 
         // Cập nhật UserProgress
         UserProgress progress = progressRepo.findByUserIdAndLessonId(p.getUserId(), lessonId)
@@ -90,7 +100,7 @@ public class ExerciseService {
                         .lesson(lessonRepo.getReferenceById(lessonId)).build());
 
         progress.setAttempts(progress.getAttempts() + 1);
-        progress.setScore(progress.getScore() + grade.points());
+        progress.setScore(progress.getScore() + pointsEarned);
 
         // Lấy tổng điểm lesson
         int totalPoints = exerciseRepo.sumPointsByLessonId(lessonId);
@@ -112,11 +122,12 @@ public class ExerciseService {
                 p.getUserId(), courseId, course.getTotalLessons());
 
         return SubmitResponse.builder()
-                .correct(grade.correct())
-                .pointsEarned(grade.points())
+                .correct(grade.correct() && !isTimeout)
+                .pointsEarned(pointsEarned)
                 .correctAnswer(grade.correctAnswer())
                 .explanation(grade.explanation())
                 .totalLessonScore(progress.getScore())
+                .isTimeout(isTimeout)
                 .isCourseCompleted(coursePercent == 100)
                 .courseId(coursePercent == 100 ? courseId : null)
                 .build();

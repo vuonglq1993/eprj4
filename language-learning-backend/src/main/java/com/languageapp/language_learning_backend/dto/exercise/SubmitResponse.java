@@ -11,5 +11,6 @@ public class SubmitResponse {
     private String  explanation;
     private Integer totalLessonScore;   // tổng điểm bài học sau khi nộp
     private Boolean isCourseCompleted;  // ✅ thêm vào
+    private Boolean isTimeout;
     private UUID courseId;
 }
