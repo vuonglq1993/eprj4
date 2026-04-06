@@ -1,0 +1,209 @@
+.cl-page {
+  background-color: #f4f7fe;
+  font-family: 'Public Sans', sans-serif;
+  min-height: 100%;
+}
+
+.cl-inner {
+  max-width: 1100px;
+}
+
+.cl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.cl-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #edf2f7;
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.cl-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.cl-card-img {
+  position: relative;
+  height: 140px;
+  overflow: hidden;
+}
+
+.cl-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 无缩略图：三块圆角方并列，高对比、无重叠、无 backdrop-filter，避免发灰发糊 */
+.cl-card-thumb-placeholder {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+  min-height: 140px;
+  padding: 0 1rem 1.35rem;
+  box-sizing: border-box;
+  background: linear-gradient(165deg, #1e293b 0%, #334155 48%, #475569 100%);
+}
+
+.cl-card-thumb-placeholder__row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+}
+
+.cl-card-thumb-placeholder__sq {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  /* 不用顶部 inset 高光，避免渲染成“多一块贴在顶上”的错觉 */
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cl-card-thumb-placeholder__sq--mid {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.4);
+}
+
+.cl-card:hover .cl-card-thumb-placeholder__sq,
+.cl-card:hover .cl-card-thumb-placeholder__sq--mid {
+  transform: translateY(-2px);
+}
+
+/* Nút View/Edit/Delete — luôn hiện, có chữ kèm icon */
+.cl-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.cl-action-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  min-height: 30px;
+  padding: 5px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+
+.cl-action-btn__emoji {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.cl-action-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.cl-action-btn:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.cl-action-btn--del:hover {
+  background: #ffe4e6;
+  border-color: #fecdd3;
+  color: #be123c;
+}
+
+.cl-card-body {
+  padding: 1rem;
+}
+
+.cl-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.cl-status--pub {
+  color: #15803d;
+  background-color: #dcfce7;
+}
+
+.cl-status--draft {
+  color: #92400e;
+  background-color: #fef3c7;
+}
+
+.cl-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.cl-badge--beginner { color: #15803d; background: #dcfce7; }
+.cl-badge--intermediate { color: #b45309; background: #fef3c7; }
+.cl-badge--advanced { color: #be123c; background: #ffe4e6; }
+
+.cl-meta {
+  display: flex;
+  align-items: center;
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.ll-btn-action {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  padding: 5px;
+  border-radius: 6px;
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ll-btn-action:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.btn-primary-purple {
+  background-color: #6366f1;
+  color: white;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  transition: 0.3s;
+}
+
+.btn-primary-purple:hover {
+  background-color: #4f46e5;
+  color: white;
+}

@@ -359,3 +359,47 @@ a.sidebar__nav-item:visited {
   }
 }
 
+/* --------------------------------------------------------------------------
+   Bootstrap modals (Courses / Lessons / Exercises): dialog nested inside
+   .modal-backdrop for flex centering. BS .modal-backdrop.fade.show sets
+   opacity on the whole subtree → washed-out labels, inputs, and buttons.
+   Keep dimming via rgba background only; force full opacity on the wrapper.
+   -------------------------------------------------------------------------- */
+.modal-backdrop.fade.show.d-flex.align-items-center.justify-content-center {
+  opacity: 1 !important;
+}
+
+.modal-content {
+  color: #0f172a;
+}
+
+.modal-content .modal-title {
+  color: #0f172a;
+}
+
+.modal-content .form-label,
+.modal-content .form-check-label {
+  color: #334155;
+}
+
+.modal-content .form-control,
+.modal-content .form-select {
+  color: #0f172a;
+  background-color: #fff;
+  border-color: #94a3b8;
+}
+
+.modal-content .form-control:focus,
+.modal-content .form-select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.22);
+}
+
+.modal-content .form-control::placeholder {
+  color: #64748b;
+}
+
+.modal-content .text-muted {
+  color: #64748b !important;
+}
+

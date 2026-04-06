@@ -25,6 +25,11 @@ const PAGE_TITLES = {
   '/wizard': 'Wizard',
   '/calendar': 'Calendar',
   '/new-product': 'New Product',
+  '/languages': 'Languages',
+  '/courses': 'Courses',
+  '/lessons': 'Lessons',
+  '/exercises': 'Exercises',
+  '/progress': 'My Progress',
 }
 
 
