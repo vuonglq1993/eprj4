@@ -63,6 +63,6 @@ public class Exercise {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
     public enum ExerciseType {
-        MULTIPLE_CHOICE, FILL_IN_BLANK, LISTENING_CHOICE, SPEAKING, TRANSLATION, MATCHING
+        MULTIPLE_CHOICE, FILL_IN_BLANK, LISTENING_CHOICE, SPEAKING, TRANSLATION, MATCHING, DRAG_DROP
     }
 }

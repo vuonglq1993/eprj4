@@ -32,10 +32,6 @@ public class StudyLog {
     @JoinColumn(name = "lesson_id")
     private Lesson lesson;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id")
-    private Course course;
-
     @Column(nullable = false)
     private LocalDate studyDate;
 
