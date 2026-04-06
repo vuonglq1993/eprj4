@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,9 +30,6 @@ public class ExerciseService {
     private final CourseService          courseService;
     private final LessonService          lessonService;
     private final ObjectMapper           mapper;
-    private final ExerciseRepository exerciseRepository;
-    private final UserProgressRepository progressRepository;
-
 
     // ── LIST ──────────────────────────────────────────────────
     @Transactional(readOnly = true)
@@ -94,13 +90,12 @@ public class ExerciseService {
                         .lesson(lessonRepo.getReferenceById(lessonId)).build());
 
         progress.setAttempts(progress.getAttempts() + 1);
-        // cộng điểm
         progress.setScore(progress.getScore() + grade.points());
 
-// lấy tổng điểm lesson
+        // Lấy tổng điểm lesson
         int totalPoints = exerciseRepo.sumPointsByLessonId(lessonId);
 
-// check hoàn thành (>=80%)
+        // Check hoàn thành (>=80%)
         if (progress.getScore() >= totalPoints * 0.8) {
             progress.setStatus(ProgressStatus.COMPLETED);
             progress.setCompletedAt(Instant.now());
@@ -112,10 +107,19 @@ public class ExerciseService {
         }
         progressRepo.save(progress);
 
+        // ✅ Tính coursePercent SAU KHI save progress
+        int coursePercent = progressRepo.calculateProgress(
+                p.getUserId(), courseId, course.getTotalLessons());
+
         return SubmitResponse.builder()
-                .correct(grade.correct()).pointsEarned(grade.points())
-                .correctAnswer(grade.correctAnswer()).explanation(grade.explanation())
-                .totalLessonScore(progress.getScore()).build();
+                .correct(grade.correct())
+                .pointsEarned(grade.points())
+                .correctAnswer(grade.correctAnswer())
+                .explanation(grade.explanation())
+                .totalLessonScore(progress.getScore())
+                .isCourseCompleted(coursePercent == 100)
+                .courseId(coursePercent == 100 ? courseId : null)
+                .build();
     }
 
     // ── HELPERS ───────────────────────────────────────────────
@@ -142,20 +146,18 @@ public class ExerciseService {
                     yield new GradeResult(ok, ok ? ex.getPoints() : 0, ca,
                             q.has("explanation") ? q.get("explanation").asText() : null);
                 }
-                case SPEAKING -> new GradeResult(true, ex.getPoints(), "N/A", "Graded by AI pronunciation check");
+                case SPEAKING -> new GradeResult(true, ex.getPoints(), "N/A",
+                        "Graded by AI pronunciation check");
                 case DRAG_DROP -> {
                     String type = q.has("type") ? q.get("type").asText() : "FILL_BLANK";
-
                     if ("WORD_ORDER".equals(type)) {
-                        // Answer là chuỗi index cách nhau bởi dấu phẩy: "1,2,0,4,3"
                         String correctOrder = q.get("correctOrder").toString()
-                                .replaceAll("[\\[\\] ]", ""); // bỏ dấu ngoặc, space
+                                .replaceAll("[\\[\\] ]", "");
                         boolean ok = correctOrder.equals(answer.trim());
                         yield new GradeResult(ok, ok ? ex.getPoints() : 0,
                                 q.get("correctSentence").asText(),
                                 q.has("explanation") ? q.get("explanation").asText() : null);
                     } else {
-                        // FILL_BLANK — answer là index của option đúng
                         int ci = q.get("correctIndex").asInt();
                         boolean ok = ci == Integer.parseInt(answer.trim());
                         yield new GradeResult(ok, ok ? ex.getPoints() : 0,
@@ -163,7 +165,7 @@ public class ExerciseService {
                                 q.has("explanation") ? q.get("explanation").asText() : null);
                     }
                 }
-                default       -> new GradeResult(false, 0, "N/A", null);
+                default -> new GradeResult(false, 0, "N/A", null);
             };
         } catch (Exception e) {
             log.warn("Grade error: {}", e.getMessage());
@@ -180,5 +182,4 @@ public class ExerciseService {
                 .orderIndex(e.getOrderIndex()).points(e.getPoints())
                 .timeLimitSeconds(e.getTimeLimitSeconds()).build();
     }
-    }
-
+}
