@@ -8,4 +8,6 @@ import java.util.UUID;
 public class SubmitRequest {
     @NotNull  private UUID   exerciseId;
     @NotBlank private String answer;
+    private Long clientStartTime;   // ms, FE gửi lúc hiện câu hỏi
+    private Long clientSubmitTime;  // ms, FE gửi lúc bấm submit / hết giờ
 }
