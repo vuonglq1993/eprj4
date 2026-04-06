@@ -36,7 +36,6 @@ public class StudyLogService {
         logRepo.save(StudyLog.builder()
                 .user(user)
                 .lesson(lesson)
-                .course(lesson.getCourse())
                 .studyDate(LocalDate.now())
                 .durationSeconds(req.getDurationSeconds())
                 .score(req.getScore())
