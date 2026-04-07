@@ -8,12 +8,6 @@ import { getApiErrorMessage } from '../utils/apiError';
 
 const EMPTY_FORM = { code: '', name: '', nativeName: '', flag: '', isActive: true };
 
-function LevelBadge({ level }) {
-  const lang = level || '';
-  const cls = lang === 'Popular' ? 'll-badge--popular' : lang === 'Trending' ? 'll-badge--trending' : 'll-badge--standard';
-  return <span className={`ll-badge ${cls}`}>{lang || 'Standard'}</span>;
-}
-
 function StatusDot({ status }) {
   return (
     <span className={`ll-status-dot ${status === 'Active' ? 'll-status-dot--on' : 'll-status-dot--off'}`}>
@@ -90,7 +84,7 @@ function LanguageList() {
     try {
       if (editId) {
         const res = await updateLanguage(editId, form);
-        setLanguages((prev) => prev.map((l) => l.id === editId ? res.data : l));
+        setLanguages((prev) => prev.map((l) => (l.id === editId ? res.data : l)));
       } else {
         const res = await createLanguage(form);
         setLanguages((prev) => [...prev, res.data]);
@@ -171,7 +165,6 @@ function LanguageList() {
         )}
       </div>
 
-      {/* Create / Edit Modal */}
       {showModal && (
         <div className="ll-modal-root" role="presentation">
           <button
