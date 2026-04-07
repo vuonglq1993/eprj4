@@ -48,6 +48,17 @@ public class Lesson {
     @Column(nullable = false) @Builder.Default private Integer durationMinutes = 0;
     @Column(nullable = false) @Builder.Default private Boolean isFree          = false;
 
+    /**
+     * Truy cập theo gói:
+     * - PREVIEW: ai cũng xem được (thường tương ứng isFree=true)
+     * - MONTHLY: gói 1 tháng xem được
+     * - UNLIMITED: chỉ gói 3 tháng / 1 năm xem được
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private AccessTier accessTier = AccessTier.UNLIMITED;
+
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<Exercise> exercises = new ArrayList<>();
@@ -60,4 +71,5 @@ public class Lesson {
     private Instant updatedAt;
 
     public enum LessonType { VOCABULARY, GRAMMAR, LISTENING, SPEAKING, READING, WRITING, MIXED }
+    public enum AccessTier { PREVIEW, MONTHLY, UNLIMITED }
 }

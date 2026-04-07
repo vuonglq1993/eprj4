@@ -54,6 +54,6 @@ public class Subscription {
                 && (endDate == null || endDate.isAfter(Instant.now()));
     }
 
-    public enum Plan      { FREE, MONTHLY, YEARLY }
+    public enum Plan      { FREE, MONTHLY, THREE_MONTHS, YEARLY }
     public enum SubStatus { ACTIVE, EXPIRED, CANCELLED, PAUSED }
 }
