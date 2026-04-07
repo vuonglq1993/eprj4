@@ -28,6 +28,27 @@ public class LearningPathService {
     private final LanguageRepository         languageRepo;
     private final UserRepository             userRepo;
     private final UserProgressRepository     progressRepo;
+    private final LessonRepository           lessonRepo;
+    private Subscription.Plan getPlan(UUID userId) {
+        return userRepo.findById(userId)
+                .map(u -> u.getSubscription() != null ? u.getSubscription().getPlan() : Subscription.Plan.FREE)
+                .orElse(Subscription.Plan.FREE);
+    }
+
+    private int calcAccessibleCourseProgressPercent(UUID userId, Course c, Subscription.Plan plan) {
+        if (c.getTotalLessons() == 0) return 0;
+        if (plan == Subscription.Plan.THREE_MONTHS || plan == Subscription.Plan.YEARLY) {
+            return progressRepo.calculateProgress(userId, c.getId(), c.getTotalLessons());
+        }
+        var tiers = (plan == Subscription.Plan.MONTHLY)
+                ? List.of(Lesson.AccessTier.PREVIEW, Lesson.AccessTier.MONTHLY)
+                : List.of(Lesson.AccessTier.PREVIEW);
+        long total = lessonRepo.countAccessible(c.getId(), tiers);
+        if (total == 0) return 0;
+        long done = progressRepo.countCompletedAccessible(userId, c.getId(), tiers);
+        return (int) (done * 100 / total);
+    }
+
 
     // ── LIST (public) ─────────────────────────────────────────
     @Transactional(readOnly = true)
@@ -238,11 +259,10 @@ public class LearningPathService {
     /** Tính % hoàn thành từng course của user trong path */
     private Map<UUID, Integer> buildCourseProgressMap(UUID userId, LearningPath lp) {
         Map<UUID, Integer> map = new HashMap<>();
+        Subscription.Plan plan = getPlan(userId);
         for (LearningPathStep step : lp.getSteps()) {
             Course c = step.getCourse();
-            int pct = c.getTotalLessons() > 0
-                    ? progressRepo.calculateProgress(userId, c.getId(), c.getTotalLessons())
-                    : 0;
+            int pct = calcAccessibleCourseProgressPercent(userId, c, plan);
             map.put(c.getId(), pct);
         }
         return map;
@@ -283,6 +303,8 @@ public class LearningPathService {
         List<LearningPathStep> steps = lp.getSteps();
         List<LearningPathResponse.StepResponse> result = new ArrayList<>();
 
+        Subscription.Plan plan = (userPath != null) ? getPlan(userPath.getUser().getId()) : null;
+
         for (int i = 0; i < steps.size(); i++) {
             LearningPathStep step = steps.get(i);
             Course c = step.getCourse();
@@ -292,6 +314,21 @@ public class LearningPathService {
             boolean isUnlocked = i == 0
                     || !steps.get(i - 1).getIsRequired()
                     || courseProgress.getOrDefault(steps.get(i - 1).getCourse().getId(), 0) == 100;
+
+            boolean canAccess;
+            String requiredPlan;
+            if (plan == null || plan == Subscription.Plan.FREE) {
+                long previewCount = lessonRepo.countAccessible(c.getId(), List.of(Lesson.AccessTier.PREVIEW));
+                canAccess = previewCount > 0;
+                requiredPlan = canAccess ? null : "MONTHLY";
+            } else if (plan == Subscription.Plan.MONTHLY) {
+                long monthlyCount = lessonRepo.countAccessible(c.getId(), List.of(Lesson.AccessTier.PREVIEW, Lesson.AccessTier.MONTHLY));
+                canAccess = monthlyCount > 0;
+                requiredPlan = canAccess ? null : "UNLIMITED";
+            } else {
+                canAccess = true; // THREE_MONTHS / YEARLY
+                requiredPlan = null;
+            }
 
             result.add(LearningPathResponse.StepResponse.builder()
                     .stepId(step.getId())
@@ -305,6 +342,8 @@ public class LearningPathService {
                     .isRequired(step.getIsRequired())
                     .courseProgressPercent(pct)
                     .isUnlocked(isUnlocked)
+                    .canAccess(canAccess)
+                    .requiredPlan(requiredPlan)
                     .build());
         }
         return result;

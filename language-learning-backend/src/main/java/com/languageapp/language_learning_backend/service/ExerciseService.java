@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.languageapp.language_learning_backend.dto.exercise.*;
 import com.languageapp.language_learning_backend.entity.*;
+import com.languageapp.language_learning_backend.entity.Lesson.AccessTier;
 import com.languageapp.language_learning_backend.entity.UserProgress.ProgressStatus;
 import com.languageapp.language_learning_backend.exception.GlobalExceptionHandler.*;
 import com.languageapp.language_learning_backend.repository.*;
@@ -81,6 +82,7 @@ public class ExerciseService {
         Exercise ex = findOrThrow(req.getExerciseId(), lessonId);
 
         GradeResult grade = grade(ex, req.getAnswer());
+
         // Check timeout
         boolean isTimeout = false;
         if (ex.getTimeLimitSeconds() > 0
@@ -117,9 +119,15 @@ public class ExerciseService {
         }
         progressRepo.save(progress);
 
-        // ✅ Tính coursePercent SAU KHI save progress
-        int coursePercent = progressRepo.calculateProgress(
-                p.getUserId(), courseId, course.getTotalLessons());
+        // ✅ Tính coursePercent theo accessible lessons của plan (không dùng totalLessons)
+        Subscription.Plan plan = getPlan(p);
+        List<AccessTier> tiers = accessibleTiers(plan);
+        long accessibleTotal = lessonRepo.countAccessible(courseId, tiers);
+        int coursePercent = 0;
+        if (accessibleTotal > 0) {
+            long done = progressRepo.countCompletedAccessible(p.getUserId(), courseId, tiers);
+            coursePercent = (int)(done * 100 / accessibleTotal);
+        }
 
         return SubmitResponse.builder()
                 .correct(grade.correct() && !isTimeout)
@@ -134,6 +142,29 @@ public class ExerciseService {
     }
 
     // ── HELPERS ───────────────────────────────────────────────
+
+    /**
+     * ✅ Lấy plan của user. ADMIN/TEACHER được coi như YEARLY.
+     */
+    private Subscription.Plan getPlan(UserPrincipal p) {
+        if (p == null) return Subscription.Plan.FREE;
+        if ("ADMIN".equals(p.getRole()) || "TEACHER".equals(p.getRole())) return Subscription.Plan.YEARLY;
+        return userRepo.findById(p.getUserId())
+                .map(u -> u.getSubscription() != null ? u.getSubscription().getPlan() : Subscription.Plan.FREE)
+                .orElse(Subscription.Plan.FREE);
+    }
+
+    /**
+     * ✅ Trả về các AccessTier mà plan này được phép truy cập.
+     */
+    private List<AccessTier> accessibleTiers(Subscription.Plan plan) {
+        return switch (plan) {
+            case THREE_MONTHS, YEARLY -> List.of(AccessTier.PREVIEW, AccessTier.MONTHLY, AccessTier.UNLIMITED);
+            case MONTHLY              -> List.of(AccessTier.PREVIEW, AccessTier.MONTHLY);
+            default                   -> List.of(AccessTier.PREVIEW);
+        };
+    }
+
     public Exercise findOrThrow(UUID exerciseId, UUID lessonId) {
         return exerciseRepo.findById(exerciseId)
                 .filter(e -> e.getLesson().getId().equals(lessonId))
