@@ -3,7 +3,6 @@ import { useNavigate, useLocation, Link } from 'react-router-dom'
 import {
   MdHome,
   MdPages,
-  MdLockOutline,
   MdExpandMore,
   MdExpandLess,
   MdLogout,
@@ -11,6 +10,9 @@ import {
   MdSchool,
   MdTrendingUp,
   MdStorage,
+  MdRoute,
+  MdCategory,
+  MdConfirmationNumber,
 } from 'react-icons/md'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -52,7 +54,7 @@ const menuConfig = [
   },
   {
     id: 'db-tables',
-    label: 'Database',
+    label: 'Subscriptions',
     icon: MdStorage,
     children: [
       { id: 'tbl-payment-transactions', label: 'payment_transactions', path: '/data/payment-transactions' },
@@ -62,59 +64,43 @@ const menuConfig = [
     ],
   },
   {
+    id: 'learning-paths',
+    label: 'Learning Paths',
+    icon: MdRoute,
+    children: [
+      { id: 'learning-paths-list', label: 'All Paths', path: '/learning-paths' },
+    ],
+  },
+  {
+    id: 'topics',
+    label: 'Topics',
+    icon: MdCategory,
+    children: [
+      { id: 'topics-list', label: 'All Topics', path: '/topics' },
+    ],
+  },
+  {
+    id: 'admin-plans',
+    label: 'Subscription Plans',
+    icon: MdConfirmationNumber,
+    children: [
+      { id: 'admin-plans-list', label: 'Manage Plans', path: '/admin/subscription-plans' },
+    ],
+  },
+  {
     id: 'pages',
     label: 'Pages',
     icon: MdPages,
     children: [
       {
-        id: 'profile',
-        label: 'Profile',
-        children: [
-          { id: 'profile-overview', label: 'Profile overview', path: '/profile-overview' },
-          { id: 'teams', label: 'Teams', path: '/teams' },
-        ],
-      },
-      {
         id: 'account',
         label: 'Account',
         children: [
           { id: 'setting', label: 'Setting', path: '/setting' },
-          { id: 'billing', label: 'Billing', path: '/billing' },
-          { id: 'invoice', label: 'Invoice', path: '/invoice' },
           { id: 'security', label: 'Security', path: '/security' },
         ],
       },
-      {
-        label: 'Notification',
-        path: '/notification',
-        id: 'notification',
-      },
-      {
-        label: 'Chat',
-        path: '/chat',
-        id: 'chat',
-      },
-      {
-        label: 'Pricing Page',
-        path: '/pricing-page',
-        id: 'pricing-page',
-      },
-      {
-        label: 'Charts',
-        path: '/charts',
-        id: 'charts',
-      },
-      {
-        label: 'Timeline',
-        path: '/timeline',
-        id: 'timeline',
-      },
     ],
-  },
-  {
-    id: 'authentication',
-    label: 'Authentication',
-    icon: MdLockOutline,
   },
 ]
 
@@ -122,7 +108,7 @@ function Sidebar({ onNavigate }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { logout } = useAuth()
-  const [expandedIds, setExpandedIds] = useState(new Set(['home', 'languages', 'courses', 'progress', 'db-tables', 'pages', 'profile', 'account']))
+  const [expandedIds, setExpandedIds] = useState(new Set(['home', 'languages', 'courses', 'progress', 'db-tables', 'pages', 'account', 'learning-paths', 'topics', 'admin-plans']))
 
   const handleLogout = () => {
     onNavigate?.()

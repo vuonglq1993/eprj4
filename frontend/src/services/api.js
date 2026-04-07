@@ -16,15 +16,41 @@ function isPublicAuthPath(url) {
   );
 }
 
+function hasStoredAccessToken() {
+  try {
+    const raw = localStorage.getItem('auth_tokens');
+    const t = raw ? JSON.parse(raw).accessToken : null;
+    return typeof t === 'string' && t.trim().length > 0;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * GET /languages không dùng principal — luôn public; token lỗi/expired đôi khi gây 403 nên không gửi Bearer.
- * GET /courses có @AuthenticationPrincipal (progress) — vẫn gửi token khi có.
+ * GET danh mục có thể cho phép anonymous.
+ * Chỉ bỏ Bearer khi **chưa đăng nhập** — nếu đã có JWT mà vẫn xóa header, Spring thường coi là
+ * anonymous và trả 403 dù endpoint yêu cầu authenticated (Admin/User).
+ *
+ * GET /courses (progress theo user) — không nằm trong danh sách này.
  */
+function isPublicCatalogGetPath(path) {
+  if (path === '/languages' || path.startsWith('/languages/')) return true;
+  if (path === '/learning-paths') return true;
+  const lpSeg = path.match(/^\/learning-paths\/([^/]+)$/);
+  if (lpSeg && lpSeg[1] !== 'my') return true;
+  if (path === '/topics' || path.startsWith('/topics/')) return true;
+  if (path === '/subscription-plans') return true;
+  if (/^\/subscription-plans\/[^/]+$/.test(path)) return true;
+  return false;
+}
+
 function isPublicResourceGet(config) {
   const method = (config.method || 'get').toLowerCase();
   if (method !== 'get') return false;
   const path = (config.url || '').split('?')[0];
-  return path === '/languages' || path.startsWith('/languages/');
+  if (!isPublicCatalogGetPath(path)) return false;
+  if (hasStoredAccessToken()) return false;
+  return true;
 }
 
 api.interceptors.request.use((config) => {
