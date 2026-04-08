@@ -26,4 +26,8 @@ public interface StudyLogRepository extends JpaRepository<StudyLog, UUID> {
     long sumSeconds(@Param("uid") UUID uid, @Param("from") LocalDate from, @Param("to") LocalDate to);
 
     boolean existsByUserIdAndStudyDate(UUID userId, LocalDate date);
+    @Query("SELECT s FROM StudyLog s JOIN FETCH s.lesson l WHERE s.user.id=:uid AND s.studyDate BETWEEN :from AND :to ORDER BY s.studyDate DESC")
+List<StudyLog> findByUserAndDateRange(@Param("uid") UUID uid,
+                                      @Param("from") LocalDate from,
+                                      @Param("to") LocalDate to);
 }

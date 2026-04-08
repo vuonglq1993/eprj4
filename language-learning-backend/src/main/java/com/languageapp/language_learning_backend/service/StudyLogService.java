@@ -97,4 +97,34 @@ public class StudyLogService {
     public List<Object[]> getUsersToRemind() {
         return userRepo.findUsersToRemind(LocalDate.now(), LocalDate.now().minusDays(1));
     }
+    // ✅ NEW: weekly logs grouped by date
+    @Transactional(readOnly = true)
+    public Map<LocalDate, List<Map<String, Object>>> getWeeklyLogs(UserPrincipal p) {
+        UUID uid = p.getUserId();
+
+        LocalDate today = LocalDate.now();
+        LocalDate startOfWeek = today.minusDays(6);
+
+        List<StudyLog> logs = logRepo.findByUserAndDateRange(uid, startOfWeek, today);
+
+        Map<LocalDate, List<Map<String, Object>>> result = new LinkedHashMap<>();
+
+        for (StudyLog log : logs) {
+            LocalDate date = log.getStudyDate();
+
+            result.putIfAbsent(date, new ArrayList<>());
+
+            Map<String, Object> item = new HashMap<>();
+            item.put("lessonId", log.getLesson().getId());
+            item.put("lessonName", log.getLesson().getTitle());
+            item.put("duration", log.getDurationSeconds());
+            item.put("activityType", log.getActivityType());
+
+            result.get(date).add(item);
+        }
+
+        return result;
+    }
 }
+
+
