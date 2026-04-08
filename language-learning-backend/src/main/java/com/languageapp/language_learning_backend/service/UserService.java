@@ -202,6 +202,9 @@ public class UserService {
         if (req.getAvatarUrl() != null)
             user.setAvatarUrl(req.getAvatarUrl());
 
+        if (req.getUiLanguage() != null)
+            user.setUiLanguage(req.getUiLanguage());
+
         return toProfileResponse(userRepo.save(user));
     }
 
@@ -269,6 +272,7 @@ public class UserService {
                         ? u.getSubscription().getPlan().name()
                         : "FREE")
                 .isPremium(u.isPremium())
+                .uiLanguage(u.getUiLanguage())
                 .build();
     }
 

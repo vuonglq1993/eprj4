@@ -44,5 +44,9 @@ public class LearningPathResponse {
         // Tiến độ của user trong course này
         private Integer courseProgressPercent;
         private Boolean isUnlocked;         // false nếu bước trước chưa complete
+        /** FE dùng để render khóa theo gói (không phụ thuộc isUnlocked) */
+        private Boolean canAccess;
+        /** Gói tối thiểu để học được course trong step (MONTHLY hoặc UNLIMITED) */
+        private String  requiredPlan;
     }
 }

@@ -3,12 +3,16 @@ import { useNavigate, useLocation, Link } from 'react-router-dom'
 import {
   MdHome,
   MdPages,
-  MdApps,
-  MdShoppingCart,
-  MdLockOutline,
   MdExpandMore,
   MdExpandLess,
   MdLogout,
+  MdLanguage,
+  MdSchool,
+  MdTrendingUp,
+  MdStorage,
+  MdRoute,
+  MdCategory,
+  MdConfirmationNumber,
 } from 'react-icons/md'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -23,102 +27,80 @@ const menuConfig = [
     ],
   },
   {
+    id: 'languages',
+    label: 'Languages',
+    icon: MdLanguage,
+    children: [
+      { id: 'language-list', label: 'Languages', path: '/languages' },
+    ],
+  },
+  {
+    id: 'courses',
+    label: 'Courses',
+    icon: MdSchool,
+    children: [
+      { id: 'course-list', label: 'Courses', path: '/courses' },
+      { id: 'lesson-list', label: 'Lessons', path: '/lessons' },
+      { id: 'exercise-list', label: 'Exercises', path: '/exercises' },
+    ],
+  },
+  {
+    id: 'progress',
+    label: 'Progress',
+    icon: MdTrendingUp,
+    children: [
+      { id: 'my-progress', label: 'My Progress', path: '/progress' },
+    ],
+  },
+  {
+    id: 'db-tables',
+    label: 'Subscriptions',
+    icon: MdStorage,
+    children: [
+      { id: 'tbl-payment-transactions', label: 'payment_transactions', path: '/data/payment-transactions' },
+      { id: 'tbl-study-logs', label: 'study_logs', path: '/data/study-logs' },
+      { id: 'tbl-subscriptions', label: 'subscriptions', path: '/data/subscriptions' },
+      { id: 'tbl-subscription-plans', label: 'subscription_plans', path: '/data/subscription-plans' },
+    ],
+  },
+  {
+    id: 'learning-paths',
+    label: 'Learning Paths',
+    icon: MdRoute,
+    children: [
+      { id: 'learning-paths-list', label: 'All Paths', path: '/learning-paths' },
+    ],
+  },
+  {
+    id: 'topics',
+    label: 'Topics',
+    icon: MdCategory,
+    children: [
+      { id: 'topics-list', label: 'All Topics', path: '/topics' },
+    ],
+  },
+  {
+    id: 'admin-plans',
+    label: 'Subscription Plans',
+    icon: MdConfirmationNumber,
+    children: [
+      { id: 'admin-plans-list', label: 'Manage Plans', path: '/admin/subscription-plans' },
+    ],
+  },
+  {
     id: 'pages',
     label: 'Pages',
     icon: MdPages,
     children: [
       {
-        id: 'profile',
-        label: 'Profile',
-        children: [
-          { id: 'profile-overview', label: 'Profile overview', path: '/profile-overview' },
-          { id: 'teams', label: 'Teams', path: '/teams' },
-          { id: 'all-projects', label: 'All Projects',path: '/allprojects'},
-        ],
-      },
-      {
-        id: 'user',
-        label: 'User',
-        children: [
-          { id: 'report', label: 'Report', path: '/report' },
-          { id: 'new-user', label: 'New User', path: '/new-user' },
-        ],
-      },
-      {
         id: 'account',
         label: 'Account',
         children: [
           { id: 'setting', label: 'Setting', path: '/setting' },
-          { id: 'billing', label: 'Billing', path: '/billing' },
-          { id: 'invoice', label: 'Invoice', path: '/invoice' },
           { id: 'security', label: 'Security', path: '/security' },
         ],
       },
-      {
-        id: 'projects',
-        label: 'Projects',
-        children: [
-          { id: 'general', label: 'General', path: '/general' },
-          { id: 'timeline', label: 'Timeline', path: '/timeline' },
-          { id: 'new-project', label: 'New Project', path: '/new-project' },
-        ],
-      },
-      {
-        label: 'Pricing Page',
-        path: '/pricing-page',
-        id: 'pricing-page',
-      },
-      {
-        label: 'Charts',
-        path: '/charts',
-        id: 'charts', 
-      },
-      {
-        label: 'Notification',
-        path: '/notification',
-        id:'/notification'
-      },
-      {
-        label: 'Chat',
-        path: '/chat',
-        id:'/chat'
-      }
-
     ],
-  },
-  {
-    id: 'applications',
-    label: 'Applications',
-    icon: MdApps,
-    children: [
-      { id: 'kanban', label: 'Kanban', path: '/kanban' },
-      { id: 'wizard', label: 'Wizard', path: '/wizard' },
-      { id: 'data-tables', label: 'Data tables', path: '/datatables' },
-      { id: 'calendar', label: 'Calendar',path: '/calendar' },
-    ],
-  },
-  {
-    id: 'ecommerce',
-    label: 'E-commerce',
-    icon: MdShoppingCart,
-    children: [
-      { id: 'overview', label: 'Overview' },
-      {
-        id: 'products',
-        label: 'Products',
-        children: [
-          { id: 'new-product', label: 'New Product',path: '/new-product' },
-          { id: 'edit-product', label: 'Edit Product',path: '/edit-product' },
-          { id: 'product-list', label: 'Product List', path: '/product-list' },
-        ],
-      },
-      { id: 'orders', label: 'Orders' },
-    ],
-  },
-  {
-    id: 'authentication',
-    label: 'Authentication',
-    icon: MdLockOutline,
   },
 ]
 
@@ -126,7 +108,7 @@ function Sidebar({ onNavigate }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { logout } = useAuth()
-  const [expandedIds, setExpandedIds] = useState(new Set(['home', 'pages', 'profile']))
+  const [expandedIds, setExpandedIds] = useState(new Set(['home', 'languages', 'courses', 'progress', 'db-tables', 'pages', 'account', 'learning-paths', 'topics', 'admin-plans']))
 
   const handleLogout = () => {
     onNavigate?.()
