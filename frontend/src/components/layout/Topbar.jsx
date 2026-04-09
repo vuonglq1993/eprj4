@@ -30,6 +30,9 @@ const PAGE_TITLES = {
   '/lessons': 'Lessons',
   '/exercises': 'Exercises',
   '/progress': 'My Progress',
+  '/learning-paths': 'Learning Paths',
+  '/topics': 'Topics',
+  '/admin/subscription-plans': 'Subscription Plans',
 }
 
 

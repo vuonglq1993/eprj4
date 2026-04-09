@@ -39,6 +39,10 @@ import PaymentTransactionsPage from "./pages/data/PaymentTransactionsPage"
 import StudyLogsPage from "./pages/data/StudyLogsPage"
 import SubscriptionsDataPage from "./pages/data/SubscriptionsPage"
 import SubscriptionPlansPage from "./pages/data/SubscriptionPlansPage"
+import LearningPathList from "./pages/LearningPathList"
+import TopicList from "./pages/TopicList"
+import OnboardingPage from "./pages/OnboardingPage"
+import SubscriptionPlansAdminPage from "./pages/SubscriptionPlansAdminPage"
 
 
 import './styles/layout.css'
@@ -70,6 +74,10 @@ import './styles/lessonlist.css'
 import './styles/exerciselist.css'
 import './styles/progresspage.css'
 import './styles/dataTablesPages.css'
+import './styles/learningpathlist.css'
+import './styles/topiclist.css'
+import './styles/onboarding.css'
+import './styles/subscriptionplansadmin.css'
 
 
 
@@ -379,6 +387,46 @@ function SubscriptionPlansRoute() {
   )
 }
 
+function LearningPathListRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <LearningPathList />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function TopicListRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <TopicList />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function OnboardingPageRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <OnboardingPage />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function SubscriptionPlansAdminRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <SubscriptionPlansAdminPage />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
 function LoginRoute() {
   const { isAuthenticated } = useAuth()
   if (isAuthenticated) return <Navigate to="/" replace />
@@ -428,6 +476,10 @@ function App() {
           <Route path="/lessons" element={<LessonListRoute />} />
           <Route path="/exercises" element={<ExerciseListRoute />} />
           <Route path="/progress" element={<ProgressPageRoute />} />
+          <Route path="/learning-paths" element={<LearningPathListRoute />} />
+          <Route path="/topics" element={<TopicListRoute />} />
+          <Route path="/onboarding" element={<OnboardingPageRoute />} />
+          <Route path="/admin/subscription-plans" element={<SubscriptionPlansAdminRoute />} />
           <Route path="/data/payment-transactions" element={<PaymentTransactionsRoute />} />
           <Route path="/data/study-logs" element={<StudyLogsRoute />} />
           <Route path="/data/subscriptions" element={<SubscriptionsDataRoute />} />

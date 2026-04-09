@@ -47,6 +47,7 @@ dependencies:
   # Storage (JWT token, user prefs)
   flutter_secure_storage: ^9.2.2
   shared_preferences: ^2.3.0
+  url_launcher: ^6.3.0
 
   # Audio: playback, recording (luyện nghe/nói)
   just_audio: ^0.9.40     # playback audio từ URL/local
