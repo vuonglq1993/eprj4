@@ -120,6 +120,11 @@ public class StudyLogService {
             item.put("duration", log.getDurationSeconds());
             item.put("activityType", log.getActivityType());
 
+            item.put("score", log.getScore()); // thêm điểm
+
+            // nếu entity StudyLog có createdAt / createdDate / loggedAt thì thêm:
+            item.put("createdAt", log.getCreatedAt()); // hoặc log.getLoggedAt()
+
             result.get(date).add(item);
         }
 
