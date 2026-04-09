@@ -7,6 +7,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
@@ -55,4 +59,34 @@ public class GlobalExceptionHandler {
     public static class UnauthorizedException extends RuntimeException { public UnauthorizedException(String m) { super(m); } }
     public static class ForbiddenException    extends RuntimeException { public ForbiddenException(String m)    { super(m); } }
     public static class BadRequestException   extends RuntimeException { public BadRequestException(String m)   { super(m); } }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<?> handleRuntimeException(RuntimeException e) {
+        log.error("Runtime error: {}", e.getMessage());
+
+        String message = e.getMessage();
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+        // Detect API-specific errors
+        if (message != null && message.contains("API error: 429")) {
+            status = HttpStatus.TOO_MANY_REQUESTS;
+            message = "AI service rate limit exceeded. Please try again later.";
+        } else if (message != null && message.contains("API error: 401")) {
+            status = HttpStatus.UNAUTHORIZED;
+            message = "AI service authentication failed. Check your API key.";
+        }
+
+        return ResponseEntity.status(status).body(Map.of(
+                "error", message != null ? message : "Unknown error",
+                "timestamp", System.currentTimeMillis()
+        ));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleIllegalArgument(IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(Map.of(
+                "error", e.getMessage(),
+                "timestamp", System.currentTimeMillis()
+        ));
+    }
 }
