@@ -72,3 +72,13 @@ momo:
   access-key: ${MOMO_ACCESS_KEY}
   secret-key: ${MOMO_SECRET_KEY}
   ipn-url: ${MOMO_IPN_URL}
+ai:
+  provider: ${AI_PROVIDER:gemini}
+  max-tokens: 1024
+  timeout-seconds: 30
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}
+  model: gemini-2.0-flash
+  base-url: https://generativelanguage.googleapis.com/v1beta/models
