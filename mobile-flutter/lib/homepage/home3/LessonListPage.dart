@@ -355,6 +355,19 @@ class _LessonListPageState extends State<LessonListPage> {
     );
   }
 
+  // void _navigateToQuiz(Lesson lesson) {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => QuizProgressPage(
+  //         courseId: widget.courseId,
+  //         lessonId: lesson.id,
+  //       ),
+  //     ),
+  //   ).then((_) => _loadLessons()); // Tự động load lại để cập nhật trạng thái
+  // }
+
+
   void _navigateToQuiz(Lesson lesson) {
     Navigator.push(
       context,
@@ -362,8 +375,9 @@ class _LessonListPageState extends State<LessonListPage> {
         builder: (context) => QuizProgressPage(
           courseId: widget.courseId,
           lessonId: lesson.id,
+          lessonDurationMinutes: lesson.durationMinutes,
         ),
       ),
-    ).then((_) => _loadLessons()); // Tự động load lại để cập nhật trạng thái
+    ).then((_) => _loadLessons());
   }
 }
