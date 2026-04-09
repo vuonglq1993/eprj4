@@ -150,7 +150,91 @@
 
 
 
+//bản chưa time
+// import 'dart:convert';
+//
+// enum QuestionType { imageChoice, wordChoice, inputField }
+//
+// class Question {
+//   final String id;
+//   final String title;
+//   final String? subTitle;
+//   final QuestionType type;
+//   final List<String> options;
+//   final String correctAnswer;
+//   final String? audioText;
+//   final int points;
+//
+//   Question({
+//     required this.id,
+//     required this.title,
+//     this.subTitle,
+//     required this.type,
+//     required this.options,
+//     required this.correctAnswer,
+//     this.audioText,
+//     required this.points,
+//   });
+//
+//   factory Question.fromExercise(Map<String, dynamic> json) {
+//     final dynamic rawData = json['questionData'];
+//     Map<String, dynamic> qData = {};
+//
+//     if (rawData is String && rawData.isNotEmpty) {
+//       qData = jsonDecode(rawData) as Map<String, dynamic>;
+//     } else if (rawData is Map) {
+//       qData = Map<String, dynamic>.from(rawData);
+//     }
+//
+//     final String typeFromDb = (json['type'] ?? '').toString();
+//
+//     late final QuestionType qType;
+//     switch (typeFromDb) {
+//       case 'LISTENING_CHOICE':
+//         qType = QuestionType.imageChoice;
+//         break;
+//       case 'FILL_IN_BLANK':
+//       case 'TRANSLATION':
+//         qType = QuestionType.inputField;
+//         break;
+//       case 'MULTIPLE_CHOICE':
+//       default:
+//         qType = QuestionType.wordChoice;
+//         break;
+//     }
+//
+//     final List<String> options = qData['options'] is List
+//         ? List<String>.from(qData['options'])
+//         : <String>[];
+//
+//     String correctAnswer = '';
+//     if (qData['answer'] != null) {
+//       correctAnswer = qData['answer'].toString();
+//     } else if (qData['correctIndex'] != null && options.isNotEmpty) {
+//       final int? idx = int.tryParse(qData['correctIndex'].toString());
+//       if (idx != null && idx >= 0 && idx < options.length) {
+//         correctAnswer = options[idx];
+//       }
+//     }
+//
+//     return Question(
+//       id: (json['id'] ?? '').toString(),
+//       title: (json['title'] ?? 'Bài tập').toString(),
+//       subTitle: qData['question']?.toString(),
+//       type: qType,
+//       options: options,
+//       correctAnswer: correctAnswer,
+//       audioText: qData['targetText']?.toString(),
+//       points: json['points'] is int
+//           ? json['points'] as int
+//           : int.tryParse(json['points']?.toString() ?? '0') ?? 0,
+//     );
+//   }
+// }
 
+
+
+//bản thêm time
 import 'dart:convert';
 
 enum QuestionType { imageChoice, wordChoice, inputField }
@@ -164,6 +248,7 @@ class Question {
   final String correctAnswer;
   final String? audioText;
   final int points;
+  final int timeLimitSeconds;
 
   Question({
     required this.id,
@@ -174,6 +259,7 @@ class Question {
     required this.correctAnswer,
     this.audioText,
     required this.points,
+    required this.timeLimitSeconds,
   });
 
   factory Question.fromExercise(Map<String, dynamic> json) {
@@ -228,6 +314,9 @@ class Question {
       points: json['points'] is int
           ? json['points'] as int
           : int.tryParse(json['points']?.toString() ?? '0') ?? 0,
+      timeLimitSeconds: json['timeLimitSeconds'] is int
+          ? json['timeLimitSeconds'] as int
+          : int.tryParse(json['timeLimitSeconds']?.toString() ?? '0') ?? 0,
     );
   }
 }
