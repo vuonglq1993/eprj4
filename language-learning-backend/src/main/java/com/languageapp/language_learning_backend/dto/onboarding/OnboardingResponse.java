@@ -10,6 +10,8 @@ import java.util.UUID;
 public class OnboardingResponse {
 
     private UUID          onboardingId;
+
+    private UUID targetLanguageId;
     private String        targetLanguageName;
     private String        targetLanguageCode;
     private String        targetLanguageFlag;
