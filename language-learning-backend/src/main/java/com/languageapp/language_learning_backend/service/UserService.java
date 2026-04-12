@@ -23,10 +23,8 @@ public class UserService {
     private final UserRepository userRepo;
     private final PasswordEncoder encoder;
 
-    // ✅ JWT ENABLED
-    private final JwtTokenProvider jwt;
 
-    // ❌ Redis removed completely
+    private final JwtTokenProvider jwt;
 
     // TODO enable email OTP verification later
     // private final EmailService emailService;
