@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 // ╔══════════════════════════════════════════════════════════╗
 // ║  1. AI Chat Teacher                                      ║
 // ╚══════════════════════════════════════════════════════════╝
-@Tag(name = "AI · Chat")
+@Tag(name = "10 · AI Features")
 @RestController
 @RequestMapping("/api/v1/ai/chat")
 @RequiredArgsConstructor
@@ -46,7 +46,7 @@ class AiChatController {
 // ╔══════════════════════════════════════════════════════════╗
 // ║  2. Grammar Check                                        ║
 // ╚══════════════════════════════════════════════════════════╝
-@Tag(name = "AI · Grammar")
+@Tag(name = "10 · AI Features")
 @RestController
 @RequestMapping("/api/v1/ai/grammar")
 @RequiredArgsConstructor
@@ -74,7 +74,7 @@ class GrammarController {
 // ╔══════════════════════════════════════════════════════════╗
 // ║  3. Pronunciation                                        ║
 // ╚══════════════════════════════════════════════════════════╝
-@Tag(name = "AI · Pronunciation")
+@Tag(name = "10 · AI Features")
 @RestController
 @RequestMapping("/api/v1/ai/pronunciation")
 @RequiredArgsConstructor
@@ -103,7 +103,7 @@ class PronunciationController {
 // ╔══════════════════════════════════════════════════════════╗
 // ║  4. Vocabulary                                           ║
 // ╚══════════════════════════════════════════════════════════╝
-@Tag(name = "AI · Vocabulary")
+@Tag(name = "10 · AI Features")
 @RestController
 @RequestMapping("/api/v1/ai/vocab")
 @RequiredArgsConstructor
@@ -140,7 +140,7 @@ class VocabController {
 // ╔══════════════════════════════════════════════════════════╗
 // ║  5. Recommendation                                       ║
 // ╚══════════════════════════════════════════════════════════╝
-@Tag(name = "AI · Recommendation")
+@Tag(name = "10 · AI Features")
 @RestController
 @RequestMapping("/api/v1/ai/recommend")
 @RequiredArgsConstructor
