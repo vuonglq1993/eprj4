@@ -4,11 +4,12 @@ import 'language_selection_page.dart';
 import 'invite_page.dart';
 import 'edit_profile_page.dart';
 import 'subscription_page.dart';
-import 'help_chat_page.dart';
+//import 'help_chat_page.dart';
 import 'app_settings_page.dart';
 // Đảm bảo import theme_notifier
 import 'theme_notifier.dart';
 import 'Profile.dart';
+import '../homepagesetting/ai/ai_tools_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -55,12 +56,21 @@ class SettingsPage extends StatelessWidget {
               _buildSettingsItem(context, "Invite Friends", Icons.people_outline, Colors.orangeAccent, () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const InvitePage()));
               }),
-              _buildSettingsItem(context, "Help", Icons.help_outline, Colors.lightBlue, () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const HelpChatPage()));
+
+              //AI Chat
+              // _buildSettingsItem(context, "Help", Icons.help_outline, Colors.lightBlue, () {
+              //   Navigator.push(context, MaterialPageRoute(builder: (_) => const HelpChatPage()));
+              // }),
+
+              //Ai Tool các loại
+              _buildSettingsItem(context, "AI", Icons.lock_open, Colors.redAccent, () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AiToolsPage()));
               }),
+
               _buildSettingsItem(context, "Subscription", Icons.lock_open, Colors.redAccent, () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionPage()));
               }),
+
             ],
           ),
         );
