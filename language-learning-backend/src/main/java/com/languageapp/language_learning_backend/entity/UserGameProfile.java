@@ -43,6 +43,22 @@ public class UserGameProfile {
     /** Ngày reset weeklyXp gần nhất */
     private Instant weeklyXpResetAt;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer currentStreak = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer longestStreak = 0;
+
+    private Instant lastActivityAt;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer streakFreezeCount = 3;
+
     @CreationTimestamp private Instant createdAt;
     @UpdateTimestamp   private Instant updatedAt;
+
+
 }
