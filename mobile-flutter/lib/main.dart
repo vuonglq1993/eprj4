@@ -64,7 +64,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
 
-  print("API_URL: ${dotenv.env['API_URL']}");
+  print("API_BASE_URL: ${dotenv.env['API_BASE_URL']}");
   print("APP_NAME: ${dotenv.env['APP_NAME']}");
 
   await Firebase.initializeApp(

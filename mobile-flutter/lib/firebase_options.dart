@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'config/app_config.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -49,20 +50,20 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAra9hxONojgQLn2bB_Tqv_6VL6lql-1Js',
-    appId: '1:943935351696:android:c6a2ad72c525c48333a115',
-    messagingSenderId: '943935351696',
-    projectId: 'eprj4-notification-49748',
-    storageBucket: 'eprj4-notification-49748.firebasestorage.app',
+  static FirebaseOptions get android => FirebaseOptions(
+    apiKey: AppConfig.firebaseAndroidApiKey,
+    appId: AppConfig.firebaseAndroidAppId,
+    messagingSenderId: AppConfig.firebaseAndroidMessagingSenderId,
+    projectId: AppConfig.firebaseAndroidProjectId,
+    storageBucket: AppConfig.firebaseAndroidStorageBucket,
   );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDSrSjrZn0UNuJedVLWo83ZoUl916dx4hQ',
-    appId: '1:943935351696:ios:7ee04ca53012650e33a115',
-    messagingSenderId: '943935351696',
-    projectId: 'eprj4-notification-49748',
-    storageBucket: 'eprj4-notification-49748.firebasestorage.app',
-    iosBundleId: 'com.languageapp.languageLearning',
+  static FirebaseOptions get ios => FirebaseOptions(
+    apiKey: AppConfig.firebaseIosApiKey,
+    appId: AppConfig.firebaseIosAppId,
+    messagingSenderId: AppConfig.firebaseIosMessagingSenderId,
+    projectId: AppConfig.firebaseIosProjectId,
+    storageBucket: AppConfig.firebaseIosStorageBucket,
+    iosBundleId: AppConfig.firebaseIosBundleId,
   );
 }

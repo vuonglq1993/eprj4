@@ -84,10 +84,11 @@
 //bản mới nối task
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config/app_config.dart';
 import 'token_service.dart';
 
 class StudyLogService {
-  static const String baseUrl = "http://10.0.2.2:8080/api/v1/study-logs";
+  static String get baseUrl => "${AppConfig.apiBaseUrl}/study-logs";
 
   static Future<void> logStudySession({
     required String lessonId,

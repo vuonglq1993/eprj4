@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/learning_path_model.dart';
+import '../config/app_config.dart';
 import 'token_service.dart';
 
 class LearningPathService {
-  static const String baseUrl = "http://10.0.2.2:8080/api/v1/learning-paths";
+  static String get baseUrl => "${AppConfig.apiBaseUrl}/learning-paths";
 
   static Future<Map<String, String>> _authHeaders() async {
     final token = await TokenService.getToken();

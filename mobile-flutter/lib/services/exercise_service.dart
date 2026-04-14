@@ -82,10 +82,10 @@
 
 
 
-//bản có time
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/question_model.dart';
+import '../config/app_config.dart';
 import 'token_service.dart';
 
 class SubmitResponse {
@@ -118,7 +118,7 @@ class SubmitResponse {
 }
 
 class ExerciseService {
-  static const String baseUrl = "http://10.0.2.2:8080/api/v1";
+  static String get baseUrl => AppConfig.apiBaseUrl;
 
   static Future<List<Question>> getExercises(String courseId, String lessonId) async {
     final token = await TokenService.getToken();
