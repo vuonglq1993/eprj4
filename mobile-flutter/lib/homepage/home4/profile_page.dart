@@ -1261,7 +1261,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_config.dart';
 import '../../services/api_service.dart';
-import '../homepagesetting/language_selection_page.dart';
 import '../homepagesetting/theme_notifier.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -1270,6 +1269,10 @@ import '../../models/course_model.dart';
 import '../../services/progress_service.dart';
 import '../../models/stats_model.dart';
 import 'achievement_page.dart';
+
+import '../../services/gamification_service.dart';
+import '../../models/game_profile_model.dart';
+import 'leaderboard_page.dart';
 
 class ProfilePage extends StatefulWidget {
   final VoidCallback onBack;
@@ -1294,6 +1297,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   StatsResponse? weeklyStats;
   String activityTimeText = "0m";
+  GameProfile? gameProfile;
 
   @override
   void initState() {
@@ -1307,6 +1311,7 @@ class _ProfilePageState extends State<ProfilePage> {
       _fetchUser(),
       _fetchCompletedCourses(),
       _fetchWeeklyStats(),
+      _fetchGame(),
     ]);
     if (mounted) {
       setState(() => isLoading = false);
@@ -1357,6 +1362,21 @@ class _ProfilePageState extends State<ProfilePage> {
       });
     } catch (e) {
       debugPrint("Error fetching weekly stats: $e");
+    }
+  }
+
+  Future<void> _fetchGame() async {
+    try {
+      final data = await GamificationService.getGameProfile();
+      debugPrint("ProfilePage gameProfile: $data");
+
+      if (!mounted) return;
+
+      setState(() {
+        gameProfile = data;
+      });
+    } catch (e) {
+      debugPrint("Error fetching game profile: $e");
     }
   }
 
@@ -1459,36 +1479,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         style: const TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                       const SizedBox(height: 25),
-                      OutlinedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LanguageSelectionPage(),
-                            ),
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(
-                            color: Color(0xFF5F2EFF),
-                            width: 1.5,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 25,
-                            vertical: 12,
-                          ),
-                        ),
-                        child: const Text(
-                          "My Languages",
-                          style: TextStyle(
-                            color: Color(0xFF5F2EFF),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                      _buildGameCard(theme),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 25),
                         child: Divider(
@@ -1700,6 +1691,89 @@ class _ProfilePageState extends State<ProfilePage> {
             level,
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.grey, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGameCard(ThemeData theme) {
+    if (gameProfile == null) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: theme.dividerColor.withOpacity(0.05)),
+        ),
+        child: const Text(
+          "Game profile not loaded",
+          style: TextStyle(color: Colors.red),
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Level ${gameProfile!.level} • ${gameProfile!.levelTitle}",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: theme.textTheme.titleMedium?.color,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            "${gameProfile!.totalXp} XP",
+            style: TextStyle(
+              color: theme.textTheme.bodyMedium?.color,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: (gameProfile!.progressPercent.clamp(0, 100)) / 100,
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            "Weekly XP: ${gameProfile!.weeklyXp}",
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const LeaderboardPage(),
+                ),
+              );
+            },
+            child: const Text(
+              "View Leaderboard",
+              style: TextStyle(
+                color: Color(0xFF5F2EFF),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
