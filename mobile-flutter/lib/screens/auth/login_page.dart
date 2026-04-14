@@ -1,0 +1,425 @@
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import '../../core/theme.dart';
+import '../../core/app_widgets.dart';
+import '../../services/api_service.dart';
+import '../onboarding/onboarding_flow.dart';
+import '../home/home_placeholder.dart';
+import 'register_page.dart';
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+  bool _showPassword = false;
+  bool _enable2FA = false;
+  bool _isLoading = false;
+  bool _isGoogleLoading = false;
+
+  @override
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+
+    final user = await ApiService.login(
+      email: _email.text.trim(),
+      password: _password.text.trim(),
+    );
+
+    if (!mounted) return;
+
+    if (user == null) {
+      setState(() => _isLoading = false);
+      _snack('Email hoặc mật khẩu không đúng');
+      return;
+    }
+
+    final onboardingDone = await ApiService.isOnboardingCompleted();
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            onboardingDone ? const HomePlaceholder() : const OnboardingFlow(),
+      ),
+      (r) => false,
+    );
+  }
+
+  void _snack(String msg) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.bg,
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 220,
+            child: Container(
+              decoration: const BoxDecoration(gradient: AppGradients.bgTop),
+            ),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 48),
+
+                // Logo chip
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    gradient: AppGradients.primaryIcon,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: AppShadows.primaryGlow,
+                  ),
+                  child: const Icon(Icons.layers_rounded,
+                      color: Colors.white, size: 28),
+                ),
+                const SizedBox(height: 20),
+
+                // Header
+                const Text(
+                  'Chào mừng trở lại',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Đăng nhập để tiếp tục học',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Google button
+                _googleButton(),
+                const SizedBox(height: 24),
+
+                // Divider
+                _divider('hoặc email'),
+                const SizedBox(height: 24),
+
+                // Email
+                _input(
+                  controller: _email,
+                  hint: 'Email',
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return 'Nhập email';
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                        .hasMatch(v.trim())) return 'Email không hợp lệ';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                // Password
+                _input(
+                  controller: _password,
+                  hint: 'Mật khẩu',
+                  icon: Icons.lock_outline_rounded,
+                  obscure: !_showPassword,
+                  suffix: IconButton(
+                    icon: Icon(
+                      _showPassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      color: AppColors.textSecondary,
+                      size: 20,
+                    ),
+                    onPressed: () =>
+                        setState(() => _showPassword = !_showPassword),
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Nhập mật khẩu';
+                    return null;
+                  },
+                ),
+
+                // Forgot password
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => _snack('Tính năng đang phát triển'),
+                    child: const Text(
+                      'Quên mật khẩu?',
+                      style: TextStyle(
+                        color: AppColors.primaryLight,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // Login button
+                _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                            color: AppColors.primary))
+                    : _primaryButton('Đăng nhập', _login),
+
+                const SizedBox(height: 20),
+
+                // 2FA toggle
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.shield_outlined,
+                          color: AppColors.textSecondary, size: 20),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Bật xác thực 2 lớp (2FA)\nđể bảo vệ tài khoản',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: _enable2FA,
+                        onChanged: (v) {
+                          setState(() => _enable2FA = v);
+                          if (v) _snack('2FA sẽ được kích hoạt sau khi đăng nhập');
+                        },
+                        activeColor: AppColors.primary,
+                        trackColor: WidgetStateProperty.all(AppColors.border),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Register link
+                Center(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const RegisterPage()),
+                    ),
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'Chưa có tài khoản? ',
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: 'Đăng ký',
+                            style: TextStyle(
+                              color: AppColors.primaryLight,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        ),
+      ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Widgets ──────────────────────────────────────────────────────────────
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isGoogleLoading = true);
+    try {
+      final googleSignIn = GoogleSignIn(
+        serverClientId: '579961382537-hfli270fo9pvfhb51d8fe1birvu1s113.apps.googleusercontent.com',
+      );
+      final account = await googleSignIn.signIn();
+      if (account == null) {
+        setState(() => _isGoogleLoading = false);
+        return;
+      }
+      final auth = await account.authentication;
+      final idToken = auth.idToken;
+      if (idToken == null) {
+        if (!mounted) return;
+        setState(() => _isGoogleLoading = false);
+        _snack('Không lấy được token Google. Thử lại.');
+        return;
+      }
+      final user = await ApiService.loginWithGoogle(idToken);
+      if (!mounted) return;
+      setState(() => _isGoogleLoading = false);
+      if (user != null) {
+        final onboardingDone = await ApiService.isOnboardingCompleted();
+        if (!mounted) return;
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => onboardingDone ? const HomePlaceholder() : const OnboardingFlow(),
+          ),
+          (r) => false,
+        );
+      } else {
+        _snack('Đăng nhập Google thất bại. Thử lại.');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isGoogleLoading = false);
+      _snack('Lỗi Google Sign-In: ${e.toString()}');
+    }
+  }
+
+  Widget _googleButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.border),
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        icon: _isGoogleLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
+              )
+            : const Text('G',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                )),
+        label: Text(
+          _isGoogleLoading ? 'Đang xử lý...' : 'Tiếp tục với Google',
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        onPressed: _isGoogleLoading ? null : _signInWithGoogle,
+      ),
+    );
+  }
+
+  Widget _divider(String label) {
+    return Row(
+      children: [
+        const Expanded(child: Divider(color: AppColors.border)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Text(label,
+              style: const TextStyle(
+                  color: AppColors.textSecondary, fontSize: 13)),
+        ),
+        const Expanded(child: Divider(color: AppColors.border)),
+      ],
+    );
+  }
+
+  Widget _input({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    bool obscure = false,
+    Widget? suffix,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: keyboardType,
+      style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: AppColors.textHint, fontSize: 15),
+        prefixIcon: Icon(icon, color: AppColors.textSecondary, size: 20),
+        suffixIcon: suffix,
+        filled: true,
+        fillColor: AppColors.inputBg,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error),
+        ),
+      ),
+      validator: validator,
+    );
+  }
+
+  Widget _primaryButton(String label, VoidCallback onTap) {
+    return GradientButton(label: label, onTap: onTap);
+  }
+}
