@@ -10,6 +10,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import com.languageapp.language_learning_backend.entity.UserProgress;
 import com.languageapp.language_learning_backend.entity.UserProgress.ProgressStatus;
@@ -22,6 +23,7 @@ public class StudyLogService {
     private final LessonRepository   lessonRepo;
     private final UserRepository     userRepo;
     private final UserProgressRepository progressRepo;
+    private final UserGameProfileRepository gameRepo;
 
     // ── LOG PHIÊN HỌC ─────────────────────────────────────────
     @Transactional
@@ -41,6 +43,9 @@ public class StudyLogService {
                 .score(req.getScore())
                 .activityType(req.getActivityType())
                 .build());
+
+        updateStreak(user);
+
         Course course = lesson.getCourse();
         UserProgress progress = progressRepo
                 .findByUserIdAndLessonId(user.getId(), lesson.getId())
@@ -68,27 +73,51 @@ public class StudyLogService {
     // ── STREAK ────────────────────────────────────────────────
     @Transactional(readOnly = true)
     public StreakResponse getStreak(UserPrincipal p) {
-        UUID uid = p.getUserId();
-        List<LocalDate> dates = logRepo.studyDates(uid, LocalDate.now().minusDays(30));
-        Set<LocalDate>  all   = new HashSet<>(logRepo.studyDates(uid, LocalDate.now().minusDays(365)));
 
-        LocalDate today = LocalDate.now();
-        int cur = 0;
-        LocalDate check = all.contains(today) ? today : (all.contains(today.minusDays(1)) ? today.minusDays(1) : null);
-        if (check != null) { for (; all.contains(check); check = check.minusDays(1)) cur++; }
-
-        List<LocalDate> sorted = new ArrayList<>(all); Collections.sort(sorted);
-        int longest = sorted.isEmpty() ? 0 : 1, tmp = 1;
-        for (int i = 1; i < sorted.size(); i++) {
-            tmp = sorted.get(i).equals(sorted.get(i-1).plusDays(1)) ? tmp + 1 : 1;
-            longest = Math.max(longest, tmp);
-        }
+        UserGameProfile gp = gameRepo.findByUserId(p.getUserId())
+                .orElseThrow(() -> new NotFoundException("Profile not found"));
 
         return StreakResponse.builder()
-                .currentStreak(cur).longestStreak(Math.max(longest, cur))
-                .lastStudyDate(dates.isEmpty() ? null : dates.get(0))
-                .studiedToday(logRepo.existsByUserIdAndStudyDate(uid, today))
-                .studyDates(dates).build();
+                .currentStreak(gp.getCurrentStreak())
+                .longestStreak(gp.getLongestStreak())
+                .build();
+    }
+
+    private void updateStreak(User user) {
+
+        UserGameProfile gp = gameRepo.findByUserId(user.getId())
+                .orElseGet(() -> gameRepo.save(
+                        UserGameProfile.builder().user(user).build()
+                ));
+
+        // 👉 timezone (fix cứng VN, muốn xịn thì lưu DB)
+        ZoneId zone = ZoneId.of("Asia/Ho_Chi_Minh");
+
+        Instant now = Instant.now();
+
+        LocalDate today = now.atZone(zone).toLocalDate();
+
+        LocalDate last = gp.getLastActivityAt() == null
+                ? null
+                : gp.getLastActivityAt().atZone(zone).toLocalDate();
+
+        // ❌ đã học hôm nay → ignore
+        if (last != null && last.equals(today)) return;
+
+        // ✅ streak logic
+        if (last != null && last.plusDays(1).equals(today)) {
+            gp.setCurrentStreak(gp.getCurrentStreak() + 1);
+        } else {
+            gp.setCurrentStreak(1);
+        }
+
+        if (gp.getCurrentStreak() > gp.getLongestStreak()) {
+            gp.setLongestStreak(gp.getCurrentStreak());
+        }
+
+        gp.setLastActivityAt(now);
+
+        gameRepo.save(gp);
     }
 
     // ── DAILY REMINDER SCHEDULER ──────────────────────────────
@@ -97,4 +126,39 @@ public class StudyLogService {
     public List<Object[]> getUsersToRemind() {
         return userRepo.findUsersToRemind(LocalDate.now(), LocalDate.now().minusDays(1));
     }
+    // ✅ NEW: weekly logs grouped by date
+    @Transactional(readOnly = true)
+    public Map<LocalDate, List<Map<String, Object>>> getWeeklyLogs(UserPrincipal p) {
+        UUID uid = p.getUserId();
+
+        LocalDate today = LocalDate.now();
+        LocalDate startOfWeek = today.minusDays(6);
+
+        List<StudyLog> logs = logRepo.findByUserAndDateRange(uid, startOfWeek, today);
+
+        Map<LocalDate, List<Map<String, Object>>> result = new LinkedHashMap<>();
+
+        for (StudyLog log : logs) {
+            LocalDate date = log.getStudyDate();
+
+            result.putIfAbsent(date, new ArrayList<>());
+
+            Map<String, Object> item = new HashMap<>();
+            item.put("lessonId", log.getLesson().getId());
+            item.put("lessonName", log.getLesson().getTitle());
+            item.put("duration", log.getDurationSeconds());
+            item.put("activityType", log.getActivityType());
+
+            item.put("score", log.getScore()); // thêm điểm
+
+            // nếu entity StudyLog có createdAt / createdDate / loggedAt thì thêm:
+            item.put("createdAt", log.getCreatedAt()); // hoặc log.getLoggedAt()
+
+            result.get(date).add(item);
+        }
+
+        return result;
+    }
 }
+
+

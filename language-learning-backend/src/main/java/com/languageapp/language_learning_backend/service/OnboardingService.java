@@ -81,6 +81,7 @@ public class OnboardingService {
 
         return OnboardingResponse.builder()
                 .onboardingId(ob.getId())
+                .targetLanguageId(lang.getId())
                 .targetLanguageName(lang.getName())
                 .targetLanguageCode(lang.getCode())
                 .targetLanguageFlag(lang.getFlag())
@@ -105,6 +106,7 @@ public class OnboardingService {
 
         return OnboardingResponse.builder()
                 .onboardingId(ob.getId())
+                .targetLanguageId(lang != null ? lang.getId() : null)
                 .targetLanguageName(lang != null ? lang.getName() : null)
                 .targetLanguageCode(lang != null ? lang.getCode() : null)
                 .targetLanguageFlag(lang != null ? lang.getFlag() : null)
