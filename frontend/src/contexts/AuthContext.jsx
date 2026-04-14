@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { login as apiLogin, logout as apiLogout } from '../services/authService';
-import { getProfile } from '../services/userService';
+import { getProfile, normalizeUserProfile } from '../services/userService';
 
 const AuthContext = createContext(null);
 
@@ -32,13 +32,14 @@ function hasUsableAccessToken() {
 }
 
 function profileToUser(p) {
+  const n = normalizeUserProfile(p);
   return {
-    id: p.id,
-    email: p.email,
-    firstName: p.firstName,
-    lastName: p.lastName,
-    avatarUrl: p.avatarUrl,
-    role: p.role,
+    id: n.id,
+    email: n.email,
+    firstName: n.firstName,
+    lastName: n.lastName,
+    avatarUrl: n.avatarUrl,
+    role: n.role,
   };
 }
 

@@ -14,7 +14,7 @@ import {
 } from '../services/learningPathService';
 import { getLanguages } from '../services/languageService';
 import { isAdmin, hasRole } from '../utils/roleUtils';
-import { DEMO_LEARNING_PATHS, DEMO_LANGUAGES_FOR_PATH } from '../data/learningPathDemo';
+
 
 const EMPTY_FORM = {
   title: '',
