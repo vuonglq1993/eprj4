@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 
 const JWT_SECRET = process.env.JWT_SECRET || 'eprj4_jwt_secret_key_2024';
 

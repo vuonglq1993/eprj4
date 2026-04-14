@@ -60,7 +60,6 @@ const menuConfig = [
       { id: 'tbl-payment-transactions', label: 'payment_transactions', path: '/data/payment-transactions' },
       { id: 'tbl-study-logs', label: 'study_logs', path: '/data/study-logs' },
       { id: 'tbl-subscriptions', label: 'subscriptions', path: '/data/subscriptions' },
-      { id: 'tbl-subscription-plans', label: 'subscription_plans', path: '/data/subscription-plans' },
     ],
   },
   {
@@ -97,7 +96,6 @@ const menuConfig = [
         label: 'Account',
         children: [
           { id: 'setting', label: 'Setting', path: '/setting' },
-          { id: 'security', label: 'Security', path: '/security' },
         ],
       },
     ],
