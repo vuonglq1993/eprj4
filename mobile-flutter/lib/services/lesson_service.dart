@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/lesson_model.dart';
+import '../config/app_config.dart';
 import 'token_service.dart';
 
 class LessonService {
-  static const String baseUrl = "http://10.0.2.2:8080/api/v1";
+  static String get baseUrl => AppConfig.apiBaseUrl;
 
   // Lấy danh sách bài học của một khóa học
   // static Future<List<Lesson>> getLessonsByCourse(String courseId) async {

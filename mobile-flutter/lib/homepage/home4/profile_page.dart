@@ -1259,6 +1259,7 @@
 
 //bản chỉnh sửa có view all achievenment
 import 'package:flutter/material.dart';
+import '../../config/app_config.dart';
 import '../../services/api_service.dart';
 import '../homepagesetting/language_selection_page.dart';
 import '../homepagesetting/theme_notifier.dart';
@@ -1321,7 +1322,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _fetchCompletedCourses() async {
-    const String apiUrl = "http://10.0.2.2:8080/api/v1/courses";
+    final String apiUrl = "${AppConfig.apiBaseUrl}/courses";
     try {
       final token = await TokenService.getToken();
       final response = await http.get(

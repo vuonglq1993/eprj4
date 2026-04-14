@@ -110,9 +110,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:language_learning/services/token_service.dart';
+import '../config/app_config.dart';
 
 class OnboardingService {
-  static const String baseUrl = "http://10.0.2.2:8080/api/v1/onboarding";
+  static String get baseUrl => "${AppConfig.apiBaseUrl}/onboarding";
 
   static Future<Map<String, dynamic>?> getStatus() async {
     try {

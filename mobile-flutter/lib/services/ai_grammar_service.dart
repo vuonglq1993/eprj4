@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/ai_grammar_model.dart';
+import '../config/app_config.dart';
 import 'token_service.dart';
 
 class AiGrammarService {
-  static const String baseUrl =
-      "http://10.0.2.2:8080/api/v1/ai/grammar/check";
+  static String get baseUrl => "${AppConfig.apiBaseUrl}/ai/grammar/check";
 
   static Future<GrammarCheckResponseModel> checkGrammar(
       GrammarCheckRequestModel request,

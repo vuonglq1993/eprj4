@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/ai_vocab_model.dart';
+import '../config/app_config.dart';
 import 'token_service.dart';
 
 class AiVocabService {
-  static const String generateUrl =
-      "http://10.0.2.2:8080/api/v1/ai/vocab/generate";
-  static const String gameUrl =
-      "http://10.0.2.2:8080/api/v1/ai/vocab/game";
+  static String get generateUrl =>
+      "${AppConfig.apiBaseUrl}/ai/vocab/generate";
+  static String get gameUrl =>
+      "${AppConfig.apiBaseUrl}/ai/vocab/game";
 
   static Future<Map<String, dynamic>> generateWordData(
       VocabRequestModel request,

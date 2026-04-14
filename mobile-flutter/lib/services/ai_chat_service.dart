@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/ai_chat_model.dart';
+import '../config/app_config.dart';
 import 'token_service.dart';
 
 class AiChatService {
-  static const String baseUrl = "http://10.0.2.2:8080/api/v1/ai/chat";
+  static String get baseUrl => "${AppConfig.apiBaseUrl}/ai/chat";
 
   static Future<AiChatResponseModel> sendMessage(
       AiChatRequestModel request,

@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/ai_pronunciation_model.dart';
+import '../config/app_config.dart';
 import 'token_service.dart';
 
 class AiPronunciationService {
-  static const String baseUrl =
-      "http://10.0.2.2:8080/api/v1/ai/pronunciation/analyze";
+  static String get baseUrl =>
+      "${AppConfig.apiBaseUrl}/ai/pronunciation/analyze";
 
   static Future<PronunciationResponseModel> analyze(
       PronunciationRequestModel request,

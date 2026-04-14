@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import '../config/app_config.dart';
 
 class UploadService {
-  static const cloudName = "dk2jfvopp";
-  static const uploadPreset = "user_avatar_preset"; // tạo trong Cloudinary
+  static String get cloudName => AppConfig.cloudinaryCloudName;
+  static String get uploadPreset => AppConfig.cloudinaryUploadPreset;
 
   static Future<String?> uploadAvatar(File file) async {
     try {

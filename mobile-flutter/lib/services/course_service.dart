@@ -2,10 +2,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/course_model.dart';
+import '../config/app_config.dart';
 import 'token_service.dart';
 
 class CourseService {
-  static const String baseUrl = "http://10.0.2.2:8080/api/v1/courses"; // 10.0.2.2 cho Android Emulator
+  static String get baseUrl => "${AppConfig.apiBaseUrl}/courses";
 
   static Future<List<Course>> getPublishedCourses() async {
     final token = await TokenService.getToken();
