@@ -101,7 +101,7 @@ public class ProgressService {
                     int pct = calcProgress(uid, c, plan);
 
                     double avg = e.getValue().stream()
-                            .mapToInt(UserProgress::getScore).average().orElse(0);
+                            .mapToInt(UserProgress::getBestScore).average().orElse(0);
                     System.out.println(">>> USER: " + uid);
                     System.out.println(">>> TIERS: " + tiers);
                     Page<Lesson> np = progressRepo.nextAccessibleLesson(
@@ -140,6 +140,7 @@ public class ProgressService {
                         .lessonType(pr.getLesson().getType().name())
                         .status(pr.getStatus())
                         .score(pr.getScore())
+                        .bestScore(pr.getBestScore())
                         .attempts(pr.getAttempts())
                         .timeSpentMinutes(pr.getTimeSpentSeconds() / 60)
                         .completedAt(pr.getCompletedAt())
@@ -197,7 +198,7 @@ public class ProgressService {
         User user = userRepo.findById(uid).orElseThrow(() -> new NotFoundException("User not found"));
 
         double avg = progressRepo.findByUserIdAndCourseId(uid, courseId)
-                .stream().mapToInt(UserProgress::getScore).average().orElse(0);
+                .stream().mapToInt(UserProgress::getBestScore).average().orElse(0);
 
         Instant completedAt = progressRepo.findByUserIdAndCourseId(uid, courseId)
                 .stream().map(UserProgress::getCompletedAt)
