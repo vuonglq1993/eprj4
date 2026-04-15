@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const { authenticate, JWT_SECRET } = require('../middleware/auth');
 const store = require('../data/store');
 

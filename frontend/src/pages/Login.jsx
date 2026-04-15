@@ -1,19 +1,20 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import AuthLayout from '../layouts/AuthLayout';
 import { FcGoogle } from 'react-icons/fc';
-import { FaFacebook } from 'react-icons/fa';
 import { loginWithGoogle } from '../services/authService';
 // Google OAuth cần cài @react-oauth/google + GOOGLE_CLIENT_ID — xem README
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const flashMessage = location.state?.message;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,6 +45,11 @@ function Login() {
         </p>
 
         <form className="auth-form__form" onSubmit={handleSubmit} noValidate>
+          {flashMessage && (
+            <div className="auth-form__error auth-form__error--info" role="status">
+              {flashMessage}
+            </div>
+          )}
           {error && (
             <div className="auth-form__error" role="alert">
               {error}
@@ -104,10 +110,6 @@ function Login() {
           >
             <FcGoogle size={20} />
             <span>Sign in with Google</span>
-          </button>
-          <button type="button" className="auth-form__social-btn">
-            <FaFacebook size={20} style={{ color: '#1877f2' }} />
-            <span>Sign in with Facebook</span>
           </button>
         </div>
 

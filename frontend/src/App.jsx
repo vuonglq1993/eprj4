@@ -22,7 +22,6 @@ import Billing from "./pages/Billing"
 import NewProject from "./pages/NewProject"
 import AllProjects from "./pages/AllProjects"
 import Invoice from "./pages/Invoice"
-import SecuritySetting from "./pages/SecuritySetting"
 import Kanban from "./pages/Kanban"
 import Wizard from "./pages/Wizard"
 import DataTables from "./pages/DataTables"
@@ -38,7 +37,6 @@ import ProgressPage from "./pages/ProgressPage"
 import PaymentTransactionsPage from "./pages/data/PaymentTransactionsPage"
 import StudyLogsPage from "./pages/data/StudyLogsPage"
 import SubscriptionsDataPage from "./pages/data/SubscriptionsPage"
-import SubscriptionPlansPage from "./pages/data/SubscriptionPlansPage"
 import LearningPathList from "./pages/LearningPathList"
 import TopicList from "./pages/TopicList"
 import OnboardingPage from "./pages/OnboardingPage"
@@ -60,7 +58,6 @@ import './styles/NewUser.css'
 import './styles/NewProject.css'
 import './styles/allprojects.css'
 import './styles/invoice.css'
-import './styles/SecuritySetting.css'
 import './styles/Kanban.css'
 import './styles/wizard.css'
 import './styles/DataTables.css'
@@ -229,15 +226,6 @@ function InvoiceRoute() {
     </ProtectedRoute>
   )
 }
-function SecuritySettingRoute() {
-  return (
-    <ProtectedRoute>
-      <AppLayout>
-        <SecuritySetting/>
-      </AppLayout>
-    </ProtectedRoute>
-  )
-}
 function KanbanRoute() {
   return (
     <ProtectedRoute>
@@ -377,16 +365,6 @@ function SubscriptionsDataRoute() {
   )
 }
 
-function SubscriptionPlansRoute() {
-  return (
-    <ProtectedRoute>
-      <AppLayout>
-        <SubscriptionPlansPage />
-      </AppLayout>
-    </ProtectedRoute>
-  )
-}
-
 function LearningPathListRoute() {
   return (
     <ProtectedRoute>
@@ -463,7 +441,6 @@ function App() {
           <Route path="/new-project" element={<NewProjectRoute />} />
           <Route path="/allprojects" element={<AllProjectsRoute />} />
           <Route path="/invoice" element={<InvoiceRoute />} />
-          <Route path="/security" element={<SecuritySettingRoute />} />
           <Route path="/kanban" element={<KanbanRoute />} />
           <Route path="/wizard" element={<WizardRoute />} />
           <Route path="/datatables" element={<DataTablesRoute />} />
@@ -483,7 +460,6 @@ function App() {
           <Route path="/data/payment-transactions" element={<PaymentTransactionsRoute />} />
           <Route path="/data/study-logs" element={<StudyLogsRoute />} />
           <Route path="/data/subscriptions" element={<SubscriptionsDataRoute />} />
-          <Route path="/data/subscription-plans" element={<SubscriptionPlansRoute />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
