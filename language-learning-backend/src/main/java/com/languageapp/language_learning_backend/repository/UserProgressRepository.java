@@ -64,10 +64,10 @@ public interface UserProgressRepository extends JpaRepository<UserProgress, UUID
     @Query("SELECT COALESCE(SUM(p.attempts),0) FROM UserProgress p WHERE p.user.id=:uid")
     long sumAttempts(@Param("uid") UUID userId);
 
-    @Query("SELECT COALESCE(AVG(p.score),0) FROM UserProgress p WHERE p.user.id=:uid AND p.status='COMPLETED'")
+    @Query("SELECT COALESCE(AVG(p.bestScore),0) FROM UserProgress p WHERE p.user.id=:uid AND p.status='COMPLETED'")
     double avgScore(@Param("uid") UUID userId);
 
-    @Query("SELECT l.type, AVG(p.score), COUNT(p) FROM UserProgress p JOIN p.lesson l WHERE p.user.id=:uid AND p.status='COMPLETED' GROUP BY l.type")
+    @Query("SELECT l.type, AVG(p.bestScore), COUNT(p) FROM UserProgress p JOIN p.lesson l WHERE p.user.id=:uid AND p.status='COMPLETED' GROUP BY l.type")
     List<Object[]> avgScoreByType(@Param("uid") UUID userId);
 
     // ❌ DEPRECATED – ĐỪNG DÙNG NỮA

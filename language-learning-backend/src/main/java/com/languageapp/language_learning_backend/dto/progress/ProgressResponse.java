@@ -14,6 +14,7 @@ public class ProgressResponse {
     private String         lessonType;
     private ProgressStatus status;
     private Integer        score;
+    private Integer        bestScore;
     private Integer        attempts;
     private Integer        timeSpentMinutes;
     private Instant completedAt;

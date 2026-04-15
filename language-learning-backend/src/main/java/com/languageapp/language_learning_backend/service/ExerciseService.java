@@ -101,6 +101,13 @@ public class ExerciseService {
                         .course(courseRepo.getReferenceById(courseId))
                         .lesson(lessonRepo.getReferenceById(lessonId)).build());
 
+        // Nếu lesson đã COMPLETED và user làm lại → reset session score
+        if (progress.getStatus() == ProgressStatus.COMPLETED) {
+            progress.setScore(0);
+            progress.setStatus(ProgressStatus.IN_PROGRESS);
+            progress.setCompletedAt(null);
+        }
+
         progress.setAttempts(progress.getAttempts() + 1);
         progress.setScore(progress.getScore() + pointsEarned);
 
@@ -117,6 +124,10 @@ public class ExerciseService {
                 progress.setStartedAt(Instant.now());
             }
         }
+
+        // Lưu bestScore = điểm tốt nhất qua các lần làm
+        progress.setBestScore(Math.max(progress.getBestScore(), progress.getScore()));
+
         progressRepo.save(progress);
 
         // ✅ Tính coursePercent theo accessible lessons của plan (không dùng totalLessons)
@@ -176,21 +187,53 @@ public class ExerciseService {
             JsonNode q = mapper.readTree(ex.getQuestionData());
             return switch (ex.getType()) {
                 case MULTIPLE_CHOICE, LISTENING_CHOICE -> {
-                    int ci = q.get("correctIndex").asInt();
-                    boolean ok = ci == Integer.parseInt(answer.trim());
+                    JsonNode opts = q.get("options");
+                    int ci;
+                    if (q.has("correctIndex") && !q.get("correctIndex").isNull()) {
+                        ci = q.get("correctIndex").asInt();
+                    } else {
+                        // fallback: tìm index theo text "correct"
+                        String correctText = q.has("correct") ? q.get("correct").asText() : "";
+                        ci = -1;
+                        for (int i = 0; i < opts.size(); i++) {
+                            if (opts.get(i).asText().equalsIgnoreCase(correctText)) { ci = i; break; }
+                        }
+                    }
+                    boolean ok = ci >= 0 && ci == Integer.parseInt(answer.trim());
+                    String correctAnswerText = (ci >= 0 && opts != null) ? opts.get(ci).asText() : "";
                     yield new GradeResult(ok, ok ? ex.getPoints() : 0,
-                            q.get("options").get(ci).asText(),
+                            correctAnswerText,
                             q.has("explanation") ? q.get("explanation").asText() : null);
                 }
                 case FILL_IN_BLANK, TRANSLATION -> {
-                    String ca = q.get("answer").asText();
-                    boolean ok = ca.trim().equalsIgnoreCase(answer.trim());
+                    // support "answer" hoặc "correct" field
+                    String ca = q.has("answer") && !q.get("answer").isNull()
+                            ? q.get("answer").asText()
+                            : q.has("correct") ? q.get("correct").asText() : "";
+                    boolean ok = !ca.isEmpty() && ca.trim().equalsIgnoreCase(answer.trim());
                     yield new GradeResult(ok, ok ? ex.getPoints() : 0, ca,
                             q.has("explanation") ? q.get("explanation").asText() : null);
                 }
                 case SPEAKING -> new GradeResult(true, ex.getPoints(), "N/A",
                         "Graded by AI pronunciation check");
-                case DRAG_DROP -> {
+                case MATCHING, DRAG_DROP -> {
+                    // Pairs matching exercise
+                    if (q.has("pairs")) {
+                        String[] userAnswers = answer.split("\\|", -1);
+                        JsonNode pairs = q.get("pairs");
+                        boolean allCorrect = pairs.size() == userAnswers.length;
+                        if (allCorrect) {
+                            for (int i = 0; i < pairs.size(); i++) {
+                                String correctRight = pairs.get(i).get("right").asText();
+                                if (!correctRight.trim().equalsIgnoreCase(userAnswers[i].trim())) {
+                                    allCorrect = false; break;
+                                }
+                            }
+                        }
+                        yield new GradeResult(allCorrect, allCorrect ? ex.getPoints() : 0,
+                                "All pairs matched correctly",
+                                q.has("explanation") ? q.get("explanation").asText() : null);
+                    }
                     String type = q.has("type") ? q.get("type").asText() : "FILL_BLANK";
                     if ("WORD_ORDER".equals(type)) {
                         String correctOrder = q.get("correctOrder").toString()
