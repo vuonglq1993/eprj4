@@ -36,4 +36,10 @@ public class StudyLogController {
     public ResponseEntity<StreakResponse> getStreak(@AuthenticationPrincipal UserPrincipal p) {
         return ResponseEntity.ok(service.getStreak(p));
     }
+
+    @Operation(summary = "Lấy danh sách học theo tuần (group by date)")
+    @GetMapping("/weekly")
+    public ResponseEntity<?> getWeeklyLogs(@AuthenticationPrincipal UserPrincipal p) {
+        return ResponseEntity.ok(service.getWeeklyLogs(p));
+    }
 }

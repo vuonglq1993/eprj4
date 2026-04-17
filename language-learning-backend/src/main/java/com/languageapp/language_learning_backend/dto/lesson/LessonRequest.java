@@ -13,4 +13,9 @@ public class LessonRequest {
     @Min(0)                         private Integer    orderIndex      = 0;
     @Min(0)                         private Integer    durationMinutes = 0;
     private Boolean    isFree          = false;
+    /**
+     * PREVIEW / MONTHLY / UNLIMITED.
+     * Nếu null: backend sẽ tự map PREVIEW khi isFree=true, ngược lại UNLIMITED.
+     */
+    private String     accessTier;
 }

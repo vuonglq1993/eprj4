@@ -11,6 +11,7 @@ public class ExerciseResponse {
     private String       title;
     private ExerciseType type;
     private String       questionData;
+    private String       audioUrl;
     private Integer      orderIndex;
     private Integer      points;
     private Integer      timeLimitSeconds;

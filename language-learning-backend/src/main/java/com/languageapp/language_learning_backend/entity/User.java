@@ -59,6 +59,9 @@ public class User {
     @Column(nullable = false) @Builder.Default private Boolean emailVerified = false;
     @Column(nullable = false) @Builder.Default private Boolean isActive      = true;
 
+    @Column(length = 10) @Builder.Default
+    private String uiLanguage = "vi";
+
     @CreationTimestamp @Column(updatable = false) private Instant createdAt;
     @UpdateTimestamp private Instant updatedAt;
 
@@ -67,7 +70,7 @@ public class User {
     private Subscription subscription;
 
     public enum Role         { STUDENT, TEACHER, ADMIN }
-    public enum AuthProvider { LOCAL, GOOGLE, FACEBOOK, APPLE }
+    public enum AuthProvider { LOCAL, GOOGLE}
 
     public String  getFullName() { return firstName + (lastName != null ? " " + lastName : ""); }
     public boolean isPremium()   { return subscription != null && subscription.isPremium(); }

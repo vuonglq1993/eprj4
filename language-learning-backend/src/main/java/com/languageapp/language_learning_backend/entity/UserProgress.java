@@ -43,6 +43,7 @@ public class UserProgress {
     private ProgressStatus status = ProgressStatus.NOT_STARTED;
 
     @Column(nullable = false) @Builder.Default private Integer score            = 0;
+    @Column(nullable = false) @Builder.Default private Integer bestScore        = 0;
     @Column(nullable = false) @Builder.Default private Integer attempts         = 0;
     @Column(nullable = false) @Builder.Default private Integer timeSpentSeconds = 0;
 

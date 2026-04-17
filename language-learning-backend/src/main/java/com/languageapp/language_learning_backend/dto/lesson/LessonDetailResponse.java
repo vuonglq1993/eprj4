@@ -18,6 +18,10 @@ public class LessonDetailResponse {
     private Integer       orderIndex;
     private Integer       durationMinutes;
     private Boolean       isFree;
+    /** FE dùng để render lock + CTA mua gói */
+    private Boolean       isAccessible;
+    /** Gói tối thiểu để truy cập (MONTHLY hoặc UNLIMITED). Null nếu ai cũng xem được */
+    private String        requiredPlan;
     private Integer       totalExercises;
     private Instant       createdAt;
     // Populated nếu user đã login

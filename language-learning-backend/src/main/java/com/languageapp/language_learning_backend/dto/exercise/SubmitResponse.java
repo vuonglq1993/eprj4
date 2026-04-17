@@ -1,6 +1,7 @@
 package com.languageapp.language_learning_backend.dto.exercise;
 
 import lombok.*;
+import java.util.UUID;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class SubmitResponse {
@@ -9,4 +10,7 @@ public class SubmitResponse {
     private String  correctAnswer;
     private String  explanation;
     private Integer totalLessonScore;   // tổng điểm bài học sau khi nộp
+    private Boolean isCourseCompleted;  // ✅ thêm vào
+    private Boolean isTimeout;
+    private UUID courseId;
 }

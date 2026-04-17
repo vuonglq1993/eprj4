@@ -72,26 +72,22 @@ public class SwaggerConfig {
     // ── TAGS — thứ tự hiển thị trong Swagger UI ──────────────
     private List<Tag> tags() {
         return List.of(
-                new Tag().name("01 · Users & Auth")
-                        .description("Đăng ký, đăng nhập, refresh token, xác thực email, reset mật khẩu"),
-                new Tag().name("02 · Languages")
-                        .description("Danh sách ngôn ngữ học (en, ja, ko, zh, fr, vi...)"),
-                new Tag().name("03 · Courses")
-                        .description("Khoá học — tìm kiếm, filter, publish/unpublish"),
-                new Tag().name("04 · Lessons")
-                        .description("Bài học trong khoá — nội dung, video, audio"),
-                new Tag().name("05 · Exercises")
-                        .description("Bài tập — multiple choice, fill-in-blank, speaking, matching. Tự động chấm điểm"),
-                new Tag().name("06 · Progress")
-                        .description("Dashboard học tập, tiến độ theo khoá, stats tuần/tháng/năm, chứng chỉ"),
-                new Tag().name("07 · Study Logs & Streak")
-                        .description("Ghi nhận phiên học, streak liên tiếp, heatmap hoạt động"),
-                new Tag().name("08 · Subscriptions")
-                        .description("Trạng thái Premium, huỷ auto-renew"),
-                new Tag().name("09 · Payments")
-                        .description("Tạo đơn thanh toán PayPal / MoMo, lịch sử giao dịch, webhook IPN"),
-                new Tag().name("10 · AI Features")
-                        .description("Chat gia sư AI, kiểm tra ngữ pháp, chấm phát âm, bài kiểm tra trình độ CEFR")
+                new Tag().name("01 · Users & Auth"),
+                new Tag().name("02 · Languages"),
+                new Tag().name("03 · Courses"),
+                new Tag().name("04 · Lessons"),
+                new Tag().name("05 · Exercises"),
+                new Tag().name("06 · Progress"),
+                new Tag().name("07 · Study Logs & Streak"),
+                new Tag().name("08 · Subscriptions"),
+                new Tag().name("09 · Payments"),
+                new Tag().name("10 · AI Features"),
+                new Tag().name("11 · Topics"),
+                new Tag().name("12 · Learning Paths"),
+                new Tag().name("13 · Gamification"),
+                new Tag().name("14 · Something"),
+                new Tag().name("15 · Review Mistakes"),
+                new Tag().name("16 · Reports")
         );
     }
 

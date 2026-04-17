@@ -23,10 +23,8 @@ public class UserService {
     private final UserRepository userRepo;
     private final PasswordEncoder encoder;
 
-    // ✅ JWT ENABLED
-    private final JwtTokenProvider jwt;
 
-    // ❌ Redis removed completely
+    private final JwtTokenProvider jwt;
 
     // TODO enable email OTP verification later
     // private final EmailService emailService;
@@ -202,6 +200,9 @@ public class UserService {
         if (req.getAvatarUrl() != null)
             user.setAvatarUrl(req.getAvatarUrl());
 
+        if (req.getUiLanguage() != null)
+            user.setUiLanguage(req.getUiLanguage());
+
         return toProfileResponse(userRepo.save(user));
     }
 
@@ -269,6 +270,7 @@ public class UserService {
                         ? u.getSubscription().getPlan().name()
                         : "FREE")
                 .isPremium(u.isPremium())
+                .uiLanguage(u.getUiLanguage())
                 .build();
     }
 

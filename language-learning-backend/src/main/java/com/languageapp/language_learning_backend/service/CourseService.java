@@ -3,6 +3,7 @@ import com.languageapp.language_learning_backend.dto.course.*;
 import com.languageapp.language_learning_backend.dto.lesson.LessonSummaryResponse;
 import com.languageapp.language_learning_backend.entity.*;
 import com.languageapp.language_learning_backend.entity.Course.Level;
+import com.languageapp.language_learning_backend.entity.Lesson.AccessTier;
 import com.languageapp.language_learning_backend.exception.GlobalExceptionHandler.*;
 import com.languageapp.language_learning_backend.repository.*;
 import com.languageapp.language_learning_backend.security.UserPrincipal;
@@ -22,6 +23,49 @@ public class CourseService {
     private final LanguageRepository     languageRepo;
     private final UserRepository         userRepo;
     private final UserProgressRepository progressRepo;
+    private final LessonRepository       lessonRepo;
+
+    private Subscription.Plan getPlan(UserPrincipal p) {
+        if (p == null) return Subscription.Plan.FREE;
+        if ("ADMIN".equals(p.getRole()) || "TEACHER".equals(p.getRole())) return Subscription.Plan.YEARLY;
+        return userRepo.findById(p.getUserId())
+                .map(u -> u.getSubscription() != null ? u.getSubscription().getPlan() : Subscription.Plan.FREE)
+                .orElse(Subscription.Plan.FREE);
+    }
+
+    private int calcAccessibleCourseProgressPercent(UUID userId, Course c, Subscription.Plan plan) {
+        if (userId == null) return 0;
+        if (c.getTotalLessons() == 0) return 0;
+        if (plan == Subscription.Plan.THREE_MONTHS || plan == Subscription.Plan.YEARLY) {
+            return progressRepo.calculateProgress(userId, c.getId(), c.getTotalLessons());
+        }
+        if (plan == Subscription.Plan.MONTHLY) {
+            var tiers = List.of(AccessTier.PREVIEW, AccessTier.MONTHLY);
+            long total = lessonRepo.countAccessible(c.getId(), tiers);
+            if (total == 0) return 0;
+            long done = progressRepo.countCompletedAccessible(userId, c.getId(), tiers);
+            return (int) (done * 100 / total);
+        }
+        // FREE: chỉ tính preview
+        var tiers = List.of(AccessTier.PREVIEW);
+        long total = lessonRepo.countAccessible(c.getId(), tiers);
+        if (total == 0) return 0;
+        long done = progressRepo.countCompletedAccessible(userId, c.getId(), tiers);
+        return (int) (done * 100 / total);
+    }
+
+    private boolean canAccessLesson(Lesson l, UserPrincipal p) {
+        if (Boolean.TRUE.equals(l.getIsFree())) return true;
+        Subscription.Plan plan = getPlan(p);
+        if (plan == Subscription.Plan.THREE_MONTHS || plan == Subscription.Plan.YEARLY) return true;
+        if (plan == Subscription.Plan.MONTHLY) return l.getAccessTier() == AccessTier.MONTHLY;
+        return false;
+    }
+
+    private String requiredPlanLabel(Lesson l) {
+        if (Boolean.TRUE.equals(l.getIsFree())) return null;
+        return (l.getAccessTier() == AccessTier.MONTHLY) ? "MONTHLY" : "UNLIMITED";
+    }
 
     // ── LIST (public) ─────────────────────────────────────────
     @Transactional(readOnly = true)
@@ -45,8 +89,7 @@ public class CourseService {
                 .stream().collect(Collectors.toMap(pr -> pr.getLesson().getId(), pr -> pr.getStatus().name()))
                 : Collections.emptyMap();
 
-        int pct = (p != null && c.getTotalLessons() > 0)
-                ? progressRepo.calculateProgress(p.getUserId(), id, c.getTotalLessons()) : 0;
+        int pct = (p != null) ? calcAccessibleCourseProgressPercent(p.getUserId(), c, getPlan(p)) : 0;
 
         return CourseDetailResponse.builder()
                 .id(c.getId()).title(c.getTitle()).description(c.getDescription())
@@ -56,13 +99,23 @@ public class CourseService {
                 .createdByName(c.getCreatedBy() != null ? c.getCreatedBy().getFullName() : null)
                 .createdAt(c.getCreatedAt()).progressPercent(pct)
                 .lessons(c.getLessons().stream()
-                        .map(l -> LessonSummaryResponse.builder()
-                                .id(l.getId()).title(l.getTitle()).type(l.getType())
-                                .orderIndex(l.getOrderIndex()).durationMinutes(l.getDurationMinutes())
-                                .isFree(l.getIsFree())
-                                .progressStatus(progressMap.getOrDefault(l.getId(), "NOT_STARTED"))
-                                .build())
-                        .collect(Collectors.toList()))
+                        .map(l -> {
+                            boolean canAccess = canAccessLesson(l, p) || isAdminOrOwner(p, c);
+
+                            return LessonSummaryResponse.builder()
+                                    .id(l.getId())
+                                    .title(l.getTitle())
+                                    .type(l.getType())
+                                    .orderIndex(l.getOrderIndex())
+                                    .durationMinutes(l.getDurationMinutes())
+                                    .isFree(l.getIsFree())
+                                    .isAccessible(canAccess)
+                                    .requiredPlan(canAccess ? null : requiredPlanLabel(l))
+                                    .progressStatus(progressMap.getOrDefault(l.getId(), "NOT_STARTED"))
+                                    .build();
+                        })
+                        .collect(Collectors.toList())
+                )
                 .build();
     }
 
@@ -134,8 +187,7 @@ public class CourseService {
     private PageResponse<CourseResponse> toPage(Page<Course> pg, int page, int size, UserPrincipal p) {
         return PageResponse.<CourseResponse>builder()
                 .content(pg.getContent().stream().map(c -> {
-                    int pct = (p != null && c.getTotalLessons() > 0)
-                            ? progressRepo.calculateProgress(p.getUserId(), c.getId(), c.getTotalLessons()) : 0;
+                    int pct = (p != null) ? calcAccessibleCourseProgressPercent(p.getUserId(), c, getPlan(p)) : 0;
                     return toCourseResponse(c, pct);
                 }).collect(Collectors.toList()))
                 .page(page).size(size).totalElements(pg.getTotalElements())

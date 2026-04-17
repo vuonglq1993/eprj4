@@ -20,4 +20,5 @@ public class UserProfileResponse {
     private Instant createdAt;
     private String        subscriptionPlan;
     private Boolean       isPremium;
+    private String uiLanguage;
 }

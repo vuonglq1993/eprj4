@@ -1,19 +1,19 @@
 package com.languageapp.language_learning_backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.annotations.*;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "exercise_attempts", indexes = {
-        @Index(name = "idx_attempt_user", columnList = "user_id"),
-        @Index(name = "idx_attempt_exercise", columnList = "exercise_id"),
-        @Index(name = "idx_attempt_progress", columnList = "progress_id")
+@Table(name = "user_exercise_attempts", indexes = {
+        @Index(name = "idx_attempt_user_lesson", columnList = "user_id, lesson_id"),
+        @Index(name = "idx_attempt_wrong", columnList = "user_id, is_correct")
 })
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class ExerciseAttempt {
@@ -33,27 +33,20 @@ public class ExerciseAttempt {
     private Exercise exercise;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "progress_id", nullable = false)
-    private UserProgress progress;
+    @JoinColumn(name = "lesson_id", nullable = false)
+    private Lesson lesson;
 
-    // ⏱ thời gian bắt đầu
-    private Instant startedAt;
+    @Column(columnDefinition = "JSON")
+    private String selectedAnswer;
 
-    // ⏱ thời gian submit
-    private Instant submittedAt;
-
-    // ⏱ thời gian làm (seconds)
-    private Integer durationSeconds;
-
-    // 🎯 kết quả
+    @Column(nullable = false)
     private Boolean isCorrect;
 
-    private Integer score;
+    @Column(nullable = false) @Builder.Default
+    private Integer score = 0;
 
-    // ❌ timeout hay không
-    private Boolean isTimeout;
+    private Integer timeSpentSeconds;
 
-    // lưu answer user (JSON)
-    @Column(columnDefinition = "TEXT")
-    private String userAnswer;
+    @CreationTimestamp
+    private Instant submittedAt;
 }

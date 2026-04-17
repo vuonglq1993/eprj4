@@ -65,5 +65,5 @@ public class PaymentTransaction {
 
     public enum Gateway  { MOMO, ZALOPAY, VNPAY, PAYPAL, STRIPE }
     public enum TxStatus { PENDING, SUCCESS, FAILED, REFUNDED, CANCELLED }
-    public enum Plan     { MONTHLY, YEARLY }
+    public enum Plan     { MONTHLY, THREE_MONTHS, YEARLY }
 }
