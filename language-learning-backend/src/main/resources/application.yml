@@ -83,3 +83,12 @@ groq:
   api-key: ${GROQ_API_KEY}
   model: llama-3.3-70b-versatile
   base-url: https://api.groq.com/openai/v1/chat/completions
+
+
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME}
+    api-key: ${CLOUDINARY_API_KEY}
+    api-secret: ${CLOUDINARY_API_SECRET}
+
+firebase:
+  config-path: firebase-service-account.json

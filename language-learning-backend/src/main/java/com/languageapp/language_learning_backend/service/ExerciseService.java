@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.languageapp.language_learning_backend.entity.Record;
+=======
 
 import java.time.Instant;
 import java.util.*;
@@ -31,6 +33,7 @@ public class ExerciseService {
     private final CourseService          courseService;
     private final LessonService          lessonService;
     private final ObjectMapper           mapper;
+    private final RecordRepository recordRepo;
 
     // ── LIST ──────────────────────────────────────────────────
     @Transactional(readOnly = true)
@@ -261,10 +264,23 @@ public class ExerciseService {
     private record GradeResult(boolean correct, int points, String correctAnswer, String explanation) {}
 
     private ExerciseResponse toResponse(Exercise e) {
+
+        List<Record> records = recordRepo.findByExercise_Id(e.getId());
+
+        String audioUrl = records.isEmpty()
+                ? null
+                : records.get(0).getAudioUrl();
+
         return ExerciseResponse.builder()
-                .id(e.getId()).lessonId(e.getLesson().getId()).title(e.getTitle())
-                .type(e.getType()).questionData(e.getQuestionData())
-                .orderIndex(e.getOrderIndex()).points(e.getPoints())
-                .timeLimitSeconds(e.getTimeLimitSeconds()).build();
+                .id(e.getId())
+                .lessonId(e.getLesson().getId())
+                .title(e.getTitle())
+                .type(e.getType())
+                .questionData(e.getQuestionData())
+                .audioUrl(audioUrl)
+                .orderIndex(e.getOrderIndex())
+                .points(e.getPoints())
+                .timeLimitSeconds(e.getTimeLimitSeconds())
+                .build();
     }
 }
