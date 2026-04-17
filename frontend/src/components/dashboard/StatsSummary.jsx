@@ -1,9 +1,4 @@
-const stats = [
-  { label: 'Users', value: '35k', subtitle: 'Page views per minute' },
-  { label: 'Clicks', value: '1m', subtitle: 'Page views per minute' },
-  { label: 'Sales', value: '$345', subtitle: 'Page views per minute' },
-  { label: 'Items', value: '68', subtitle: 'Page views per minute' },
-]
+const stats = [{ label: 'Users', value: '35k', subtitle: 'Page views per minute' }]
 
 function StatsSummary() {
   return (

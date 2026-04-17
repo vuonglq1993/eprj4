@@ -22,7 +22,6 @@ import Billing from "./pages/Billing"
 import NewProject from "./pages/NewProject"
 import AllProjects from "./pages/AllProjects"
 import Invoice from "./pages/Invoice"
-import SecuritySetting from "./pages/SecuritySetting"
 import Kanban from "./pages/Kanban"
 import Wizard from "./pages/Wizard"
 import DataTables from "./pages/DataTables"
@@ -30,6 +29,18 @@ import Calendar from "./pages/Calendar"
 import NewProduct from "./pages/NewProduct"
 import EditProduct from "./pages/EditProduct"
 import ProductList from "./pages/ProductList"
+import LanguageList from "./pages/LanguageList"
+import CourseList from "./pages/CourseList"
+import LessonList from "./pages/LessonList"
+import ExerciseList from "./pages/ExerciseList"
+import ProgressPage from "./pages/ProgressPage"
+import PaymentTransactionsPage from "./pages/data/PaymentTransactionsPage"
+import StudyLogsPage from "./pages/data/StudyLogsPage"
+import SubscriptionsDataPage from "./pages/data/SubscriptionsPage"
+import LearningPathList from "./pages/LearningPathList"
+import TopicList from "./pages/TopicList"
+import OnboardingPage from "./pages/OnboardingPage"
+import SubscriptionPlansAdminPage from "./pages/SubscriptionPlansAdminPage"
 
 
 import './styles/layout.css'
@@ -47,7 +58,6 @@ import './styles/NewUser.css'
 import './styles/NewProject.css'
 import './styles/allprojects.css'
 import './styles/invoice.css'
-import './styles/SecuritySetting.css'
 import './styles/Kanban.css'
 import './styles/wizard.css'
 import './styles/DataTables.css'
@@ -55,6 +65,16 @@ import './styles/calendar.css'
 import './styles/newproduct.css'
 import './styles/editproduct.css'
 import './styles/productlist.css'
+import './styles/languagelist.css'
+import './styles/courselist.css'
+import './styles/lessonlist.css'
+import './styles/exerciselist.css'
+import './styles/progresspage.css'
+import './styles/dataTablesPages.css'
+import './styles/learningpathlist.css'
+import './styles/topiclist.css'
+import './styles/onboarding.css'
+import './styles/subscriptionplansadmin.css'
 
 
 
@@ -206,15 +226,6 @@ function InvoiceRoute() {
     </ProtectedRoute>
   )
 }
-function SecuritySettingRoute() {
-  return (
-    <ProtectedRoute>
-      <AppLayout>
-        <SecuritySetting/>
-      </AppLayout>
-    </ProtectedRoute>
-  )
-}
 function KanbanRoute() {
   return (
     <ProtectedRoute>
@@ -278,6 +289,121 @@ function ProductListRoute() {
     </ProtectedRoute>
   )
 }
+function LanguageListRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <LanguageList />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+function CourseListRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <CourseList />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+function LessonListRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <LessonList />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+function ExerciseListRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <ExerciseList />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+function ProgressPageRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <ProgressPage />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function PaymentTransactionsRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <PaymentTransactionsPage />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function StudyLogsRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <StudyLogsPage />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function SubscriptionsDataRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <SubscriptionsDataPage />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function LearningPathListRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <LearningPathList />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function TopicListRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <TopicList />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function OnboardingPageRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <OnboardingPage />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function SubscriptionPlansAdminRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <SubscriptionPlansAdminPage />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
 
 function LoginRoute() {
   const { isAuthenticated } = useAuth()
@@ -315,7 +441,6 @@ function App() {
           <Route path="/new-project" element={<NewProjectRoute />} />
           <Route path="/allprojects" element={<AllProjectsRoute />} />
           <Route path="/invoice" element={<InvoiceRoute />} />
-          <Route path="/security" element={<SecuritySettingRoute />} />
           <Route path="/kanban" element={<KanbanRoute />} />
           <Route path="/wizard" element={<WizardRoute />} />
           <Route path="/datatables" element={<DataTablesRoute />} />
@@ -323,6 +448,18 @@ function App() {
           <Route path="/new-product" element={<NewProductRoute />} />
            <Route path="/edit-product" element={<EditProductRoute />} />
           <Route path="/product-list" element={<ProductListRoute />} />
+          <Route path="/languages" element={<LanguageListRoute />} />
+          <Route path="/courses" element={<CourseListRoute />} />
+          <Route path="/lessons" element={<LessonListRoute />} />
+          <Route path="/exercises" element={<ExerciseListRoute />} />
+          <Route path="/progress" element={<ProgressPageRoute />} />
+          <Route path="/learning-paths" element={<LearningPathListRoute />} />
+          <Route path="/topics" element={<TopicListRoute />} />
+          <Route path="/onboarding" element={<OnboardingPageRoute />} />
+          <Route path="/admin/subscription-plans" element={<SubscriptionPlansAdminRoute />} />
+          <Route path="/data/payment-transactions" element={<PaymentTransactionsRoute />} />
+          <Route path="/data/study-logs" element={<StudyLogsRoute />} />
+          <Route path="/data/subscriptions" element={<SubscriptionsDataRoute />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

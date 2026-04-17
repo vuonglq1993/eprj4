@@ -1,1004 +1,23 @@
-// import 'package:flutter/material.dart';
-// import '../../services/fake_auth.dart';
-// import '../../quiz/quiz_page.dart';
-// import '../home3/progress_page.dart';
-// import '../home2/task_page.dart';
-// import '../home4/profile_page.dart';
-// import '../home4/activity_page.dart';
-// import '../homepagesetting/settings_page.dart';
-// import '../homepagesetting/theme_notifier.dart';
-// import '../../data/task_question_data.dart';
-// import '../../notification/notification_page.dart';
-// import '../../models/notification_model.dart';
-// import '../../services/notification_service.dart';
-//
-// class HomePage extends StatefulWidget {
-//   const HomePage({super.key});
-//
-//   @override
-//   State<HomePage> createState() => _HomePageState();
-// }
-//
-// class _HomePageState extends State<HomePage> {
-//   int currentIndex = 0;
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return ValueListenableBuilder<ThemeMode>(
-//       valueListenable: themeNotifier,
-//       builder: (context, mode, child) {
-//         final isDark = mode == ThemeMode.dark;
-//         final theme = Theme.of(context);
-//
-//         return Scaffold(
-//           backgroundColor: theme.scaffoldBackgroundColor,
-//           body: _getSelectedPage(),
-//           bottomNavigationBar: BottomNavigationBar(
-//             currentIndex: currentIndex,
-//             type: BottomNavigationBarType.fixed,
-//             onTap: (index) {
-//               setState(() {
-//                 currentIndex = index;
-//               });
-//             },
-//             selectedItemColor: const Color(0xFF5F2EFF),
-//             unselectedItemColor: isDark ? Colors.grey[500] : Colors.grey,
-//             backgroundColor: theme.cardColor,
-//             showSelectedLabels: true,
-//             showUnselectedLabels: false,
-//             items: const [
-//               BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
-//               BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: "Task"),
-//               BottomNavigationBarItem(icon: Icon(Icons.pie_chart_outline), label: "Stats"),
-//               BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Profile"),
-//             ],
-//           ),
-//         );
-//       },
-//     );
-//   }
-//
-//   Widget _getSelectedPage() {
-//     switch (currentIndex) {
-//       case 0:
-//         return _buildHomeContent();
-//       case 1:
-//         return TaskPage(onBack: () => setState(() => currentIndex = 0));
-//       case 2:
-//         return ProgressPage(onBack: () => setState(() => currentIndex = 0));
-//       case 3:
-//         return ProfilePage(
-//           onBack: () => setState(() => currentIndex = 0),
-//           onOpenActivity: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ActivityPage())),
-//           onOpenSettings: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage())),
-//         );
-//       default:
-//         return _buildHomeContent();
-//     }
-//   }
-//
-//   Widget _buildHomeContent() {
-//     final theme = Theme.of(context);
-//     final isDark = themeNotifier.value == ThemeMode.dark;
-//
-//     return Column(
-//       children: [
-//         Container(
-//           padding: const EdgeInsets.fromLTRB(20, 50, 20, 25),
-//           decoration: const BoxDecoration(
-//             color: Color(0xFF5F2EFF),
-//             borderRadius: BorderRadius.only(
-//               bottomLeft: Radius.circular(30),
-//               bottomRight: Radius.circular(30),
-//             ),
-//           ),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                 children: [
-//                   CircleAvatar(
-//                     radius: 22,
-//                     backgroundImage: FakeAuth.avatar != null
-//                         ? FileImage(FakeAuth.avatar!)
-//                         : const NetworkImage("https://i.pravatar.cc/150?img=3") as ImageProvider,
-//                   ),
-//                   // const Icon(Icons.notifications_none, color: Colors.white, size: 26),
-//                   //notification
-//                   Stack(
-//                     children: [
-//
-//                       IconButton(
-//                         icon: const Icon(Icons.notifications_none,
-//                             color: Colors.white, size: 26),
-//
-//                         onPressed: () {
-//                           Navigator.push(
-//                             context,
-//                             MaterialPageRoute(
-//                               builder: (_) => const NotificationPage(),
-//                             ),
-//                           ).then((_) {
-//                             setState(() {});
-//                           });
-//                         },
-//                       ),
-//
-//                       if (NotificationService.unreadCount() > 0)
-//                         Positioned(
-//                           right: 0,
-//                           top: 0,
-//                           child: Container(
-//                             padding: const EdgeInsets.all(4),
-//                             decoration: const BoxDecoration(
-//                               color: Colors.red,
-//                               shape: BoxShape.circle,
-//                             ),
-//                             child: Text(
-//                               NotificationService.unreadCount().toString(),
-//                               style: const TextStyle(
-//                                 color: Colors.white,
-//                                 fontSize: 10,
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                     ],
-//                   )
-//                 ],
-//               ),
-//               const SizedBox(height: 20),
-//               Text(
-//                 "Hello, ${FakeAuth.userName ?? 'User'}",
-//                 style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-//               ),
-//               const SizedBox(height: 5),
-//               const Text(
-//                 "What would you like to learn today?",
-//                 style: TextStyle(color: Colors.white70, fontSize: 14),
-//               ),
-//             ],
-//           ),
-//         ),
-//
-//         Expanded(
-//           child: SingleChildScrollView(
-//             padding: const EdgeInsets.symmetric(horizontal: 20),
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 const SizedBox(height: 25),
-//                 sectionTitle("Continue Course", theme),
-//                 const SizedBox(height: 15),
-//
-//                 Row(
-//                   children: [
-//                     Expanded(
-//                       child: continueCard(
-//                         "German\nLanguage",
-//                         "15/20",
-//                         0.75,
-//                         const Color(0xFF5F2EFF),
-//                         theme,
-//                             () {
-//                           Navigator.push(
-//                             context,
-//                             MaterialPageRoute(
-//                               builder: (_) => QuizPage(
-//                                 taskQuestions: germanQuestions,
-//                               ),
-//                             ),
-//                           );
-//                         },
-//                       ),
-//                     ),
-//                     const SizedBox(width: 15),
-//                     Expanded(
-//                       child: continueCard(
-//                         "Spanish\nLanguage",
-//                         "10/30",
-//                         0.33,
-//                         Colors.orange,
-//                         theme,
-//                             () {
-//                           Navigator.push(
-//                             context,
-//                             MaterialPageRoute(
-//                               builder: (_) => QuizPage(
-//                                 taskQuestions: germanQuestions,
-//                               ),
-//                             ),
-//                           );
-//                         },
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//
-//                 const SizedBox(height: 30),
-//                 sectionTitle("Featured Courses", theme),
-//                 const SizedBox(height: 15),
-//                 featuredCard("Grammar Quiz", "Business English", "2 hours", theme),
-//                 const SizedBox(height: 15),
-//                 featuredCard("Online Phrases", "Business English", "2 hours", theme),
-//
-//                 const SizedBox(height: 20),
-//
-//                 Container(
-//                   padding: const EdgeInsets.all(16),
-//                   decoration: BoxDecoration(
-//                     color: isDark ? Colors.orange.withOpacity(0.2) : const Color(0xFFFFEFE3),
-//                     borderRadius: BorderRadius.circular(16),
-//                   ),
-//                   child: Row(
-//                     children: [
-//                       const Icon(Icons.emoji_events, color: Colors.orange),
-//                       const SizedBox(width: 12),
-//                       Expanded(
-//                         child: Text(
-//                           "Set Weekly Goal!\nUsers who set goals stay motivated.",
-//                           style: TextStyle(fontSize: 13, color: theme.textTheme.bodyMedium?.color),
-//                         ),
-//                       )
-//                     ],
-//                   ),
-//                 ),
-//                 const SizedBox(height: 30),
-//               ],
-//             ),
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-//
-//   Widget sectionTitle(String text, ThemeData theme) {
-//     return Row(
-//       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//       children: [
-//         Text(text, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.textTheme.titleLarge?.color)),
-//         const Text("See All", style: TextStyle(color: Color(0xFF5F2EFF), fontWeight: FontWeight.w500)),
-//       ],
-//     );
-//   }
-//
-//   Widget continueCard(
-//       String title,
-//       String progress,
-//       double value,
-//       Color color,
-//       ThemeData theme,
-//       VoidCallback? onTap,
-//       ) {
-//     return GestureDetector(
-//       onTap: onTap,
-//       child: Container(
-//         padding: const EdgeInsets.all(16),
-//         decoration: BoxDecoration(
-//           color: theme.cardColor,
-//           borderRadius: BorderRadius.circular(20),
-//           border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
-//         ),
-//         child: Column(
-//           children: [
-//             SizedBox(
-//               width: 65,
-//               height: 65,
-//               child: Stack(
-//                 alignment: Alignment.center,
-//                 children: [
-//                   CircularProgressIndicator(
-//                     value: value,
-//                     strokeWidth: 6,
-//                     backgroundColor: theme.disabledColor.withOpacity(0.1),
-//                     valueColor: AlwaysStoppedAnimation(color),
-//                   ),
-//                   Text(progress, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: theme.textTheme.bodyMedium?.color)),
-//                 ],
-//               ),
-//             ),
-//             const SizedBox(height: 12),
-//             Text(title, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: theme.textTheme.titleMedium?.color)),
-//             const SizedBox(height: 5),
-//             const Text("20 Classes - Easy", style: TextStyle(fontSize: 11, color: Colors.grey)),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Widget featuredCard(String title, String subtitle, String time, ThemeData theme) {
-//     return GestureDetector(
-//       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QuizPage())),
-//       child: Container(
-//         margin: const EdgeInsets.only(bottom: 12),
-//         padding: const EdgeInsets.all(12),
-//         decoration: BoxDecoration(
-//           color: theme.cardColor,
-//           borderRadius: BorderRadius.circular(16),
-//           boxShadow: [
-//             BoxShadow(
-//               color: Colors.black.withOpacity(themeNotifier.value == ThemeMode.dark ? 0.3 : 0.05),
-//               blurRadius: 10,
-//               offset: const Offset(0, 4),
-//             )
-//           ],
-//         ),
-//         child: Row(
-//           children: [
-//             Container(
-//               padding: const EdgeInsets.all(10),
-//               decoration: BoxDecoration(
-//                 color: const Color(0xFF5F2EFF).withOpacity(0.1),
-//                 borderRadius: BorderRadius.circular(12),
-//               ),
-//               child: const Icon(Icons.play_circle_fill, color: Color(0xFF5F2EFF)),
-//             ),
-//             const SizedBox(width: 12),
-//             Expanded(
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: theme.textTheme.titleMedium?.color)),
-//                   const SizedBox(height: 4),
-//                   Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-//                 ],
-//               ),
-//             ),
-//             Text(time, style: const TextStyle(color: Colors.blueGrey, fontSize: 12, fontWeight: FontWeight.w500)),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-
-
-
-//home fake
-// import 'package:flutter/material.dart';
-// import '../../services/api_service.dart';
-// import '../../quiz/quiz_page.dart';
-// import '../home3/progress_page.dart';
-// import '../home2/task_page.dart';
-// import '../home4/profile_page.dart';
-// import '../home4/activity_page.dart';
-// import '../homepagesetting/settings_page.dart';
-// import '../homepagesetting/theme_notifier.dart';
-// import '../../data/task_question_data.dart';
-// import '../../notification/notification_page.dart';
-// import '../../services/notification_service.dart';
-//
-// class HomePage extends StatefulWidget {
-//   const HomePage({super.key});
-//
-//   @override
-//   State<HomePage> createState() => _HomePageState();
-// }
-//
-// class _HomePageState extends State<HomePage> {
-//   int currentIndex = 0;
-//
-//   Map<String, dynamic>? user;
-//   bool isLoadingUser = true;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _loadUser();
-//   }
-//
-//   Future<void> _loadUser() async {
-//     final data = await ApiService.getProfile();
-//
-//     if (!mounted) return;
-//
-//     setState(() {
-//       user = data;
-//       isLoadingUser = false;
-//     });
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return ValueListenableBuilder<ThemeMode>(
-//       valueListenable: themeNotifier,
-//       builder: (context, mode, child) {
-//         final isDark = mode == ThemeMode.dark;
-//         final theme = Theme.of(context);
-//
-//         return Scaffold(
-//           backgroundColor: theme.scaffoldBackgroundColor,
-//           body: _getSelectedPage(),
-//           bottomNavigationBar: BottomNavigationBar(
-//             currentIndex: currentIndex,
-//             type: BottomNavigationBarType.fixed,
-//             onTap: (index) {
-//               setState(() {
-//                 currentIndex = index;
-//               });
-//             },
-//             selectedItemColor: const Color(0xFF5F2EFF),
-//             unselectedItemColor: isDark ? Colors.grey[500] : Colors.grey,
-//             backgroundColor: theme.cardColor,
-//             showSelectedLabels: true,
-//             showUnselectedLabels: false,
-//             items: const [
-//               BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
-//               BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: "Task"),
-//               BottomNavigationBarItem(icon: Icon(Icons.pie_chart_outline), label: "Stats"),
-//               BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Profile"),
-//             ],
-//           ),
-//         );
-//       },
-//     );
-//   }
-//
-//   Widget _getSelectedPage() {
-//     switch (currentIndex) {
-//       case 0:
-//         return _buildHomeContent();
-//       case 1:
-//         return TaskPage(onBack: () => setState(() => currentIndex = 0));
-//       case 2:
-//         return ProgressPage(onBack: () => setState(() => currentIndex = 0));
-//       case 3:
-//         return ProfilePage(
-//           onBack: () async {
-//             // 🔥 Quan trọng: Gọi fetch lại dữ liệu mới nhất từ server
-//             await _loadUser();
-//             setState(() {
-//               currentIndex = 0;
-//             });
-//           },
-//           onOpenActivity: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ActivityPage())),
-//           onOpenSettings: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage())),
-//         );
-//       default:
-//         return _buildHomeContent();
-//     }
-//   }
-//
-//   Widget _buildHomeContent() {
-//     final theme = Theme.of(context);
-//     final isDark = themeNotifier.value == ThemeMode.dark;
-//
-//     return Column(
-//       children: [
-//         Container(
-//           padding: const EdgeInsets.fromLTRB(20, 50, 20, 25),
-//           decoration: const BoxDecoration(
-//             color: Color(0xFF5F2EFF),
-//             borderRadius: BorderRadius.only(
-//               bottomLeft: Radius.circular(30),
-//               bottomRight: Radius.circular(30),
-//             ),
-//           ),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                 children: [
-//                   CircleAvatar(
-//                     radius: 22,
-//                     backgroundImage: user?['avatarUrl'] != null
-//                         ? NetworkImage(user!['avatarUrl'])
-//                         : const NetworkImage("https://i.pravatar.cc/150?img=3"),
-//                   ),
-//
-//                   // 🔔 Notification
-//                   Stack(
-//                     children: [
-//                       IconButton(
-//                         icon: const Icon(Icons.notifications_none,
-//                             color: Colors.white, size: 26),
-//                         onPressed: () {
-//                           Navigator.push(
-//                             context,
-//                             MaterialPageRoute(
-//                               builder: (_) => const NotificationPage(),
-//                             ),
-//                           ).then((_) {
-//                             setState(() {});
-//                           });
-//                         },
-//                       ),
-//
-//                       if (NotificationService.unreadCount() > 0)
-//                         Positioned(
-//                           right: 0,
-//                           top: 0,
-//                           child: Container(
-//                             padding: const EdgeInsets.all(4),
-//                             decoration: const BoxDecoration(
-//                               color: Colors.red,
-//                               shape: BoxShape.circle,
-//                             ),
-//                             child: Text(
-//                               NotificationService.unreadCount().toString(),
-//                               style: const TextStyle(
-//                                 color: Colors.white,
-//                                 fontSize: 10,
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                     ],
-//                   )
-//                 ],
-//               ),
-//               const SizedBox(height: 20),
-//
-//               // 🔥 NAME FROM BACKEND
-//               Text(
-//                 "Hello, ${user?['firstName'] ?? ''} ${user?['lastName'] ?? ''}",
-//                 style: const TextStyle(
-//                     color: Colors.white,
-//                     fontSize: 24,
-//                     fontWeight: FontWeight.bold),
-//               ),
-//
-//               const SizedBox(height: 5),
-//               const Text(
-//                 "What would you like to learn today?",
-//                 style: TextStyle(color: Colors.white70, fontSize: 14),
-//               ),
-//             ],
-//           ),
-//         ),
-//
-//         Expanded(
-//           child: SingleChildScrollView(
-//             padding: const EdgeInsets.symmetric(horizontal: 20),
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 const SizedBox(height: 25),
-//                 sectionTitle("Continue Course", theme),
-//                 const SizedBox(height: 15),
-//
-//                 Row(
-//                   children: [
-//                     Expanded(
-//                       child: continueCard(
-//                         "German\nLanguage",
-//                         "15/20",
-//                         0.75,
-//                         const Color(0xFF5F2EFF),
-//                         theme,
-//                             () {
-//                           Navigator.push(
-//                             context,
-//                             MaterialPageRoute(
-//                               builder: (_) => QuizPage(
-//                                 taskQuestions: germanQuestions,
-//                               ),
-//                             ),
-//                           );
-//                         },
-//                       ),
-//                     ),
-//                     const SizedBox(width: 15),
-//                     Expanded(
-//                       child: continueCard(
-//                         "Spanish\nLanguage",
-//                         "10/30",
-//                         0.33,
-//                         Colors.orange,
-//                         theme,
-//                             () {
-//                           Navigator.push(
-//                             context,
-//                             MaterialPageRoute(
-//                               builder: (_) => QuizPage(
-//                                 taskQuestions: germanQuestions,
-//                               ),
-//                             ),
-//                           );
-//                         },
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//
-//                 const SizedBox(height: 30),
-//                 sectionTitle("Featured Courses", theme),
-//                 const SizedBox(height: 15),
-//                 featuredCard("Grammar Quiz", "Business English", "2 hours", theme),
-//                 const SizedBox(height: 15),
-//                 featuredCard("Online Phrases", "Business English", "2 hours", theme),
-//
-//                 const SizedBox(height: 20),
-//
-//                 Container(
-//                   padding: const EdgeInsets.all(16),
-//                   decoration: BoxDecoration(
-//                     color: isDark
-//                         ? Colors.orange.withOpacity(0.2)
-//                         : const Color(0xFFFFEFE3),
-//                     borderRadius: BorderRadius.circular(16),
-//                   ),
-//                   child: Row(
-//                     children: [
-//                       const Icon(Icons.emoji_events, color: Colors.orange),
-//                       const SizedBox(width: 12),
-//                       Expanded(
-//                         child: Text(
-//                           "Set Weekly Goal!\nUsers who set goals stay motivated.",
-//                           style: TextStyle(
-//                               fontSize: 13,
-//                               color: theme.textTheme.bodyMedium?.color),
-//                         ),
-//                       )
-//                     ],
-//                   ),
-//                 ),
-//                 const SizedBox(height: 30),
-//               ],
-//             ),
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-//
-//   Widget sectionTitle(String text, ThemeData theme) {
-//     return Row(
-//       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//       children: [
-//         Text(text,
-//             style: TextStyle(
-//                 fontWeight: FontWeight.bold,
-//                 fontSize: 18,
-//                 color: theme.textTheme.titleLarge?.color)),
-//         const Text("See All",
-//             style: TextStyle(
-//                 color: Color(0xFF5F2EFF), fontWeight: FontWeight.w500)),
-//       ],
-//     );
-//   }
-//
-//   Widget continueCard(
-//       String title,
-//       String progress,
-//       double value,
-//       Color color,
-//       ThemeData theme,
-//       VoidCallback? onTap,
-//       ) {
-//     return GestureDetector(
-//       onTap: onTap,
-//       child: Container(
-//         padding: const EdgeInsets.all(16),
-//         decoration: BoxDecoration(
-//           color: theme.cardColor,
-//           borderRadius: BorderRadius.circular(20),
-//           border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
-//         ),
-//         child: Column(
-//           children: [
-//             SizedBox(
-//               width: 65,
-//               height: 65,
-//               child: Stack(
-//                 alignment: Alignment.center,
-//                 children: [
-//                   CircularProgressIndicator(
-//                     value: value,
-//                     strokeWidth: 6,
-//                     backgroundColor: theme.disabledColor.withOpacity(0.1),
-//                     valueColor: AlwaysStoppedAnimation(color),
-//                   ),
-//                   Text(progress,
-//                       style: TextStyle(
-//                           fontWeight: FontWeight.bold,
-//                           fontSize: 12,
-//                           color: theme.textTheme.bodyMedium?.color)),
-//                 ],
-//               ),
-//             ),
-//             const SizedBox(height: 12),
-//             Text(title,
-//                 textAlign: TextAlign.center,
-//                 style: TextStyle(
-//                     fontWeight: FontWeight.bold,
-//                     fontSize: 14,
-//                     color: theme.textTheme.titleMedium?.color)),
-//             const SizedBox(height: 5),
-//             const Text("20 Classes - Easy",
-//                 style: TextStyle(fontSize: 11, color: Colors.grey)),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Widget featuredCard(
-//       String title, String subtitle, String time, ThemeData theme) {
-//     return GestureDetector(
-//       onTap: () =>
-//           Navigator.push(context, MaterialPageRoute(builder: (_) => const QuizPage())),
-//       child: Container(
-//         margin: const EdgeInsets.only(bottom: 12),
-//         padding: const EdgeInsets.all(12),
-//         decoration: BoxDecoration(
-//           color: theme.cardColor,
-//           borderRadius: BorderRadius.circular(16),
-//           boxShadow: [
-//             BoxShadow(
-//               color: Colors.black.withOpacity(
-//                   themeNotifier.value == ThemeMode.dark ? 0.3 : 0.05),
-//               blurRadius: 10,
-//               offset: const Offset(0, 4),
-//             )
-//           ],
-//         ),
-//         child: Row(
-//           children: [
-//             Container(
-//               padding: const EdgeInsets.all(10),
-//               decoration: BoxDecoration(
-//                 color: const Color(0xFF5F2EFF).withOpacity(0.1),
-//                 borderRadius: BorderRadius.circular(12),
-//               ),
-//               child:
-//               const Icon(Icons.play_circle_fill, color: Color(0xFF5F2EFF)),
-//             ),
-//             const SizedBox(width: 12),
-//             Expanded(
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(title,
-//                       style: TextStyle(
-//                           fontWeight: FontWeight.bold,
-//                           fontSize: 15,
-//                           color: theme.textTheme.titleMedium?.color)),
-//                   const SizedBox(height: 4),
-//                   Text(subtitle,
-//                       style:
-//                       const TextStyle(color: Colors.grey, fontSize: 13)),
-//                 ],
-//               ),
-//             ),
-//             Text(time,
-//                 style: const TextStyle(
-//                     color: Colors.blueGrey,
-//                     fontSize: 12,
-//                     fontWeight: FontWeight.w500)),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-
-
-
-
-//
-// import 'package:flutter/material.dart';
-// import '../../services/api_service.dart';
-// import '../../services/course_service.dart';
-// import '../../models/course_model.dart';
-// import '../home3/lesson_list_page.dart';
-//
-// import '../home3/progress_page.dart';
-// import '../home2/task_page.dart';
-// import '../home4/profile_page.dart';
-// import '../home4/activity_page.dart';
-// import '../homepagesetting/settings_page.dart';
-// import '../homepagesetting/theme_notifier.dart';
-//
-// import '../../notification/notification_page.dart';
-// import '../../services/notification_service.dart';
-//
-// class HomePage extends StatefulWidget {
-//   const HomePage({super.key});
-//
-//   @override
-//   State<HomePage> createState() => _HomePageState();
-// }
-//
-// class _HomePageState extends State<HomePage> {
-//   int currentIndex = 0;
-//
-//   Map<String, dynamic>? user;
-//   List<Course> courses = [];
-//   bool isLoading = true;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     loadAll();
-//   }
-//
-//   Future<void> loadAll() async {
-//     try {
-//       final userData = await ApiService.getProfile();
-//       final courseData = await CourseService.getCourses();
-//
-//       setState(() {
-//         user = userData;
-//         courses = courseData;
-//         isLoading = false;
-//       });
-//     } catch (e) {
-//       print(e);
-//       setState(() => isLoading = false);
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return ValueListenableBuilder<ThemeMode>(
-//       valueListenable: themeNotifier,
-//       builder: (context, mode, child) {
-//         final theme = Theme.of(context);
-//
-//         return Scaffold(
-//           backgroundColor: theme.scaffoldBackgroundColor,
-//           body: _getSelectedPage(),
-//           bottomNavigationBar: BottomNavigationBar(
-//             currentIndex: currentIndex,
-//             type: BottomNavigationBarType.fixed,
-//             onTap: (index) => setState(() => currentIndex = index),
-//             selectedItemColor: const Color(0xFF5F2EFF),
-//             items: const [
-//               BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-//               BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: "Task"),
-//               BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: "Stats"),
-//               BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-//             ],
-//           ),
-//         );
-//       },
-//     );
-//   }
-//
-//   Widget _getSelectedPage() {
-//     switch (currentIndex) {
-//       case 0:
-//         return _home();
-//       case 1:
-//         return TaskPage(onBack: () => setState(() => currentIndex = 0));
-//       case 2:
-//         return ProgressPage(onBack: () => setState(() => currentIndex = 0));
-//       case 3:
-//         return ProfilePage(
-//           onBack: () => setState(() => currentIndex = 0),
-//           onOpenActivity: () {},
-//           onOpenSettings: () {},
-//         );
-//       default:
-//         return _home();
-//     }
-//   }
-//
-//   Widget _home() {
-//     final theme = Theme.of(context);
-//
-//     if (isLoading) {
-//       return const Center(child: CircularProgressIndicator());
-//     }
-//
-//     return Column(
-//       children: [
-//         // ===== HEADER =====
-//         Container(
-//           padding: const EdgeInsets.fromLTRB(20, 50, 20, 25),
-//           decoration: const BoxDecoration(
-//             color: Color(0xFF5F2EFF),
-//             borderRadius: BorderRadius.only(
-//               bottomLeft: Radius.circular(30),
-//               bottomRight: Radius.circular(30),
-//             ),
-//           ),
-//           child: Column(
-//             children: [
-//               Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                 children: [
-//                   CircleAvatar(
-//                     backgroundImage: NetworkImage(
-//                       user?['avatarUrl'] ??
-//                           "https://i.pravatar.cc/150?img=3",
-//                     ),
-//                   ),
-//                   IconButton(
-//                     icon: const Icon(Icons.notifications, color: Colors.white),
-//                     onPressed: () {
-//                       Navigator.push(
-//                         context,
-//                         MaterialPageRoute(
-//                             builder: (_) => const NotificationPage()),
-//                       );
-//                     },
-//                   )
-//                 ],
-//               ),
-//               const SizedBox(height: 20),
-//               Text(
-//                 "Hello, ${user?['firstName'] ?? ''}",
-//                 style: const TextStyle(color: Colors.white, fontSize: 22),
-//               ),
-//             ],
-//           ),
-//         ),
-//
-//         // ===== COURSE LIST =====
-//         Expanded(
-//           child: ListView.builder(
-//             padding: const EdgeInsets.all(20),
-//             itemCount: courses.length,
-//             itemBuilder: (context, index) {
-//               final c = courses[index];
-//
-//               return GestureDetector(
-//                 onTap: () {
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(
-//                       builder: (_) => LessonListPage(course: c),
-//                     ),
-//                   ).then((_) => loadAll()); // reload progress
-//                 },
-//                 child: Container(
-//                   margin: const EdgeInsets.only(bottom: 15),
-//                   padding: const EdgeInsets.all(15),
-//                   decoration: BoxDecoration(
-//                     color: theme.cardColor,
-//                     borderRadius: BorderRadius.circular(16),
-//                   ),
-//                   child: Row(
-//                     children: [
-//                       const Icon(Icons.menu_book,
-//                           color: Color(0xFF5F2EFF)),
-//                       const SizedBox(width: 15),
-//                       Expanded(
-//                         child: Text(c.title,
-//                             style: const TextStyle(
-//                                 fontWeight: FontWeight.bold)),
-//                       ),
-//                       Text("${c.progressPercent ?? 0}%"),
-//                     ],
-//                   ),
-//                 ),
-//               );
-//             },
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }
-
-
-
-
-//home mới api
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
 import '../../services/api_service.dart';
-import '../../services/token_service.dart';
-import '../../models/course_model.dart';
-import '../../notification/notification_page.dart';
+import '../../services/course_service.dart';
+import '../../services/topic_service.dart';
 import '../../services/notification_service.dart';
-import '../homepagesetting/settings_page.dart';
-import '../homepagesetting/theme_notifier.dart';
-import '../homepagesetting/settings_page.dart';
+import '../../models/course_model.dart';
+import '../../models/topic_model.dart';
+import '../home3/LessonListPage.dart';
 import '../home3/progress_page.dart';
 import '../home2/task_page.dart';
+import 'topic_courses_page.dart';
+import 'topics_page.dart';
 import '../home4/profile_page.dart';
 import '../home4/activity_page.dart';
-import '../../homepage/home3/LessonListPage.dart';
+import '../homepagesetting/settings_page.dart';
+import '../homepagesetting/theme_notifier.dart';
+import '../../notification/notification_page.dart';
+import '../../services/onboarding_service.dart';
+import 'learning_paths_page.dart';
+import 'all_courses_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -1010,10 +29,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int currentIndex = 0;
   Map<String, dynamic>? user;
-  List<Course> allCourses = [];
-  List<Course> continueCourses = [];
-  bool isLoadingUser = true;
-  bool isLoadingCourses = true;
+  List<Course> courses = [];
+  List<TopicModel> topics = [];
+  bool isLoading = true;
+  Map<String, dynamic>? myOnboarding;
 
   @override
   void initState() {
@@ -1021,70 +40,63 @@ class _HomePageState extends State<HomePage> {
     _loadData();
   }
 
-  // Hàm load tổng hợp cả user và khóa học
+  void _openAllCourses() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AllCoursesPage(courses: courses),
+      ),
+    ).then((_) => _loadData());
+  }
+
+  // Future<void> _loadData() async {
+  //   try {
+  //     final results = await Future.wait([
+  //       ApiService.getProfile(),
+  //       CourseService.getPublishedCourses(),
+  //       TopicService.getTopics(),
+  //     ]);
+  //
+  //     if (!mounted) return;
+  //
+  //     setState(() {
+  //       user = results[0] as Map<String, dynamic>?;
+  //       courses = results[1] as List<Course>;
+  //       topics = results[2] as List<TopicModel>;
+  //       isLoading = false;
+  //     });
+  //   } catch (e) {
+  //     debugPrint("Error loading data: $e");
+  //     if (mounted) {
+  //       setState(() => isLoading = false);
+  //     }
+  //   }
+  // }
+
+
   Future<void> _loadData() async {
-    await Future.wait([
-      _loadUser(),
-      _fetchCourses(),
-    ]);
-  }
-
-  Future<void> _loadUser() async {
-    final data = await ApiService.getProfile();
-    if (!mounted) return;
-    setState(() {
-      user = data;
-      isLoadingUser = false;
-    });
-  }
-
-  Future<void> _fetchCourses() async {
-    const String apiUrl = "http://10.0.2.2:8080/api/v1/courses";
     try {
-      final token = await TokenService.getToken();
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {
-          "Content-Type": "application/json",
-          if (token != null) "Authorization": "Bearer $token",
-        },
-      );
+      final results = await Future.wait([
+        ApiService.getProfile(),
+        CourseService.getPublishedCourses(),
+        TopicService.getTopics(),
+        OnboardingService.getMyOnboarding(),
+      ]);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(utf8.decode(response.bodyBytes));
-        final List list = data['content'] ?? [];
-        List<Course> fetched = list.map((e) => Course.fromJson(e)).toList();
+      if (!mounted) return;
 
-        setState(() {
-          allCourses = fetched;
-
-          // --- LOGIC XỬ LÝ CONTINUE COURSE ---
-          // 1. Sắp xếp tất cả khóa học theo tiến độ giảm dần
-          fetched.sort((a, b) => b.progressPercent.compareTo(a.progressPercent));
-
-          // 2. Lọc danh sách đang học (0 < progress < 100)
-          List<Course> inProgress = fetched.where((c) => c.progressPercent > 0 && c.progressPercent < 100).toList();
-          // 3. Lọc danh sách chưa học (progress == 0)
-          List<Course> notStarted = fetched.where((c) => c.progressPercent == 0).toList();
-
-          if (inProgress.length >= 2) {
-            // Nếu có >= 2 khóa dở: Lấy 2 khóa % cao nhất
-            continueCourses = inProgress.take(2).toList();
-          } else if (inProgress.length == 1) {
-            // Nếu có 1 khóa dở: Lấy khóa đó + 1 khóa chưa học
-            continueCourses = [inProgress.first];
-            if (notStarted.isNotEmpty) continueCourses.add(notStarted.first);
-          } else {
-            // Nếu không có khóa nào dở: Lấy 2 khóa chưa học (0%)
-            continueCourses = notStarted.take(2).toList();
-          }
-
-          isLoadingCourses = false;
-        });
-      }
+      setState(() {
+        user = results[0] as Map<String, dynamic>?;
+        courses = results[1] as List<Course>;
+        topics = results[2] as List<TopicModel>;
+        myOnboarding = results[3] as Map<String, dynamic>?;
+        isLoading = false;
+      });
     } catch (e) {
-      print("Error home courses: $e");
-      setState(() => isLoadingCourses = false);
+      debugPrint("Error loading data: $e");
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -1098,21 +110,43 @@ class _HomePageState extends State<HomePage> {
 
         return Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
-          body: _getSelectedPage(),
+          body: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _getSelectedPage(),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: currentIndex,
             type: BottomNavigationBarType.fixed,
-            onTap: (index) => setState(() => currentIndex = index),
+            onTap: (index) {
+              setState(() {
+                currentIndex = index;
+              });
+
+              if (index == 0 || index == 2) {
+                _loadData();
+              }
+            },
             selectedItemColor: const Color(0xFF5F2EFF),
             unselectedItemColor: isDark ? Colors.grey[500] : Colors.grey,
             backgroundColor: theme.cardColor,
             showSelectedLabels: true,
             showUnselectedLabels: false,
             items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
-              BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: "Task"),
-              BottomNavigationBarItem(icon: Icon(Icons.pie_chart_outline), label: "Stats"),
-              BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Profile"),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_filled),
+                label: "Home",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.menu_book),
+                label: "Task",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.pie_chart_outline),
+                label: "Stats",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                label: "Profile",
+              ),
             ],
           ),
         );
@@ -1122,33 +156,72 @@ class _HomePageState extends State<HomePage> {
 
   Widget _getSelectedPage() {
     switch (currentIndex) {
-      case 0: return _buildHomeContent();
-      case 1: return TaskPage(onBack: () => setState(() => currentIndex = 0));
-      case 2: return ProgressPage(onBack: () => setState(() => currentIndex = 0));
-      case 3: return ProfilePage(
-        onBack: () async {
-          await _loadUser();
-          setState(() => currentIndex = 0);
-        },
-        onOpenActivity: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ActivityPage())),
-        onOpenSettings: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage())),
-      );
-      default: return _buildHomeContent();
+      case 0:
+        return _buildHomeContent();
+      case 1:
+        return TaskPage(
+          onBack: () => setState(() => currentIndex = 0),
+        );
+      case 2:
+        return ProgressPage(
+          onBack: () => setState(() => currentIndex = 0),
+        );
+      case 3:
+        return ProfilePage(
+          onBack: () async {
+            await _loadData();
+            setState(() {
+              currentIndex = 0;
+            });
+          },
+          onOpenActivity: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ActivityPage()),
+          ),
+          onOpenSettings: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SettingsPage()),
+          ),
+        );
+      default:
+        return _buildHomeContent();
     }
   }
 
   Widget _buildHomeContent() {
     final theme = Theme.of(context);
     final isDark = themeNotifier.value == ThemeMode.dark;
+    final List<Course> featuredCourses = courses.take(3).toList();
+
+    List<Course> inProgress =
+    courses.where((c) => c.progressPercent > 0).toList();
+    inProgress.sort((a, b) => b.progressPercent.compareTo(a.progressPercent));
+
+    List<Course> displayContinuing = [];
+
+    if (inProgress.length >= 2) {
+      displayContinuing = inProgress.take(2).toList();
+    } else {
+      displayContinuing.addAll(inProgress);
+
+      List<Course> notStarted = courses
+          .where((c) => c.progressPercent == 0 && !displayContinuing.contains(c))
+          .toList();
+
+      int needed = 2 - displayContinuing.length;
+      displayContinuing.addAll(notStarted.take(needed));
+    }
 
     return Column(
       children: [
-        // --- HEADER TÍM ---
         Container(
           padding: const EdgeInsets.fromLTRB(20, 50, 20, 25),
           decoration: const BoxDecoration(
             color: Color(0xFF5F2EFF),
-            borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(30),
+              bottomRight: Radius.circular(30),
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1158,65 +231,271 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   CircleAvatar(
                     radius: 22,
-                    backgroundImage: (user != null && user!['avatarUrl'] != null)
+                    backgroundImage: user?['avatarUrl'] != null
                         ? NetworkImage(user!['avatarUrl'])
-                        : const NetworkImage("https://via.placeholder.com/150"),
+                        : const NetworkImage("https://i.pravatar.cc/150?img=3"),
                   ),
-                  _buildNotificationBadge(),
+                  Stack(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.notifications_none,
+                          color: Colors.white,
+                          size: 26,
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationPage(),
+                            ),
+                          ).then((_) => setState(() {}));
+                        },
+                      ),
+                      if (NotificationService.unreadCount() > 0)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              NotificationService.unreadCount().toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
               Text(
-                "Hello, ${user?['firstName'] ?? ''} ${user?['lastName'] ?? ''}",
-                style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                "Hello, ${user?['firstName'] ?? 'User'}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              const Text("What would you like to learn today?", style: TextStyle(color: Colors.white70, fontSize: 14)),
+              const SizedBox(height: 5),
+              const Text(
+                "What would you like to learn today?",
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
             ],
           ),
         ),
-
         Expanded(
           child: RefreshIndicator(
             onRefresh: _loadData,
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
+              physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 25),
-                  // Click See All -> Chuyển sang tab Stats (ProgressPage)
-                  _buildSectionTitle("Continue Course", theme, onSeeAll: () {
-                    setState(() => currentIndex = 2);
-                  }),
+                  if (displayContinuing.isNotEmpty) ...[
+                    const SizedBox(height: 25),
+                    sectionTitle("Continue Course", theme, () {
+                      setState(() => currentIndex = 2);
+                    }),
+                    const SizedBox(height: 15),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: continueCard(
+                            displayContinuing[0].title,
+                            "${displayContinuing[0].progressPercent}%",
+                            displayContinuing[0].progressPercent / 100,
+                            const Color(0xFF5F2EFF),
+                            theme,
+                                () => _openCourse(displayContinuing[0]),
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: displayContinuing.length > 1
+                              ? continueCard(
+                            displayContinuing[1].title,
+                            "${displayContinuing[1].progressPercent}%",
+                            displayContinuing[1].progressPercent / 100,
+                            Colors.orange,
+                            theme,
+                                () => _openCourse(displayContinuing[1]),
+                          )
+                              : const SizedBox(),
+                        ),
+                      ],
+                    ),
+                  ],
+
+                  const SizedBox(height: 30),
+
+                  sectionTitle("Topics", theme, _openAllTopics),
                   const SizedBox(height: 15),
 
-                  // HIỂN THỊ 2 KHÓA ĐANG HỌC
-                  isLoadingCourses
-                      ? const Center(child: CircularProgressIndicator())
-                      : Row(
-                    children: continueCourses.isEmpty
-                        ? [const Text("No courses in progress")]
-                        : continueCourses.map((course) => Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 10),
-                        child: _buildContinueCard(course, theme),
+                  SizedBox(
+                    height: 135,
+                    child: topics.isEmpty
+                        ? Center(
+                      child: Text(
+                        "Chưa có chủ đề nào",
+                        style: TextStyle(
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
                       ),
-                    )).toList(),
+                    )
+                        : ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: topics.length,
+                      separatorBuilder: (_, __) =>
+                      const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        final topic = topics[index];
+
+                        return GestureDetector(
+                          onTap: () => _openTopic(topic),
+                          child: Container(
+                            width: 145,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: theme.cardColor,
+                              borderRadius: BorderRadius.circular(18),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(
+                                    themeNotifier.value == ThemeMode.dark
+                                        ? 0.3
+                                        : 0.05,
+                                  ),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                              children: [
+                                _buildTopicIcon(topic),
+                                const Spacer(),
+                                Text(
+                                  topic.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color:
+                                    theme.textTheme.titleMedium?.color,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "${topic.totalCourses} courses",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF5F2EFF),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
 
                   const SizedBox(height: 30),
-                  _buildSectionTitle("Featured Courses", theme),
+
+                  sectionTitle("Learning Paths", theme, _openAllLearningPaths),
                   const SizedBox(height: 15),
 
-                  // HIỂN THỊ TOÀN BỘ KHÓA HỌC
-                  isLoadingCourses
-                      ? const Center(child: CircularProgressIndicator())
-                      : Column(
-                    children: allCourses.map((course) => _buildFeaturedCard(course, theme)).toList(),
+                  GestureDetector(
+                    onTap: _openAllLearningPaths,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: theme.cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.route, color: Color(0xFF5F2EFF)),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              "Explore learning paths tailored to your level",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  sectionTitle("Featured Courses", theme, _openAllCourses),
+                  const SizedBox(height: 15),
+
+                  ...featuredCourses.map(
+                        (c) => featuredCard(
+                      c.title,
+                      c.description,
+                      "${c.totalLessons} Lessons",
+                      theme,
+                          () => _openCourse(c),
+                    ),
                   ),
 
                   const SizedBox(height: 20),
-                  _buildGoalBanner(isDark, theme),
+
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.orange.withOpacity(0.2)
+                          : const Color(0xFFFFEFE3),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.emoji_events, color: Colors.orange),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            "Set Weekly Goal!\nUsers who set goals stay motivated.",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: theme.textTheme.bodyMedium?.color,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   const SizedBox(height: 30),
                 ],
               ),
@@ -1224,137 +503,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ],
-    );
-  }
-
-  // --- WIDGET COMPONENTS ---
-
-  Widget _buildNotificationBadge() {
-    return Stack(
-      children: [
-        IconButton(
-          icon: const Icon(Icons.notifications_none, color: Colors.white, size: 26),
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationPage())).then((_) => setState(() {})),
-        ),
-        if (NotificationService.unreadCount() > 0)
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-              child: Text(NotificationService.unreadCount().toString(), style: const TextStyle(color: Colors.white, fontSize: 8)),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildSectionTitle(String text, ThemeData theme, {VoidCallback? onSeeAll}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(text, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.textTheme.titleLarge?.color)),
-        if (onSeeAll != null)
-          GestureDetector(
-            onTap: onSeeAll,
-            child: const Text("See All", style: TextStyle(color: Color(0xFF5F2EFF), fontWeight: FontWeight.w500)),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildContinueCard(Course course, ThemeData theme) {
-    // Tính toán bài đã học: (phần trăm * tổng bài) / 100
-    int learned = (course.progressPercent * course.totalLessons) ~/ 100;
-
-    return GestureDetector(
-      onTap: () => _openCourse(course),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
-        ),
-        child: Column(
-          children: [
-            SizedBox(
-              width: 65, height: 65,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    value: course.progressPercent / 100,
-                    strokeWidth: 6,
-                    backgroundColor: theme.disabledColor.withOpacity(0.1),
-                    valueColor: AlwaysStoppedAnimation(course.progressPercent > 50 ? const Color(0xFF5F2EFF) : Colors.orange),
-                  ),
-                  Text("${course.progressPercent}%", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: theme.textTheme.bodyMedium?.color)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(course.title, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: theme.textTheme.titleMedium?.color)),
-            const SizedBox(height: 5),
-            Text("$learned/${course.totalLessons} Lessons", style: const TextStyle(fontSize: 11, color: Colors.grey)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFeaturedCard(Course course, ThemeData theme) {
-    return GestureDetector(
-      onTap: () => _openCourse(course),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: const Color(0xFF5F2EFF).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-              child: const Icon(Icons.play_circle_fill, color: Color(0xFF5F2EFF)),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(course.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: theme.textTheme.titleMedium?.color)),
-                  Text(course.languageName, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: Colors.blueGrey.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-              child: Text(course.level, style: const TextStyle(color: Colors.blueGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGoalBanner(bool isDark, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: isDark ? Colors.orange.withOpacity(0.2) : const Color(0xFFFFEFE3), borderRadius: BorderRadius.circular(16)),
-      child: Row(
-        children: [
-          const Icon(Icons.emoji_events, color: Colors.orange),
-          const SizedBox(width: 12),
-          Expanded(child: Text("Set Weekly Goal!\nUsers who set goals stay motivated.", style: TextStyle(fontSize: 13, color: theme.textTheme.bodyMedium?.color))),
-        ],
-      ),
     );
   }
 
@@ -1362,8 +510,280 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => LessonListPage(courseId: course.id, courseTitle: course.title),
+        builder: (_) => LessonListPage(
+          courseId: course.id,
+          courseTitle: course.title,
+        ),
       ),
-    ).then((_) => _fetchCourses()); // Load lại khi quay về để cập nhật % tiến độ
+    ).then((_) => _loadData());
+  }
+
+  void _openTopic(TopicModel topic) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TopicCoursesPage(
+          topicId: topic.id,
+          topicName: topic.name,
+        ),
+      ),
+    ).then((_) => _loadData());
+  }
+
+  // void _openAllLearningPaths() {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (_) => const LearningPathsPage(),
+  //     ),
+  //   ).then((_) => _loadData());
+  // }
+
+  void _openAllLearningPaths() {
+    final targetLanguageId = myOnboarding?['targetLanguageId']?.toString();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LearningPathsPage(
+          selectedLanguageId: targetLanguageId,
+        ),
+      ),
+    ).then((_) => _loadData());
+  }
+
+  void _openAllTopics() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const TopicsPage(),
+      ),
+    ).then((_) => _loadData());
+  }
+
+  Widget _buildTopicIcon(TopicModel topic) {
+    final icon = topic.iconUrl?.trim();
+
+    if (icon != null && icon.isNotEmpty) {
+      final isNetworkImage = icon.startsWith("http://") || icon.startsWith("https://");
+
+      if (isNetworkImage) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.network(
+            icon,
+            width: 42,
+            height: 42,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _fallbackTopicIcon(topic),
+          ),
+        );
+      }
+
+      if (icon.runes.length <= 4) {
+        return Text(
+          icon,
+          style: const TextStyle(fontSize: 28),
+        );
+      }
+    }
+
+    return _fallbackTopicIcon(topic);
+  }
+
+  Widget _fallbackTopicIcon(TopicModel topic) {
+    IconData iconData = Icons.topic;
+
+    final lower = topic.name.toLowerCase();
+    if (lower.contains("grammar")) iconData = Icons.spellcheck;
+    if (lower.contains("vocabulary")) iconData = Icons.menu_book;
+    if (lower.contains("listening")) iconData = Icons.headphones;
+    if (lower.contains("travel")) iconData = Icons.flight;
+    if (lower.contains("food")) iconData = Icons.restaurant;
+    if (lower.contains("business")) iconData = Icons.business_center;
+
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        color: const Color(0xFF5F2EFF).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(
+        iconData,
+        color: const Color(0xFF5F2EFF),
+        size: 22,
+      ),
+    );
+  }
+
+  Widget sectionTitle(
+      String text,
+      ThemeData theme,
+      VoidCallback onSeeAll,
+      ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          text,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: theme.textTheme.titleLarge?.color,
+          ),
+        ),
+        GestureDetector(
+          onTap: onSeeAll,
+          child: const Text(
+            "See All",
+            style: TextStyle(
+              color: Color(0xFF5F2EFF),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget continueCard(
+      String title,
+      String progress,
+      double value,
+      Color color,
+      ThemeData theme,
+      VoidCallback onTap,
+      ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: theme.dividerColor.withOpacity(0.1),
+          ),
+        ),
+        child: Column(
+          children: [
+            SizedBox(
+              width: 65,
+              height: 65,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    value: value,
+                    strokeWidth: 6,
+                    backgroundColor: theme.disabledColor.withOpacity(0.1),
+                    valueColor: AlwaysStoppedAnimation(color),
+                  ),
+                  Text(
+                    progress,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: theme.textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: theme.textTheme.titleMedium?.color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget featuredCard(
+      String title,
+      String subtitle,
+      String info,
+      ThemeData theme,
+      VoidCallback onTap,
+      ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(
+                themeNotifier.value == ThemeMode.dark ? 0.3 : 0.05,
+              ),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF5F2EFF).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.play_circle_fill,
+                color: Color(0xFF5F2EFF),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: theme.textTheme.titleMedium?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              info,
+              style: const TextStyle(
+                color: Colors.blueGrey,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

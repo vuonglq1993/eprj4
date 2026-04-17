@@ -19,12 +19,19 @@ const PAGE_TITLES = {
   '/new-project': 'Project / New Project',
   '/allprojects': 'Pages/All projects',
   '/invoice': 'Account / Invoice',
-  '/security': 'Account / Security',
   '/kanban': 'Kanban',
   '/datatables': 'Data Tables',
   '/wizard': 'Wizard',
   '/calendar': 'Calendar',
   '/new-product': 'New Product',
+  '/languages': 'Languages',
+  '/courses': 'Courses',
+  '/lessons': 'Lessons',
+  '/exercises': 'Exercises',
+  '/progress': 'My Progress',
+  '/learning-paths': 'Learning Paths',
+  '/topics': 'Topics',
+  '/admin/subscription-plans': 'Subscription Plans',
 }
 
 

@@ -1,30 +1,37 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import AuthLayout from '../layouts/AuthLayout'
-import { FcGoogle } from 'react-icons/fc'
-import { FaFacebook } from 'react-icons/fa'
+import { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import AuthLayout from '../layouts/AuthLayout';
+import { FcGoogle } from 'react-icons/fc';
+import { loginWithGoogle } from '../services/authService';
+// Google OAuth cần cài @react-oauth/google + GOOGLE_CLIENT_ID — xem README
 
 function Login() {
-  const navigate = useNavigate()
-  const { login } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const flashMessage = location.state?.message;
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    const result = login(email, password)
-    setLoading(false)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    const result = await login(email, password);
+    setLoading(false);
     if (result.success) {
-      navigate('/', { replace: true })
+      navigate('/', { replace: true });
     } else {
-      setError(result.message || 'Đăng nhập thất bại.')
+      setError(result.message || 'Đăng nhập thất bại.');
     }
-  }
+  };
+
+  const handleGoogleLogin = () => {
+    setError('Google OAuth cần cấu hình GOOGLE_CLIENT_ID trong backend. Vui lòng đăng nhập bằng email.');
+  };
 
   return (
     <AuthLayout
@@ -38,6 +45,11 @@ function Login() {
         </p>
 
         <form className="auth-form__form" onSubmit={handleSubmit} noValidate>
+          {flashMessage && (
+            <div className="auth-form__error auth-form__error--info" role="status">
+              {flashMessage}
+            </div>
+          )}
           {error && (
             <div className="auth-form__error" role="alert">
               {error}
@@ -91,13 +103,13 @@ function Login() {
         </form>
 
         <div className="auth-form__social">
-          <button type="button" className="auth-form__social-btn">
+          <button
+            type="button"
+            className="auth-form__social-btn"
+            onClick={handleGoogleLogin}
+          >
             <FcGoogle size={20} />
             <span>Sign in with Google</span>
-          </button>
-          <button type="button" className="auth-form__social-btn">
-            <FaFacebook size={20} style={{ color: '#1877f2' }} />
-            <span>Sign in with Facebook</span>
           </button>
         </div>
 
@@ -109,7 +121,7 @@ function Login() {
         </p>
       </div>
     </AuthLayout>
-  )
+  );
 }
 
-export default Login
+export default Login;
