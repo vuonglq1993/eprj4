@@ -1,5 +1,6 @@
 package com.languageapp.language_learning_backend.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -52,7 +53,7 @@ public class Exercise {
      * SPEAKING:
      *   {"targetText":"...", "language":"en"}
      */
-    @Column(nullable = false, columnDefinition = "JSON")
+    @Column(columnDefinition = "json")
     private String questionData;
 
     @Column(nullable = false) @Builder.Default private Integer orderIndex       = 0;

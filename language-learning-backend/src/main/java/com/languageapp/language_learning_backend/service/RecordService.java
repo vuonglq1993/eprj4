@@ -34,46 +34,25 @@ public class RecordService {
 
     public Record upload(MultipartFile file,
                          String title,
-                         Record.RecordType type,
                          UUID userId,
                          UUID exerciseId) {
 
         try {
             Map uploadResult = cloudinary.uploader().upload(
                     file.getBytes(),
-                    ObjectUtils.asMap("resource_type", "video")
+                    ObjectUtils.asMap(
+                            "resource_type", "auto"
+                    )
             );
 
-            Record.RecordBuilder builder = Record.builder()
-                    .title(title)
+            Record record = Record.builder()
                     .audioUrl((String) uploadResult.get("secure_url"))
-                    .publicId((String) uploadResult.get("public_id"))
-                    .type(type);
+                    .title(title)
+                    .user(userRepo.getReferenceById(userId))
+                    .exercise(exerciseRepo.getReferenceById(exerciseId))
+                    .build();
 
-            // USER
-            if (type == Record.RecordType.USER_PRACTICE && userId != null) {
-                builder.user(userRepo.getReferenceById(userId));
-            }
-
-            // EXERCISE
-            if (exerciseId != null) {
-                builder.exercise(exerciseRepo.getReferenceById(exerciseId));
-            }
-
-            Record saved = recordRepo.save(builder.build());
-
-            // 🔔 notify
-            if (type == Record.RecordType.USER_PRACTICE) {
-                firebaseService.sendToUser(userId,
-                        "Đã upload",
-                        "Audio của bạn đã được lưu");
-            } else {
-                firebaseService.sendToTopic("listening",
-                        "Audio mới",
-                        "Có audio mới cho bài nghe");
-            }
-
-            return saved;
+            return recordRepo.save(record);
 
         } catch (Exception e) {
             throw new RuntimeException("Upload failed", e);

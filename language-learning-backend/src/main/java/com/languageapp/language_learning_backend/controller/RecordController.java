@@ -24,12 +24,11 @@ public class RecordController {
     public ResponseEntity<Record> upload(
             @RequestParam MultipartFile file,
             @RequestParam String title,
-            @RequestParam Record.RecordType type,
-            @RequestParam(required = false) UUID userId,
-            @RequestParam(required = false) UUID exerciseId
+            @RequestParam UUID userId,
+            @RequestParam UUID exerciseId
     ) {
         return ResponseEntity.ok(
-                recordService.upload(file, title, type, userId, exerciseId)
+                recordService.upload(file, title, userId, exerciseId)
         );
     }
 
