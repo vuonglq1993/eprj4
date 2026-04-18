@@ -25,40 +25,26 @@ public class Record {
 
     @Id
     @UuidGenerator
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(length = 36)
     private UUID id;
+
+    @Column(nullable = false)
+    private String audioUrl;
 
     @Column(length = 150)
     private String title;
 
-    @Column(length = 500, nullable = false)
-    private String audioUrl;
-
-    @Column(length = 255)
-    private String publicId;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
-    private RecordType type;
-
-    //  USER (cho USER_PRACTICE)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    //  LESSON (cho LESSON_AUDIO + LISTENING)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "exercise_id")
+    @JoinColumn(name = "exercise_id", nullable = false)
     private Exercise exercise;
 
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt;
+    private String transcript;
+    private Integer score;
+    private Boolean isCorrect;
 
-    public enum RecordType {
-        LESSON_AUDIO,
-        LISTENING,
-        USER_PRACTICE
-    }
+    @CreationTimestamp
+    private Instant createdAt;
 }

@@ -10,8 +10,4 @@ public interface RecordRepository extends JpaRepository<Record, UUID> {
     List<Record> findByExercise_Id(UUID exerciseId);
 
     List<Record> findByUser_Id(UUID userId);
-
-    List<Record> findByType(Record.RecordType type);
-
-    List<Record> findByExercise_IdAndType(UUID exerciseId, Record.RecordType type);
 }
