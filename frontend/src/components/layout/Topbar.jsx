@@ -19,7 +19,6 @@ const PAGE_TITLES = {
   '/new-project': 'Project / New Project',
   '/allprojects': 'Pages/All projects',
   '/invoice': 'Account / Invoice',
-  '/security': 'Account / Security',
   '/kanban': 'Kanban',
   '/datatables': 'Data Tables',
   '/wizard': 'Wizard',

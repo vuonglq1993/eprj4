@@ -4,7 +4,7 @@ import { FiEdit2, FiTrash2, FiPlus, FiX } from 'react-icons/fi';
 import { FaLayerGroup } from 'react-icons/fa6';
 import { getTopics, createTopic, updateTopic, deleteTopic } from '../services/topicService';
 import { isAdmin } from '../utils/roleUtils';
-import { DEMO_TOPICS } from '../data/topicDemo';
+
 
 const EMPTY_FORM = { name: '', description: '', iconUrl: '', isActive: true };
 

@@ -10,7 +10,7 @@ public class SubmitResponse {
     private String  correctAnswer;
     private String  explanation;
     private Integer totalLessonScore;   // tổng điểm bài học sau khi nộp
-    private Boolean isCourseCompleted;  // ✅ thêm vào
-    private Boolean isTimeout;
+    private Boolean isTimeout = false;
+    private Boolean isCourseCompleted = false;
     private UUID courseId;
 }

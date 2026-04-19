@@ -124,6 +124,11 @@ html, body, #root {
   border-radius: 10px;
 }
 
+.auth-form__error--info {
+  background: #ecfdf5;
+  color: #047857;
+}
+
 .auth-form__field {
   display: flex;
   flex-direction: column;
