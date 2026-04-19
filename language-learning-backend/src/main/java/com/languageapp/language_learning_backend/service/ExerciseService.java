@@ -39,6 +39,7 @@ public class ExerciseService {
 
     private final SpeechService speechService;
     private final ScoringService scoringService;
+    private final com.languageapp.language_learning_backend.ai.client.AiClient aiClient;
 
     // ───────────────────────── LIST
     @Transactional(readOnly = true)
@@ -124,7 +125,9 @@ public class ExerciseService {
             isTimeout = elapsed > ex.getTimeLimitSeconds();
         }
 
-        int pointsEarned = grade.correct ? ex.getPoints() : 0;
+        int pointsEarned = (ex.getType() == Exercise.ExerciseType.SPEAKING)
+                ? grade.points()
+                : (grade.correct ? ex.getPoints() : 0);
 
         UserProgress progress = progressRepo.findByUserIdAndLessonId(p.getUserId(), lessonId)
                 .orElse(UserProgress.builder()
@@ -176,11 +179,32 @@ public class ExerciseService {
             return switch (ex.getType()) {
 
                 case MULTIPLE_CHOICE, LISTENING_CHOICE -> {
-                    int correctIndex = q.get("correctIndex").asInt();
+                    com.fasterxml.jackson.databind.JsonNode optionsNode = q.path("options");
                     int user = Integer.parseInt(req.getAnswer().trim());
 
-                    boolean ok = correctIndex == user;
-                    String correctText = q.get("options").get(correctIndex).asText();
+                    // Support both "correctIndex":1 and "correct":"is" formats
+                    int correctIndex;
+                    String correctText;
+                    if (q.has("correctIndex")) {
+                        correctIndex = q.path("correctIndex").asInt(0);
+                        correctText = (optionsNode.isArray() && correctIndex < optionsNode.size())
+                                ? optionsNode.get(correctIndex).asText()
+                                : String.valueOf(correctIndex);
+                    } else {
+                        String correctStr = q.path("correct").asText("");
+                        correctIndex = -1;
+                        if (optionsNode.isArray()) {
+                            for (int i = 0; i < optionsNode.size(); i++) {
+                                if (optionsNode.get(i).asText().equals(correctStr)) {
+                                    correctIndex = i;
+                                    break;
+                                }
+                            }
+                        }
+                        correctText = correctStr.isEmpty() ? String.valueOf(correctIndex) : correctStr;
+                    }
+
+                    boolean ok = correctIndex >= 0 && correctIndex == user;
 
                     yield new GradeResult(
                             ok,
@@ -191,8 +215,9 @@ public class ExerciseService {
                 }
 
                 case FILL_IN_BLANK, TRANSLATION -> {
-                    String correct = q.get("answer").asText();
-                    boolean ok = correct.equalsIgnoreCase(req.getAnswer().trim());
+                    // Support both "answer" and "correct" field names
+                    String correct = q.has("answer") ? q.path("answer").asText("") : q.path("correct").asText("");
+                    boolean ok = !correct.isEmpty() && correct.equalsIgnoreCase(req.getAnswer().trim());
 
                     yield new GradeResult(
                             ok,
@@ -203,18 +228,68 @@ public class ExerciseService {
                 }
 
                 case SPEAKING -> {
-                    String target = q.get("targetText").asText();
+                    String target = q.path("targetText").asText(
+                            q.path("text").asText(
+                                    q.path("sentence").asText("")));
+
+                    if (req.getAudioUrl() == null || req.getAudioUrl().isBlank()) {
+                        yield new GradeResult(false, 0, target, "No audio submitted");
+                    }
 
                     String transcript = speechService.transcribeFromUrl(req.getAudioUrl());
 
-                    boolean ok = scoringService.isCorrect(transcript, target, 0.8);
+                    // AI scoring via Groq LLM
+                    String systemPrompt = """
+                            You are a language pronunciation evaluator.
+                            Given a target sentence and a speech transcript, score the pronunciation accuracy from 0 to 100.
+                            Consider: correctness of words, completeness, and naturalness.
+                            Respond in JSON only: {"score": <number>, "feedback": "<one short sentence>"}
+                            """;
+                    String userMessage = "Target: \"" + target + "\"\nTranscript: \"" + transcript + "\"";
 
-                    yield new GradeResult(
-                            ok,
-                            ex.getPoints(),
-                            target,
-                            "Speech evaluated"
-                    );
+                    int aiScore = 0;
+                    String feedback = "Could not evaluate";
+                    try {
+                        String aiReply = aiClient.chat(systemPrompt, userMessage).getText().trim();
+                        // Strip markdown code block if present
+                        aiReply = aiReply.replaceAll("(?s)```(?:json)?\\s*", "").replaceAll("```", "").trim();
+                        com.fasterxml.jackson.databind.JsonNode scoreNode = mapper.readTree(aiReply);
+                        aiScore = scoreNode.path("score").asInt(0);
+                        feedback = scoreNode.path("feedback").asText("Evaluated");
+                    } catch (Exception ignored) {
+                        // fallback to Levenshtein
+                        double sim = scoringService.similarity(transcript, target);
+                        aiScore = (int) (sim * 100);
+                        feedback = "Score based on similarity";
+                    }
+
+                    int partialPoints = (int) Math.round(aiScore / 100.0 * ex.getPoints());
+                    boolean ok = aiScore >= 60;
+                    String explanation = "Score: " + aiScore + "/100 — " + feedback
+                            + "\nYou said: \"" + transcript + "\""
+                            + "\nTarget: \"" + target + "\"";
+
+                    yield new GradeResult(ok, partialPoints, target, explanation);
+                }
+
+                case MATCHING, DRAG_DROP -> {
+                    // user answer: "right1|right2|..." in order of left items
+                    com.fasterxml.jackson.databind.JsonNode pairsNode = q.path("pairs");
+                    String[] userRights = req.getAnswer().split("\\|", -1);
+
+                    int total = pairsNode.size();
+                    int matched = 0;
+                    StringBuilder correctBuilder = new StringBuilder();
+                    for (int i = 0; i < total; i++) {
+                        String expectedRight = pairsNode.get(i).path("right").asText();
+                        if (correctBuilder.length() > 0) correctBuilder.append("|");
+                        correctBuilder.append(expectedRight);
+                        if (i < userRights.length && userRights[i].trim().equalsIgnoreCase(expectedRight.trim())) {
+                            matched++;
+                        }
+                    }
+                    boolean ok = matched == total;
+                    yield new GradeResult(ok, ok ? ex.getPoints() : 0, correctBuilder.toString(), null);
                 }
 
                 default -> new GradeResult(

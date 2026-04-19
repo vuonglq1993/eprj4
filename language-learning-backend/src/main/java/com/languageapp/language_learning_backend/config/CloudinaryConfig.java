@@ -2,10 +2,8 @@ package com.languageapp.language_learning_backend.config;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.google.api.client.util.Value;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
-
-import java.util.Map;
 
 @Configuration
 public class CloudinaryConfig {

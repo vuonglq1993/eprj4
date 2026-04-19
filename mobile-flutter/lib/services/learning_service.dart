@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import 'token_service.dart';
@@ -188,27 +189,80 @@ class LearningService {
     required String courseId,
     required String lessonId,
     required String exerciseId,
-    required dynamic answer, // Map, int, String — bất kỳ kiểu JSON nào
+    required dynamic answer,
     required int clientStartMs,
     required int clientSubmitMs,
+    String? audioUrl,
   }) async {
     try {
+      final body = {
+        'exerciseId': exerciseId,
+        'answer': answer,
+        'clientStartTime': clientStartMs,
+        'clientSubmitTime': clientSubmitMs,
+        if (audioUrl != null) 'audioUrl': audioUrl,
+      };
       final res = await http.post(
         Uri.parse(
             '$_base/courses/$courseId/lessons/$lessonId/exercises/submit'),
         headers: await _auth(),
-        body: jsonEncode({
-          'exerciseId': exerciseId,
-          'answer': answer,
-          'clientStartTime': clientStartMs,
-          'clientSubmitTime': clientSubmitMs,
-        }),
+        body: jsonEncode(body),
       );
       if (res.statusCode == 200 || res.statusCode == 201) {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
       return null;
     } catch (_) {
+      return null;
+    }
+  }
+
+  /// Upload file ghi âm lên backend (backend đẩy lên Cloudinary).
+  /// Trả về audioUrl từ Cloudinary hoặc null nếu lỗi.
+  static Future<String?> uploadSpeakingRecord({
+    required File audioFile,
+    required String exerciseId,
+    String title = 'Speaking Record',
+  }) async {
+    try {
+      final token = await TokenService.getAccessToken();
+      // Decode JWT để lấy userId (sub claim)
+      String userId = '';
+      if (token != null) {
+        final parts = token.split('.');
+        if (parts.length == 3) {
+          final padded = base64Url.normalize(parts[1]);
+          final payload =
+              utf8.decode(base64Url.decode(padded));
+          final map = jsonDecode(payload) as Map<String, dynamic>;
+          userId = (map['sub'] ?? '').toString();
+        }
+      }
+
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$_base/records/upload'),
+      );
+      if (token != null) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      print('[UploadRecord] userId=$userId exerciseId=$exerciseId');
+      request.fields['title'] = title;
+      request.fields['userId'] = userId;
+      request.fields['exerciseId'] = exerciseId;
+      request.files
+          .add(await http.MultipartFile.fromPath('file', audioFile.path));
+
+      final streamed = await request.send();
+      final responseBody = await streamed.stream.bytesToString();
+      print('[UploadRecord] status=${streamed.statusCode} body=$responseBody');
+      if (streamed.statusCode == 200 || streamed.statusCode == 201) {
+        final body = jsonDecode(responseBody) as Map<String, dynamic>;
+        return body['audioUrl']?.toString();
+      }
+      return null;
+    } catch (e, st) {
+      print('[UploadRecord] Exception: $e\n$st');
       return null;
     }
   }
