@@ -1,178 +1,229 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:language_learning/services/token_service.dart';
+import '../config/app_config.dart';
+import 'token_service.dart';
 
 class ApiService {
+  static String get _base => AppConfig.baseUrl;
 
-  static const String baseUrl = "http://10.0.2.2:8080/api/v1";
+  static Map<String, String> get _jsonHeaders => {
+        'Content-Type': 'application/json',
+      };
 
-  static Future<bool> register({
+  static Future<Map<String, String>> _authHeaders() async {
+    final token = await TokenService.getAccessToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  // ─── Helpers ────────────────────────────────────────────────────────────
+
+  static Future<Map<String, dynamic>?> _parseAndSaveAuth(http.Response res) async {
+    if (res.statusCode != 200 && res.statusCode != 201) return null;
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    await TokenService.saveTokens(
+      accessToken: data['accessToken'] as String,
+      refreshToken: data['refreshToken'] as String,
+    );
+    return data['user'] as Map<String, dynamic>;
+  }
+
+  // ─── AUTH ────────────────────────────────────────────────────────────────
+
+  static Future<String?> register({
     required String email,
     required String password,
     required String firstName,
     required String lastName,
-    required String phone, // ✅ thêm dòng này
+    required String phone,
   }) async {
-
-    final url = Uri.parse("$baseUrl/auth/register");
-
-    final response = await http.post(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        "email": email,
-        "password": password,
-        "firstName": firstName,
-        "lastName": lastName,
-        "phone": phone, // ✅ thêm dòng này
-      }),
-    );
-
-    print("STATUS: ${response.statusCode}");
-    print("BODY: ${response.body}");
-
-    return response.statusCode == 201;
+    try {
+      final res = await http.post(
+        Uri.parse('$_base/auth/register'),
+        headers: _jsonHeaders,
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+          'firstName': firstName,
+          'lastName': lastName,
+          'phone': phone,
+        }),
+      );
+      if (res.statusCode == 201) {
+        await _parseAndSaveAuth(res);
+        return null;
+      }
+      if (res.statusCode == 409) return 'email_exists';
+      return 'register_failed';
+    } catch (_) {
+      return 'network_error';
+    }
   }
 
-  static Future<String?> login({
+  static Future<Map<String, dynamic>?> login({
     required String email,
     required String password,
   }) async {
-
-    final url = Uri.parse("$baseUrl/auth/login");
-
-    final response = await http.post(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        "email": email,
-        "password": password,
-      }),
-    );
-
-    print("LOGIN STATUS: ${response.statusCode}");
-    print("LOGIN BODY: ${response.body}");
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-
-      String token = data["accessToken"];
-
-      // 🔥 BẮT BUỘC PHẢI CÓ
-      await TokenService.saveToken(token);
-
-      return token;
+    try {
+      final res = await http.post(
+        Uri.parse('$_base/auth/login'),
+        headers: _jsonHeaders,
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+      return await _parseAndSaveAuth(res);
+    } catch (_) {
+      return null;
     }
-
-    return null;
   }
 
-
-  // ================= GOOGLE LOGIN =================
-  static Future<String?> loginWithGoogle(String idToken) async {
-
-    final url = Uri.parse("$baseUrl/auth/google");
-
-    final response = await http.post(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        "idToken": idToken,
-      }),
-    );
-
-    print("GOOGLE STATUS: ${response.statusCode}");
-    print("GOOGLE BODY: ${response.body}");
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-
-      String token = data["accessToken"];
-
-      // 🔥 lưu token giống login thường
-      await TokenService.saveToken(token);
-
-      return token;
+  /// Đăng nhập bằng Google idToken.
+  static Future<Map<String, dynamic>?> loginWithGoogle(String idToken) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$_base/auth/google'),
+        headers: _jsonHeaders,
+        body: jsonEncode({'idToken': idToken}),
+      );
+      return await _parseAndSaveAuth(res);
+    } catch (_) {
+      return null;
     }
-
-    return null;
   }
 
+  static Future<void> logout() async {
+    try {
+      await http.post(
+        Uri.parse('$_base/auth/logout'),
+        headers: await _authHeaders(),
+      );
+    } catch (_) {}
+    await TokenService.clearTokens();
+  }
 
+  // ─── USER ────────────────────────────────────────────────────────────────
 
-  // GET PROFILE
   static Future<Map<String, dynamic>?> getProfile() async {
-
-    final token = await TokenService.getToken();
-
-    if (token == null) return null; // 🔥 thêm dòng này
-
-    final response = await http.get(
-      Uri.parse("$baseUrl/users/me"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+    try {
+      final res = await http.get(
+        Uri.parse('$_base/users/me'),
+        headers: await _authHeaders(),
+      );
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      if (res.statusCode == 401) await TokenService.clearTokens();
+      return null;
+    } catch (_) {
+      return null;
     }
-
-    return null;
   }
 
+  // ─── CHECK EMAIL / PHONE ─────────────────────────────────────────────────
 
-// UPDATE PROFILE
-  static Future<bool> updateProfile({
-    required String firstName,
-    required String lastName,
-    String? avatarUrl,
-  }) async {
-
-    final token = await TokenService.getToken();
-
-    final response = await http.put(
-      Uri.parse("$baseUrl/users/me"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: jsonEncode({
-        "firstName": firstName,
-        "lastName": lastName,
-        "avatarUrl": avatarUrl,
-      }),
-    );
-
-    return response.statusCode == 200;
+  /// true = đã tồn tại, false = còn trống, null = lỗi mạng
+  static Future<bool?> checkEmail(String email) async {
+    try {
+      final res = await http.get(
+        Uri.parse('$_base/auth/check-email?email=${Uri.encodeComponent(email)}'),
+        headers: _jsonHeaders,
+      );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        return data['exists'] as bool;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 
-  static Future<bool> changePassword({
-    required String currentPassword,
-    required String newPassword,
+  /// true = đã tồn tại, false = còn trống, null = lỗi mạng
+  static Future<bool?> checkPhone(String phone) async {
+    try {
+      final res = await http.get(
+        Uri.parse('$_base/auth/check-phone?phone=${Uri.encodeComponent(phone)}'),
+        headers: _jsonHeaders,
+      );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        return data['exists'] as bool;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // ─── LANGUAGES ───────────────────────────────────────────────────────────
+
+  /// Lấy danh sách ngôn ngữ (public, không cần auth).
+  static Future<List<Map<String, dynamic>>> getLanguages() async {
+    try {
+      final res = await http.get(Uri.parse('$_base/languages'));
+      if (res.statusCode == 200) {
+        final list = jsonDecode(res.body) as List<dynamic>;
+        return list.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  // ─── ONBOARDING ──────────────────────────────────────────────────────────
+
+  static Future<bool> isOnboardingCompleted() async {
+    try {
+      final res = await http.get(
+        Uri.parse('$_base/onboarding/status'),
+        headers: await _authHeaders(),
+      );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        return data['onboardingCompleted'] == true;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Submit onboarding và trả về full response (recommendedPath, motivationMessage, v.v.).
+  /// Trả về null nếu lỗi.
+  ///
+  /// selfLevel:  COMPLETE_BEGINNER | BEGINNER | INTERMEDIATE | ADVANCED
+  /// goal:       TRAVEL | SCHOOL | WORK | FAMILY_FRIENDS | SKILL_IMPROVEMENT | OTHERS
+  /// dailyTime:  FIVE_MIN | FIFTEEN_MIN | THIRTY_MIN | SIXTY_MIN
+  static Future<Map<String, dynamic>?> submitOnboarding({
+    required String targetLanguageId,
+    required String selfLevel,
+    required String goal,
+    required String dailyTime,
+    String nativeLanguageCode = 'vi',
+    String? ageGroup,
   }) async {
-
-    final token = await TokenService.getToken();
-
-    final res = await http.patch(
-      Uri.parse("$baseUrl/users/me/password"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: jsonEncode({
-        "currentPassword": currentPassword,
-        "newPassword": newPassword,
-      }),
-    );
-
-    return res.statusCode == 200;
+    try {
+      final body = <String, dynamic>{
+        'targetLanguageId': targetLanguageId,
+        'selfLevel': selfLevel,
+        'goal': goal,
+        'dailyTime': dailyTime,
+        'nativeLanguageCode': nativeLanguageCode,
+        if (ageGroup != null) 'ageGroup': ageGroup,
+      };
+      final res = await http.post(
+        Uri.parse('$_base/onboarding'),
+        headers: await _authHeaders(),
+        body: jsonEncode(body),
+      );
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 }

@@ -133,6 +133,13 @@ public class ExerciseService {
                         .lesson(lessonRepo.getReferenceById(lessonId))
                         .build());
 
+        // Nếu lesson đã COMPLETED và user làm lại → reset session score
+        if (progress.getStatus() == ProgressStatus.COMPLETED) {
+            progress.setScore(0);
+            progress.setStatus(ProgressStatus.IN_PROGRESS);
+            progress.setCompletedAt(null);
+        }
+
         progress.setAttempts(progress.getAttempts() + 1);
         progress.setScore(progress.getScore() + pointsEarned);
 
