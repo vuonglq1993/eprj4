@@ -56,12 +56,10 @@ public class StudyLogService {
                         .build()
                 );
 
-// update time
+        // Lưu thời gian tốt nhất (không cộng dồn)
         progress.setTimeSpentSeconds(
-                progress.getTimeSpentSeconds() + req.getDurationSeconds()
+                Math.max(progress.getTimeSpentSeconds(), req.getDurationSeconds())
         );
-
-        progress.setAttempts(progress.getAttempts() + 1);
 
         if (progress.getStartedAt() == null) {
             progress.setStartedAt(Instant.now());

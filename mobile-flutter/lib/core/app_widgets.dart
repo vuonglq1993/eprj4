@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'theme.dart';
+import '../services/tts_service.dart';
 
 /// Widget bao ngoài bất kỳ widget nào để thêm hiệu ứng thu nhỏ khi bấm.
 class TappableScale extends StatefulWidget {
@@ -154,6 +156,123 @@ class _GradientButtonState extends State<GradientButton>
                           : AppColors.textSecondary,
                     ),
                   ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Speak button ──────────────────────────────────────────────────────────────
+//
+// Sizes:
+//   SpeakSize.sm  — nhỏ (inline text, 28px)
+//   SpeakSize.md  — vừa (word hero, 36px)  ← default
+//   SpeakSize.lg  — to  (pronunciation page, 52px)
+
+enum SpeakSize { sm, md, lg }
+
+class SpeakButton extends StatefulWidget {
+  final String text;
+  final SpeakSize size;
+  final bool slow;
+  final Color? color;
+
+  const SpeakButton({
+    super.key,
+    required this.text,
+    this.size = SpeakSize.md,
+    this.slow = false,
+    this.color,
+  });
+
+  @override
+  State<SpeakButton> createState() => _SpeakButtonState();
+}
+
+class _SpeakButtonState extends State<SpeakButton>
+    with SingleTickerProviderStateMixin {
+  bool _playing = false;
+  late AnimationController _ripple;
+
+  @override
+  void initState() {
+    super.initState();
+    _ripple = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ripple.dispose();
+    if (_playing) TtsService.instance.stop();
+    super.dispose();
+  }
+
+  Future<void> _tap() async {
+    if (_playing) {
+      await TtsService.instance.stop();
+      setState(() => _playing = false);
+      _ripple.stop();
+      _ripple.reset();
+      return;
+    }
+    HapticFeedback.selectionClick();
+    setState(() => _playing = true);
+    _ripple.repeat();
+
+    if (widget.slow) {
+      await TtsService.instance.speakSlow(widget.text);
+    } else {
+      await TtsService.instance.speak(widget.text);
+    }
+
+    if (mounted) {
+      setState(() => _playing = false);
+      _ripple.stop();
+      _ripple.reset();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColor = widget.color ?? AppColors.primaryLight;
+
+    final (double box, double icon) = switch (widget.size) {
+      SpeakSize.sm => (28.0, 14.0),
+      SpeakSize.md => (36.0, 18.0),
+      SpeakSize.lg => (52.0, 26.0),
+    };
+
+    return GestureDetector(
+      onTap: _tap,
+      child: AnimatedBuilder(
+        animation: _ripple,
+        builder: (_, child) {
+          final t = _ripple.value < 0.5
+              ? _ripple.value * 2
+              : (1 - _ripple.value) * 2;
+          final scale = _playing ? 1.0 + 0.08 * t : 1.0;
+          return Transform.scale(scale: scale, child: child);
+        },
+        child: Container(
+          width: box,
+          height: box,
+          decoration: BoxDecoration(
+            color: _playing
+                ? baseColor.withValues(alpha: 0.25)
+                : baseColor.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: baseColor.withValues(alpha: _playing ? 0.7 : 0.35),
+            ),
+          ),
+          child: Icon(
+            _playing ? Icons.stop_rounded : Icons.volume_up_rounded,
+            size: icon,
+            color: baseColor,
           ),
         ),
       ),
