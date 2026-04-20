@@ -19,7 +19,7 @@ public interface StudyLogRepository extends JpaRepository<StudyLog, UUID> {
     List<Object[]> dailySeconds(@Param("uid") UUID uid, @Param("from") LocalDate from, @Param("to") LocalDate to);
 
     // Số bài hoàn thành mỗi ngày
-    @Query("SELECT s.studyDate, COUNT(s) FROM StudyLog s WHERE s.user.id=:uid AND s.activityType='EXERCISE_SUBMIT' AND s.studyDate BETWEEN :from AND :to GROUP BY s.studyDate")
+    @Query("SELECT s.studyDate, COUNT(s) FROM StudyLog s WHERE s.user.id=:uid AND s.studyDate BETWEEN :from AND :to GROUP BY s.studyDate")
     List<Object[]> dailyCount(@Param("uid") UUID uid, @Param("from") LocalDate from, @Param("to") LocalDate to);
 
     @Query("SELECT COALESCE(SUM(s.durationSeconds),0) FROM StudyLog s WHERE s.user.id=:uid AND s.studyDate BETWEEN :from AND :to")
