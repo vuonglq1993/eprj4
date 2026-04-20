@@ -52,11 +52,16 @@ public class GamificationService {
     };
 
     // ── GET PROFILE ───────────────────────────────────────────
-    @Transactional(readOnly = true)
+    @Transactional
     public GameProfileResponse getProfile(UserPrincipal p) {
         User user = userRepo.findById(p.getUserId())
                 .orElseThrow(() -> new NotFoundException("User not found"));
         UserGameProfile g = getOrCreate(user);
+
+        // Auto-sync XP from existing progress if profile has no XP yet
+        if (g.getTotalXp() == 0) {
+            syncXpFromProgress(user, g);
+        }
         List<UserBadge> badges = badgeRepo.findByUserIdOrderByEarnedAtDesc(p.getUserId());
 
         int level        = calcLevel(g.getTotalXp());
@@ -145,6 +150,32 @@ public class GamificationService {
         xp += XP_CORRECT_EXERCISE;
         if (streakDays > 1) xp += XP_DAILY_STREAK;
         return xp;
+    }
+
+    // ── SYNC XP FROM EXISTING PROGRESS ───────────────────────
+    private void syncXpFromProgress(User user, UserGameProfile g) {
+        // Sum bestScore across all lessons this user has attempted
+        List<UserProgress> progresses = progressRepo.findByUserId(user.getId());
+        int totalXp = progresses.stream()
+                .filter(pr -> pr.getAttempts() > 0)
+                .mapToInt(UserProgress::getBestScore)
+                .sum();
+
+        // Add streak bonus: currentStreak * XP_DAILY_STREAK
+        int streakBonus = g.getCurrentStreak() * XP_DAILY_STREAK;
+        totalXp += streakBonus;
+
+        if (totalXp > 0) {
+            int newLevel = calcLevel(totalXp);
+            g.setTotalXp(totalXp);
+            g.setLevel(newLevel);
+            // Set weeklyXp to progress from this week
+            LocalDate monday = LocalDate.now().with(DayOfWeek.MONDAY);
+            int weeklyXp = studyLogRepo.studyDates(user.getId(), monday).size() * XP_DAILY_STREAK;
+            g.setWeeklyXp(Math.min(weeklyXp, totalXp));
+            gameRepo.save(g);
+            log.info("Synced XP for user {}: {} XP (level {})", user.getEmail(), totalXp, newLevel);
+        }
     }
 
     // ── PRIVATE HELPERS ───────────────────────────────────────

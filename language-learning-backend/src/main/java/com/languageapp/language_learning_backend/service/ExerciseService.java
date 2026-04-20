@@ -40,6 +40,7 @@ public class ExerciseService {
     private final SpeechService speechService;
     private final ScoringService scoringService;
     private final com.languageapp.language_learning_backend.ai.client.AiClient aiClient;
+    private final GamificationService gamificationService;
 
     // ───────────────────────── LIST
     @Transactional(readOnly = true)
@@ -136,8 +137,11 @@ public class ExerciseService {
                         .lesson(lessonRepo.getReferenceById(lessonId))
                         .build());
 
+        // Track whether lesson was already completed (replay = no new XP)
+        boolean wasAlreadyCompleted = progress.getStatus() == ProgressStatus.COMPLETED;
+
         // Nếu lesson đã COMPLETED và user làm lại → reset session score
-        if (progress.getStatus() == ProgressStatus.COMPLETED) {
+        if (wasAlreadyCompleted) {
             progress.setScore(0);
             progress.setStatus(ProgressStatus.IN_PROGRESS);
             progress.setCompletedAt(null);
@@ -160,6 +164,14 @@ public class ExerciseService {
 
         progress.setBestScore(Math.max(progress.getBestScore(), progress.getScore()));
         progressRepo.save(progress);
+
+        // Award XP only on first-time attempt, not replays
+        if (pointsEarned > 0 && !wasAlreadyCompleted) {
+            try {
+                User user = userRepo.getReferenceById(p.getUserId());
+                gamificationService.awardXp(user, pointsEarned);
+            } catch (Exception ignored) {}
+        }
 
         return SubmitResponse.builder()
                 .correct(grade.correct && !isTimeout)
