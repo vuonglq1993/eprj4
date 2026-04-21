@@ -33,7 +33,7 @@ public class VocabService {
 
     public Object generateWordData(VocabRequest req, UserPrincipal p) {
         AiTier tier = getTier(p);
-        rateLimitGuard.check(p.getUserId(), InteractionType.RECOMMENDATION, tier); // dùng chung slot
+        rateLimitGuard.check(p.getUserId(), InteractionType.VOCAB_GENERATE, tier);
 
         String system = promptBuilder.forVocabExamples(req.getWord(), req.getCefrLevel());
         log.info("Vocab generate - user: {}, word: {}", p.getUserId(), req.getWord());
@@ -42,11 +42,11 @@ public class VocabService {
         try {
             result = aiClient.chat(system, "Tạo dữ liệu học từ vựng cho từ: " + req.getWord());
         } catch (Exception e) {
-            logHelper.saveFailure(p.getUserId(), InteractionType.RECOMMENDATION, req.getWord(), e.getMessage(), null);
+            logHelper.saveFailure(p.getUserId(), InteractionType.VOCAB_GENERATE, req.getWord(), e.getMessage(), null);
             throw e;
         }
 
-        logHelper.saveSuccess(p.getUserId(), InteractionType.RECOMMENDATION, req.getWord(), result, null);
+        logHelper.saveSuccess(p.getUserId(), InteractionType.VOCAB_GENERATE, req.getWord(), result, null);
 
         try {
             String clean = result.getText().replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();

@@ -76,8 +76,13 @@ dependencies:
 
   #env
   flutter_dotenv: ^5.1.0
+  device_info_plus: ^10.1.0
   audioplayers: ^6.6.0
   fl_chart: ^1.2.0
+  path_provider: ^2.1.4
+
+  # Deep linking (payment return)
+  app_links: ^6.3.0
 
   #singin gg
   google_sign_in: ^6.2.1

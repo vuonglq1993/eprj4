@@ -186,6 +186,17 @@ public class PaymentService {
         subService.activate(tx.getUser(), plan);
     }
 
+    // ── STATUS POLLING ────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public Map<String, String> getTransactionStatus(String transactionId, UserPrincipal p) {
+        PaymentTransaction tx = txRepo.findById(UUID.fromString(transactionId))
+                .orElseThrow(() -> new NotFoundException("Transaction not found"));
+        if (!tx.getUser().getId().equals(p.getUserId()))
+            throw new BadRequestException("Access denied");
+        return Map.of("status", tx.getStatus().name(), "gateway", tx.getGateway().name());
+    }
+
     // ── HISTORY ───────────────────────────────────────────────
 
     @Transactional(readOnly = true)
