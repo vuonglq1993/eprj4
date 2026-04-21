@@ -16,7 +16,8 @@ class PaymentScreen extends StatefulWidget {
 
 class _PaymentScreenState extends State<PaymentScreen> {
   String _selectedGateway = 'VNPAY';
-  bool _processing = false;
+  bool _processing = false; // gọi API tạo payment
+  bool _waiting = false;    // đã mở browser, đang chờ kết quả
   StreamSubscription? _deepLinkSub;
   Timer? _pollTimer;
   String? _pendingTxId; // kept for future use (e.g. cancel)
@@ -57,19 +58,23 @@ class _PaymentScreenState extends State<PaymentScreen> {
       final uri = Uri.parse(result.paymentUrl);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw Exception('Không thể mở trang thanh toán');
       }
+
+      // Sau khi browser mở, chuyển sang trạng thái "đang chờ kết quả"
+      if (mounted) setState(() { _processing = false; _waiting = true; });
 
       if (_selectedGateway == 'VNPAY') {
         _startVNPayPolling(result.transactionId);
       }
     } catch (e) {
       if (mounted) {
+        setState(() { _processing = false; _waiting = false; });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
         );
       }
-    } finally {
-      if (mounted) setState(() => _processing = false);
     }
   }
 
@@ -93,7 +98,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Future<void> _onPayPalReturn(String orderId) async {
     _deepLinkSub?.cancel();
-    setState(() => _processing = true);
+    setState(() { _processing = true; _waiting = false; });
     try {
       await PaymentService.capturePayPal(orderId);
       if (mounted) _goInvoice(true);
@@ -116,7 +121,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Thanh toán thất bại hoặc bị hủy'), backgroundColor: AppColors.error),
       );
-      setState(() => _processing = false);
+      if (mounted) setState(() { _processing = false; _waiting = false; });
     }
   }
 
@@ -171,15 +176,50 @@ class _PaymentScreenState extends State<PaymentScreen> {
           ),
           if (_processing)
             Container(
-              color: Colors.black45,
+              color: Colors.black54,
               child: const Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     CircularProgressIndicator(color: AppColors.primary),
                     SizedBox(height: 16),
-                    Text('Đang chờ thanh toán...', style: TextStyle(color: Colors.white, fontSize: 14)),
+                    Text('Đang tạo đơn hàng...', style: TextStyle(color: Colors.white, fontSize: 14)),
                   ],
+                ),
+              ),
+            ),
+          if (_waiting)
+            Container(
+              color: Colors.black54,
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 32),
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator(color: AppColors.primary),
+                      const SizedBox(height: 20),
+                      const Text('Đang chờ kết quả thanh toán',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary),
+                          textAlign: TextAlign.center),
+                      const SizedBox(height: 8),
+                      const Text('Hoàn tất thanh toán trên trình duyệt\nrồi quay lại app',
+                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          textAlign: TextAlign.center),
+                      const SizedBox(height: 20),
+                      TextButton(
+                        onPressed: () => setState(() => _waiting = false),
+                        child: const Text('Hủy chờ',
+                            style: TextStyle(color: AppColors.error, fontSize: 13)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

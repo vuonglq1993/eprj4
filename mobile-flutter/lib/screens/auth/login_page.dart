@@ -279,26 +279,37 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _signInWithGoogle() async {
     setState(() => _isGoogleLoading = true);
+    final googleSignIn = GoogleSignIn(
+      scopes: ['email', 'profile'],
+      serverClientId: '579961382537-hfli270fo9pvfhb51d8fe1birvu1s113.apps.googleusercontent.com',
+    );
     try {
-      final googleSignIn = GoogleSignIn(
-        serverClientId: '579961382537-hfli270fo9pvfhb51d8fe1birvu1s113.apps.googleusercontent.com',
-      );
+      // Disconnect first to force account picker + fresh idToken
+      await googleSignIn.signOut();
+
       final account = await googleSignIn.signIn();
       if (account == null) {
-        setState(() => _isGoogleLoading = false);
+        if (mounted) setState(() => _isGoogleLoading = false);
         return;
       }
+
       final auth = await account.authentication;
       final idToken = auth.idToken;
+
       if (idToken == null) {
+        // idToken null = serverClientId mismatch or Play Services issue
+        // Try forcing a fresh token via disconnect
+        await googleSignIn.disconnect();
         if (!mounted) return;
         setState(() => _isGoogleLoading = false);
-        _snack('Không lấy được token Google. Thử lại.');
+        _snack('Không lấy được token Google. Kiểm tra cấu hình hoặc thử lại.');
         return;
       }
+
       final user = await ApiService.loginWithGoogle(idToken);
       if (!mounted) return;
       setState(() => _isGoogleLoading = false);
+
       if (user != null) {
         final onboardingDone = await ApiService.isOnboardingCompleted();
         if (!mounted) return;
@@ -310,12 +321,19 @@ class _LoginPageState extends State<LoginPage> {
           (r) => false,
         );
       } else {
-        _snack('Đăng nhập Google thất bại. Thử lại.');
+        _snack('Tài khoản Google chưa được liên kết. Thử đăng ký hoặc liên hệ hỗ trợ.');
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (!mounted) return;
       setState(() => _isGoogleLoading = false);
-      _snack('Lỗi Google Sign-In: ${e.toString()}');
+      final msg = e.toString();
+      if (msg.contains('network_error') || msg.contains('ApiException: 7')) {
+        _snack('Lỗi mạng. Kiểm tra kết nối và thử lại.');
+      } else if (msg.contains('sign_in_canceled') || msg.contains('ApiException: 12501')) {
+        // User cancelled — no snack needed
+      } else {
+        _snack('Đăng nhập Google thất bại: $msg');
+      }
     }
   }
 

@@ -45,8 +45,9 @@ public class PaymentService {
 
         SubscriptionPlan plan = planService.getByName(req.getPlan().name());
 
+        String clientIp = getClientIp(httpReq);
         return switch (req.getGateway()) {
-            case VNPAY  -> createVNPayPayment(user, plan, req.getPlan());
+            case VNPAY  -> createVNPayPayment(user, plan, req.getPlan(), clientIp);
             case PAYPAL -> createPayPalPayment(user, plan, req.getPlan());
             default     -> throw new BadRequestException("Gateway not supported: " + req.getGateway());
         };
@@ -54,10 +55,18 @@ public class PaymentService {
 
     // ── VNPAY ─────────────────────────────────────────────────
 
+    private String getClientIp(jakarta.servlet.http.HttpServletRequest req) {
+        String ip = req.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip)) ip = req.getRemoteAddr();
+        return (ip != null && ip.contains(",")) ? ip.split(",")[0].trim() : (ip != null ? ip : "127.0.0.1");
+    }
+
     @Transactional
     public CreatePaymentResponse createVNPayPayment(User user,
                                                     SubscriptionPlan plan,
-                                                    Plan planEnum) {
+                                                    Plan planEnum,
+                                                    String clientIp) {
+        // VNPay vnp_TxnRef max 8 chars — dùng 8 hex đầu của UUID (đủ unique trong ngày)
         PaymentTransaction tx = txRepo.save(PaymentTransaction.builder()
                 .user(user)
                 .amount(BigDecimal.valueOf(plan.getPrice()))
@@ -67,15 +76,11 @@ public class PaymentService {
                 .status(TxStatus.PENDING)
                 .build());
 
+        String txnRef = tx.getId().toString().replace("-", "").substring(0, 8).toUpperCase();
         String orderInfo = "Thanh toan goi " + plan.getName() + " LinguaNext";
-        String paymentUrl = vnpay.createPaymentUrl(
-                tx.getId().toString(),
-                plan.getPrice(),
-                orderInfo,
-                "127.0.0.1"   // production: lấy từ HttpServletRequest
-        );
+        String paymentUrl = vnpay.createPaymentUrl(txnRef, plan.getPrice(), orderInfo, clientIp);
 
-        tx.setGatewayRef(tx.getId().toString());
+        tx.setGatewayRef(txnRef); // giữ txnRef nguyên để IPN lookup luôn tìm được
         txRepo.save(tx);
 
         return CreatePaymentResponse.builder()
@@ -125,8 +130,9 @@ public class PaymentService {
 
         tx.setStatus(TxStatus.SUCCESS);
         tx.setPaidAt(LocalDateTime.now());
-        tx.setGatewayRef(vnpay.getVnpTransactionNo(params));
-        tx.setRawWebhook(params.toString());
+        // KHÔNG overwrite gatewayRef (= txnRef) để IPN retry vẫn tìm được transaction
+        // vnp_TransactionNo lưu vào rawWebhook để đối soát
+        tx.setRawWebhook("vnpTransactionNo=" + vnpay.getVnpTransactionNo(params) + " | " + params);
         txRepo.save(tx);
 
         SubscriptionPlan plan = planService.getByName(tx.getPlan().name());
