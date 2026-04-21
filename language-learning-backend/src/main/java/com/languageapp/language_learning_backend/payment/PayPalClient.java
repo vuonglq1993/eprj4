@@ -24,6 +24,7 @@ public class PayPalClient {
     @Value("${paypal.client-secret}") private String clientSecret;
     @Value("${paypal.base-url:https://api-m.sandbox.paypal.com}") private String baseUrl;
     @Value("${frontend.url}")     private String frontendUrl;
+    @Value("${android.url:}")     private String androidUrl;
 
     public OrderResponse createOrder(String txId, BigDecimal amount, String desc) {
         String token = getAccessToken();
@@ -35,8 +36,8 @@ public class PayPalClient {
                         "amount", Map.of("currency_code", "USD", "value", amount.toString()),
                         "description", desc)),
                 "application_context", Map.of(
-                        "return_url", frontendUrl + "/payment/success",
-                        "cancel_url", frontendUrl + "/payment/cancel",
+                        "return_url", (androidUrl != null && !androidUrl.isBlank() ? androidUrl : frontendUrl) + "/payment/paypal/success",
+                        "cancel_url", (androidUrl != null && !androidUrl.isBlank() ? androidUrl : frontendUrl) + "/payment/paypal/cancel",
                         "brand_name", "LinguaNext",
                         "user_action", "PAY_NOW")
         );
