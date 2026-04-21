@@ -6,6 +6,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,24 +50,26 @@ public class VNPayController {
      * Chỉ dùng để hiển thị kết quả cho user (không dùng để cập nhật DB —
      * hãy dùng IPN cho việc đó).
      */
-    @Operation(summary = "VNPay return URL (browser redirect)")
+    @Value("${android.url:linguanext://app}")
+    private String androidUrl;
+
+    @Operation(summary = "VNPay return URL (browser redirect → deep link)")
     @GetMapping("/return")
-    public ResponseEntity<Map<String, Object>> returnUrl(HttpServletRequest request) {
+    public ResponseEntity<Void> returnUrl(HttpServletRequest request) {
         Map<String, String> params = extractParams(request);
         log.info("VNPay return: txnRef={}, responseCode={}",
                 params.get("vnp_TxnRef"), params.get("vnp_ResponseCode"));
 
         boolean valid   = paymentService.verifyVNPayReturn(params);
-        boolean success = "00".equals(params.get("vnp_ResponseCode"));
+        boolean success = valid && "00".equals(params.get("vnp_ResponseCode"));
+        String txnRef   = params.getOrDefault("vnp_TxnRef", "");
 
-        return ResponseEntity.ok(Map.of(
-                "success",       valid && success,
-                "txnRef",        params.getOrDefault("vnp_TxnRef", ""),
-                "amount",        params.getOrDefault("vnp_Amount", ""),
-                "transactionNo", params.getOrDefault("vnp_TransactionNo", ""),
-                "responseCode",  params.getOrDefault("vnp_ResponseCode", ""),
-                "message",       vnpMessage(params.get("vnp_ResponseCode"))
-        ));
+        String deepLink = androidUrl + "/payment/vnpay?status=" + (success ? "success" : "failed")
+                + "&txnRef=" + txnRef;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.LOCATION, deepLink);
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
     // ── HELPER ───────────────────────────────────────────────

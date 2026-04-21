@@ -81,6 +81,9 @@ dependencies:
   fl_chart: ^1.2.0
   path_provider: ^2.1.4
 
+  # Deep linking (payment return)
+  app_links: ^6.3.0
+
   #singin gg
   google_sign_in: ^6.2.1
 

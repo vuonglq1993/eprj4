@@ -829,26 +829,30 @@ class _ErrorItemState extends State<_ErrorItem> {
                             Expanded(
                               child: Row(
                                 children: [
-                                  Text(
-                                    '"${err.wrong}"',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.error,
-                                      decoration:
-                                          TextDecoration.lineThrough,
+                                  Flexible(
+                                    child: Text(
+                                      '"${err.wrong}"',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.error,
+                                        decoration: TextDecoration.lineThrough,
+                                      ),
                                     ),
                                   ),
                                   const Text(' → ',
                                       style: TextStyle(
                                           fontSize: 11,
-                                          color:
-                                              AppColors.textHint)),
-                                  Text(
-                                    '"${err.correct}"',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.success,
+                                          color: AppColors.textHint)),
+                                  Flexible(
+                                    child: Text(
+                                      '"${err.correct}"',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.success,
+                                      ),
                                     ),
                                   ),
                                 ],

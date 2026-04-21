@@ -240,48 +240,82 @@ public class ExerciseService {
                 }
 
                 case SPEAKING -> {
-                    String target = q.path("targetText").asText(
-                            q.path("text").asText(
-                                    q.path("sentence").asText("")));
+                    // Support both old format (targetText/sentence) and new format (question/sample_answer)
+                    String question     = q.path("question").asText(
+                            q.path("targetText").asText(
+                                    q.path("text").asText(
+                                            q.path("sentence").asText(""))));
+                    String sampleAnswer = q.path("sample_answer").asText("");
+                    String hint         = q.path("hint").asText("");
+
+                    // Build keyword list from expected_keywords array
+                    com.fasterxml.jackson.databind.JsonNode kwNode = q.path("expected_keywords");
+                    java.util.List<String> keywords = new java.util.ArrayList<>();
+                    if (kwNode.isArray()) {
+                        kwNode.forEach(kw -> keywords.add(kw.asText()));
+                    }
 
                     if (req.getAudioUrl() == null || req.getAudioUrl().isBlank()) {
-                        yield new GradeResult(false, 0, target, "No audio submitted");
+                        yield new GradeResult(false, 0, question, "No audio submitted");
                     }
 
                     String transcript = speechService.transcribeFromUrl(req.getAudioUrl());
 
-                    // AI scoring via Groq LLM
+                    // Build context-aware AI prompt
+                    String keywordList = keywords.isEmpty() ? "(none)" : String.join(", ", keywords);
                     String systemPrompt = """
-                            You are a language pronunciation evaluator.
-                            Given a target sentence and a speech transcript, score the pronunciation accuracy from 0 to 100.
-                            Consider: correctness of words, completeness, and naturalness.
-                            Respond in JSON only: {"score": <number>, "feedback": "<one short sentence>"}
+                            You are an English speaking exercise evaluator.
+                            Score the learner's spoken response from 0 to 100 based on:
+                            - Relevance: does the response address the question/topic? (40 pts)
+                            - Keywords: how many expected keywords are mentioned? (30 pts)
+                            - Completeness: is the response sufficiently developed? (20 pts)
+                            - Fluency/Naturalness: does it sound natural in English? (10 pts)
+                            Respond ONLY in JSON: {"score": <0-100>, "feedback": "<one encouraging sentence in Vietnamese>", "keywords_found": [<list of matched keywords>]}
                             """;
-                    String userMessage = "Target: \"" + target + "\"\nTranscript: \"" + transcript + "\"";
+
+                    String userMessage = String.format(
+                            """
+                            Question: "%s"
+                            Hint: "%s"
+                            Sample answer: "%s"
+                            Expected keywords: [%s]
+                            Learner's transcript: "%s"
+                            """,
+                            question, hint, sampleAnswer, keywordList, transcript);
 
                     int aiScore = 0;
                     String feedback = "Could not evaluate";
+                    java.util.List<String> foundKeywords = new java.util.ArrayList<>();
+
                     try {
                         String aiReply = aiClient.chat(systemPrompt, userMessage).getText().trim();
-                        // Strip markdown code block if present
                         aiReply = aiReply.replaceAll("(?s)```(?:json)?\\s*", "").replaceAll("```", "").trim();
                         com.fasterxml.jackson.databind.JsonNode scoreNode = mapper.readTree(aiReply);
-                        aiScore = scoreNode.path("score").asInt(0);
+                        aiScore  = Math.min(100, Math.max(0, scoreNode.path("score").asInt(0)));
                         feedback = scoreNode.path("feedback").asText("Evaluated");
+                        scoreNode.path("keywords_found").forEach(k -> foundKeywords.add(k.asText()));
                     } catch (Exception ignored) {
-                        // fallback to Levenshtein
-                        double sim = scoringService.similarity(transcript, target);
-                        aiScore = (int) (sim * 100);
-                        feedback = "Score based on similarity";
+                        // Fallback: count keyword matches in transcript
+                        String lower = transcript.toLowerCase();
+                        for (String kw : keywords) {
+                            if (lower.contains(kw.toLowerCase())) {
+                                foundKeywords.add(kw);
+                            }
+                        }
+                        int kwScore  = keywords.isEmpty() ? 50 : (int)(foundKeywords.size() * 100.0 / keywords.size());
+                        double sim   = sampleAnswer.isBlank() ? 0 : scoringService.similarity(transcript, sampleAnswer);
+                        aiScore      = (int)((kwScore * 0.5) + (sim * 100 * 0.5));
+                        feedback     = "Chấm dựa trên từ khoá: " + foundKeywords.size() + "/" + keywords.size();
                     }
 
                     int partialPoints = (int) Math.round(aiScore / 100.0 * ex.getPoints());
                     boolean ok = aiScore >= 60;
                     String explanation = "Score: " + aiScore + "/100 — " + feedback
+                            + "\nKeywords found: " + (foundKeywords.isEmpty() ? "none" : String.join(", ", foundKeywords))
                             + "\nYou said: \"" + transcript + "\""
-                            + "\nTarget: \"" + target + "\"";
+                            + "\nSample: \"" + sampleAnswer + "\"";
 
-                    yield new GradeResult(ok, partialPoints, target, explanation);
+                    yield new GradeResult(ok, partialPoints, question, explanation);
                 }
 
                 case MATCHING, DRAG_DROP -> {
