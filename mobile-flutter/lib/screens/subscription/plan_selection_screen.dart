@@ -299,7 +299,7 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
                   MaterialPageRoute(builder: (_) => PaymentScreen(plan: plan)),
                 ),
                 child: Text(
-                  'Dùng thử 7 ngày miễn phí',
+                  isYearly ? 'Đăng ký Pro Yearly' : 'Đăng ký Pro Monthly',
                   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -347,9 +347,9 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
   }
 
   Widget _disclaimer() {
-    return Text(
-      'Không trừ tiền trong thời gian dùng thử',
-      style: const TextStyle(fontSize: 12, color: AppColors.textHint),
+    return const Text(
+      'Hủy bất kỳ lúc nào trong Settings',
+      style: TextStyle(fontSize: 12, color: AppColors.textHint),
       textAlign: TextAlign.center,
     );
   }

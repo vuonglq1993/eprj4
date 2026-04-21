@@ -45,9 +45,12 @@ public class PaymentController {
     }
 
     @Operation(summary = "Capture PayPal order")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/capture")
-    public ResponseEntity<Void> capture(@RequestParam String orderId) {
-        service.capturePayPalOrder(orderId);
+    public ResponseEntity<Void> capture(@RequestParam String orderId,
+                                        @AuthenticationPrincipal UserPrincipal p) {
+        service.capturePayPalOrder(orderId, p);
         return ResponseEntity.ok().build();
     }
 

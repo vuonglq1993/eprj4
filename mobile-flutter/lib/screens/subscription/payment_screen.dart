@@ -14,19 +14,58 @@ class PaymentScreen extends StatefulWidget {
   State<PaymentScreen> createState() => _PaymentScreenState();
 }
 
-class _PaymentScreenState extends State<PaymentScreen> {
+class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserver {
   String _selectedGateway = 'VNPAY';
-  bool _processing = false; // gọi API tạo payment
-  bool _waiting = false;    // đã mở browser, đang chờ kết quả
+  bool _processing = false;
+  bool _waiting = false;
   StreamSubscription? _deepLinkSub;
   Timer? _pollTimer;
-  String? _pendingTxId; // kept for future use (e.g. cancel)
+  String? _pendingTxId;
+  String? _pendingPayPalOrderId; // lưu PayPal orderId để poll khi app resume
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _deepLinkSub?.cancel();
     _pollTimer?.cancel();
     super.dispose();
+  }
+
+  // Khi app resume từ background (sau khi user xong PayPal)
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _waiting && _selectedGateway == 'PAYPAL') {
+      // Thử check initial link trước
+      _checkInitialLink();
+    }
+  }
+
+  Future<void> _checkInitialLink() async {
+    try {
+      final appLinks = AppLinks();
+      final uri = await appLinks.getInitialLink();
+      if (uri != null) {
+        final path = uri.path;
+        if (path.contains('/payment/paypal/success')) {
+          final token = uri.queryParameters['token'];
+          if (token != null && mounted) _onPayPalReturn(token);
+          return;
+        } else if (path.contains('/payment/paypal/cancel')) {
+          if (mounted) _onPayPalCancel();
+          return;
+        }
+      }
+    } catch (_) {}
+    // Nếu không có initial link, fall back sang poll status
+    if (_pendingTxId != null && _waiting && mounted) {
+      _startPolling(_pendingTxId!, isPayPal: true);
+    }
   }
 
   void _listenDeepLinks() {
@@ -37,6 +76,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
       if (path.contains('/payment/paypal/success')) {
         final token = uri.queryParameters['token'];
         if (token != null && mounted) _onPayPalReturn(token);
+      } else if (path.contains('/payment/paypal/cancel')) {
+        if (mounted) _onPayPalCancel();
       } else if (path.contains('/payment/vnpay')) {
         final status = uri.queryParameters['status'];
         if (mounted) _onVNPayReturn(status == 'success');
@@ -56,18 +97,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
       _listenDeepLinks();
 
       final uri = Uri.parse(result.paymentUrl);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        throw Exception('Không thể mở trang thanh toán');
-      }
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
 
-      // Sau khi browser mở, chuyển sang trạng thái "đang chờ kết quả"
       if (mounted) setState(() { _processing = false; _waiting = true; });
 
-      if (_selectedGateway == 'VNPAY') {
-        _startVNPayPolling(result.transactionId);
-      }
+      // Cả VNPay và PayPal đều poll — deep link là fast path, poll là fallback
+      _startPolling(result.transactionId, isPayPal: _selectedGateway == 'PAYPAL');
     } catch (e) {
       if (mounted) {
         setState(() { _processing = false; _waiting = false; });
@@ -78,19 +113,43 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
-  void _startVNPayPolling(String txId) {
+  void _startPolling(String txId, {bool isPayPal = false}) {
+    _pollTimer?.cancel();
     int attempts = 0;
     _pollTimer = Timer.periodic(const Duration(seconds: 4), (t) async {
       attempts++;
-      if (attempts > 45 || !mounted) { t.cancel(); return; } // 3 min timeout
+      if (attempts > 45 || !mounted) { t.cancel(); return; }
       try {
         final status = await PaymentService.pollStatus(txId);
         if (status == 'SUCCESS') {
           t.cancel();
-          if (mounted) _onVNPayReturn(true);
+          _deepLinkSub?.cancel();
+          if (mounted) {
+            if (isPayPal) {
+              // PayPal đã SUCCESS trong DB nghĩa là capture đã xong
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Thanh toán PayPal thành công!'),
+                    backgroundColor: AppColors.success),
+              );
+              _goInvoice(true);
+            } else {
+              _onVNPayReturn(true);
+            }
+          }
         } else if (status == 'FAILED' || status == 'CANCELLED') {
           t.cancel();
-          if (mounted) _onVNPayReturn(false);
+          _deepLinkSub?.cancel();
+          if (mounted) {
+            if (isPayPal) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Thanh toán PayPal thất bại hoặc bị hủy'),
+                    backgroundColor: AppColors.error),
+              );
+              setState(() { _processing = false; _waiting = false; });
+            } else {
+              _onVNPayReturn(false);
+            }
+          }
         }
       } catch (_) {}
     });
@@ -98,17 +157,43 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Future<void> _onPayPalReturn(String orderId) async {
     _deepLinkSub?.cancel();
+    _pollTimer?.cancel();
     setState(() { _processing = true; _waiting = false; });
     try {
       await PaymentService.capturePayPal(orderId);
-      if (mounted) _goInvoice(true);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Thanh toán PayPal thành công!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        _goInvoice(true);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Capture thất bại: $e'), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text('Thanh toán thất bại: $e'),
+            backgroundColor: AppColors.error,
+          ),
         );
-        setState(() => _processing = false);
+        setState(() { _processing = false; _waiting = false; });
       }
+    }
+  }
+
+  void _onPayPalCancel() {
+    _deepLinkSub?.cancel();
+    _pollTimer?.cancel();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bạn đã hủy thanh toán PayPal'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      setState(() { _processing = false; _waiting = false; });
     }
   }
 
@@ -138,8 +223,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Widget build(BuildContext context) {
     final plan = widget.plan;
     final isYearly = plan.name == 'YEARLY';
-    final amountDisplay = '${_formatPrice(plan.price)}đ';
-    final discount = plan.price; // free trial = full discount
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -157,7 +240,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 children: [
                   _topBar(context),
                   const SizedBox(height: 16),
-                  _orderCard(plan, amountDisplay, discount, isYearly),
+                  _orderCard(plan, isYearly),
                   const SizedBox(height: 20),
                   _gatewaySection(),
                   const SizedBox(height: 28),
@@ -165,7 +248,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   const SizedBox(height: 12),
                   const Center(
                     child: Text(
-                      'Bảo mật theo tiêu chuẩn PCI-DSS\nHủy bất kỳ lúc nào trong Settings',
+                      'Thanh toán an toàn • Hủy bất kỳ lúc nào',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 11, color: AppColors.textHint),
                     ),
@@ -247,7 +330,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _orderCard(SubscriptionPlan plan, String amount, int discount, bool isYearly) {
+  Widget _orderCard(SubscriptionPlan plan, bool isYearly) {
+    final priceDisplay = '${_formatPrice(plan.price)}đ';
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -268,17 +352,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
             children: [
               Text(isYearly ? 'Pro Yearly' : 'Pro Monthly',
                   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-              Text(amount, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+              Text(priceDisplay,
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
             ],
           ),
           const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Dùng thử 7 ngày', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-              Text('-${_formatPrice(discount)}đ',
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.success)),
-            ],
+          Text(
+            isYearly ? 'Thanh toán ${_formatPrice(plan.price)}đ / năm' : 'Thanh toán ${_formatPrice(plan.price)}đ / tháng',
+            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
           ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 10),
@@ -287,15 +368,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Thanh toán hôm nay',
+              const Text('Tổng thanh toán',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-              Text('0đ',
+              Text(priceDisplay,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.primary)),
             ],
           ),
           const SizedBox(height: 4),
           Text(
-            'Tự động gia hạn ${_formatPrice(plan.price)}đ/${isYearly ? "năm" : "tháng"} sau 7 ngày',
+            'Tự động gia hạn ${_formatPrice(plan.price)}đ/${isYearly ? "năm" : "tháng"}. Hủy bất kỳ lúc nào.',
             style: const TextStyle(fontSize: 11, color: AppColors.textHint),
           ),
         ],
@@ -372,7 +453,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         ),
         onPressed: _processing ? null : _pay,
         child: Text(
-          _processing ? 'Đang xử lý...' : 'Bắt đầu dùng thử miễn phí',
+          _processing ? 'Đang xử lý...' : 'Thanh toán ngay',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),

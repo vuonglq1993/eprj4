@@ -175,14 +175,25 @@ public class PaymentService {
     }
 
     @Transactional
-    public void capturePayPalOrder(String orderId) {
-        var resp = paypal.captureOrderDetail(orderId);
-        if (!"COMPLETED".equals(resp.status()))
-            throw new BadRequestException("Payment not completed: " + resp.status());
-
+    public void capturePayPalOrder(String orderId, UserPrincipal p) {
         PaymentTransaction tx = txRepo.findByGatewayRef(orderId)
-                .orElseThrow(() -> new NotFoundException("Transaction not found"));
-        if (tx.getStatus() == TxStatus.SUCCESS) return;
+                .orElseThrow(() -> new NotFoundException("Transaction not found: " + orderId));
+
+        if (!tx.getUser().getId().equals(p.getUserId()))
+            throw new BadRequestException("Access denied");
+
+        if (tx.getStatus() == TxStatus.SUCCESS) {
+            log.info("PayPal order {} already captured", orderId);
+            return;
+        }
+
+        var resp = paypal.captureOrderDetail(orderId);
+        if (!"COMPLETED".equals(resp.status())) {
+            tx.setStatus(TxStatus.FAILED);
+            tx.setFailureReason("PayPal status=" + resp.status());
+            txRepo.save(tx);
+            throw new BadRequestException("Thanh toán PayPal thất bại: " + resp.status());
+        }
 
         tx.setStatus(TxStatus.SUCCESS);
         tx.setPaidAt(LocalDateTime.now());
@@ -190,6 +201,9 @@ public class PaymentService {
 
         SubscriptionPlan plan = planService.getByName(tx.getPlan().name());
         subService.activate(tx.getUser(), plan);
+
+        log.info("PayPal payment SUCCESS: orderId={}, userId={}, plan={}",
+                orderId, p.getUserId(), tx.getPlan());
     }
 
     // ── STATUS POLLING ────────────────────────────────────────
