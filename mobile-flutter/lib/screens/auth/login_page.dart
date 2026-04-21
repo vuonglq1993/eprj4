@@ -6,6 +6,8 @@ import '../../services/api_service.dart';
 import '../onboarding/onboarding_flow.dart';
 import '../home/home_placeholder.dart';
 import 'register_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -277,65 +279,75 @@ class _LoginPageState extends State<LoginPage> {
 
   // ─── Widgets ──────────────────────────────────────────────────────────────
 
-  Future<void> _signInWithGoogle() async {
-    setState(() => _isGoogleLoading = true);
+
+Future<void> _signInWithGoogle() async {
+  setState(() => _isGoogleLoading = true);
+
+  try {
     final googleSignIn = GoogleSignIn(
       scopes: ['email', 'profile'],
-      serverClientId: '579961382537-hfli270fo9pvfhb51d8fe1birvu1s113.apps.googleusercontent.com',
+      serverClientId: dotenv.env['GOOGLE_WEB_CLIENT_ID'],
     );
-    try {
-      // Disconnect first to force account picker + fresh idToken
-      await googleSignIn.signOut();
 
-      final account = await googleSignIn.signIn();
-      if (account == null) {
-        if (mounted) setState(() => _isGoogleLoading = false);
-        return;
-      }
+    final account = await googleSignIn.signIn();
 
-      final auth = await account.authentication;
-      final idToken = auth.idToken;
-
-      if (idToken == null) {
-        // idToken null = serverClientId mismatch or Play Services issue
-        // Try forcing a fresh token via disconnect
-        await googleSignIn.disconnect();
-        if (!mounted) return;
-        setState(() => _isGoogleLoading = false);
-        _snack('Không lấy được token Google. Kiểm tra cấu hình hoặc thử lại.');
-        return;
-      }
-
-      final user = await ApiService.loginWithGoogle(idToken);
-      if (!mounted) return;
+    if (account == null) {
       setState(() => _isGoogleLoading = false);
+      return;
+    }
 
-      if (user != null) {
-        final onboardingDone = await ApiService.isOnboardingCompleted();
-        if (!mounted) return;
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (_) => onboardingDone ? const HomePlaceholder() : const OnboardingFlow(),
-          ),
-          (r) => false,
-        );
-      } else {
-        _snack('Tài khoản Google chưa được liên kết. Thử đăng ký hoặc liên hệ hỗ trợ.');
-      }
-    } on Exception catch (e) {
-      if (!mounted) return;
+    final auth = await account.authentication;
+
+    final idToken = auth.idToken;
+
+    if (idToken == null) {
       setState(() => _isGoogleLoading = false);
-      final msg = e.toString();
-      if (msg.contains('network_error') || msg.contains('ApiException: 7')) {
-        _snack('Lỗi mạng. Kiểm tra kết nối và thử lại.');
-      } else if (msg.contains('sign_in_canceled') || msg.contains('ApiException: 12501')) {
-        // User cancelled — no snack needed
-      } else {
-        _snack('Đăng nhập Google thất bại: $msg');
-      }
+      _snack('Không lấy được idToken. Kiểm tra Web Client ID.');
+      return;
+    }
+
+    // 🔥 Gửi lên backend Spring Boot
+    final user = await ApiService.loginWithGoogle(idToken);
+
+    if (!mounted) return;
+
+    setState(() => _isGoogleLoading = false);
+
+    if (user != null) {
+      final onboardingDone =
+          await ApiService.isOnboardingCompleted();
+
+      if (!mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => onboardingDone
+              ? const HomePlaceholder()
+              : const OnboardingFlow(),
+        ),
+        (r) => false,
+      );
+    } else {
+      _snack('Backend từ chối đăng nhập Google');
+    }
+  } catch (e) {
+    setState(() => _isGoogleLoading = false);
+
+
+    final msg = e.toString();
+
+    if (msg.contains('10')) {
+      _snack('Lỗi SHA-1 (ApiException: 10)');
+    } else if (msg.contains('12500')) {
+      _snack('OAuth config sai');
+    } else if (msg.contains('7')) {
+      _snack('Lỗi mạng hoặc Google Play');
+    } else {
+      _snack('Google Sign-In lỗi: $msg');
     }
   }
+}
 
   Widget _googleButton() {
     return SizedBox(

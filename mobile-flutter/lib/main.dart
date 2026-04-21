@@ -5,6 +5,8 @@ import 'core/theme.dart';
 import 'core/ai_floating_button.dart';
 import 'screens/splash/splash_screen.dart';
 
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
