@@ -1,6 +1,27 @@
-const stats = [{ label: 'Users', value: '35k', subtitle: 'Page views per minute' }]
+function StatsSummary({ data } = {}) {
+  const stats = [
+    {
+      label: 'Users',
+      value: data?.totalUsers ? `${data.totalUsers >= 1000 ? (data.totalUsers / 1000).toFixed(1) + 'k' : data.totalUsers}` : '—',
+      subtitle: 'Total registered users',
+    },
+    {
+      label: 'Courses',
+      value: data?.totalCourses ?? '—',
+      subtitle: 'Available courses',
+    },
+    {
+      label: 'Active Sessions',
+      value: data?.activeSessions ?? '—',
+      subtitle: 'Currently online',
+    },
+    {
+      label: 'Revenue',
+      value: data?.totalRevenue != null ? `$${data.totalRevenue.toFixed(1)}` : '—',
+      subtitle: 'Total earnings',
+    },
+  ]
 
-function StatsSummary() {
   return (
     <section className="dashboard-section">
       <div className="dashboard-grid dashboard-grid--stats">
@@ -19,4 +40,3 @@ function StatsSummary() {
 }
 
 export default StatsSummary
-

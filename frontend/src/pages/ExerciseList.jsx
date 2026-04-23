@@ -6,16 +6,16 @@ import { getCourses } from '../services/courseService';
 import { getLessons } from '../services/lessonService';
 import { isAdmin, hasRole } from '../utils/roleUtils';
 
-const EXERCISE_TYPES = ['MULTIPLE_CHOICE', 'FILL_IN_BLANK', 'DRAG_DROP', 'MATCHING', 'LISTENING'];
-const EMPTY_FORM = { title: '', type: 'MULTIPLE_CHOICE', questionData: '{}', orderIndex: 0, points: 10, timeLimitSeconds: 0 };
+const EXERCISE_TYPES = ['VOCABULARY', 'GRAMMAR', 'SPEAKING', 'READING', 'LISTENING', 'WRITING'];
+const EMPTY_FORM = { title: '', type: 'VOCABULARY', questionData: '{}', orderIndex: 0, points: 10, timeLimitSeconds: 0 };
 
-/** Mẫu JSON theo loại — chỉ gợi ý cấu trúc, có thể chỉnh theo bài tập thực tế */
 const QUESTION_DATA_TEMPLATES = {
-  MULTIPLE_CHOICE: '{\n  "question": "Câu hỏi của bạn?",\n  "options": ["A", "B", "C", "D"],\n  "correctAnswer": "A"\n}',
-  FILL_IN_BLANK: '{\n  "question": "Điền vào chỗ trống: ____ là thủ đô Việt Nam.",\n  "blanks": ["Hà Nội"]\n}',
-  DRAG_DROP: '{\n  "question": "Kéo thả để sắp xếp đúng thứ tự",\n  "items": ["Bước 1", "Bước 2", "Bước 3"],\n  "correctOrder": [0, 1, 2]\n}',
-  MATCHING: '{\n  "question": "Nối cặp từ đúng",\n  "left": ["Hello", "Goodbye"],\n  "right": ["Xin chào", "Tạm biệt"],\n  "pairs": [[0, 0], [1, 1]]\n}',
-  LISTENING: '{\n  "question": "Nghe và chọn đáp án đúng",\n  "audioUrl": "https://...",\n  "options": ["A", "B", "C"],\n  "correctAnswer": "A"\n}',
+  VOCABULARY: '{\n  "word": "example",\n  "translation": "ví dụ",\n  "phonetic": "/ɪɡˈzæmpəl/",\n  "exampleSentence": "This is an example sentence."\n}',
+  GRAMMAR: '{\n  "sentence": "She go to school yesterday.",\n  "correctSentence": "She went to school yesterday.",\n  "explanation": "Use past tense for actions that happened in the past."\n}',
+  SPEAKING: '{\n  "prompt": "Introduce yourself in 5 sentences.",\n  "targetLanguage": "en"\n}',
+  READING: '{\n  "passage": "Short text here...",\n  "question": "What is the main topic?",\n  "options": ["Topic A", "Topic B", "Topic C"],\n  "correctAnswer": "Topic A"\n}',
+  LISTENING: '{\n  "question": "Listen and choose the correct answer.",\n  "audioUrl": "https://...",\n  "options": ["A", "B", "C"],\n  "correctAnswer": "A"\n}',
+  WRITING: '{\n  "prompt": "Write a short paragraph about your favorite hobby.",\n  "wordLimit": 100,\n  "scoringCriteria": "Grammar, vocabulary, coherence"\n}',
 };
 
 function normalizeQuestionDataForForm(raw) {
@@ -49,7 +49,7 @@ function validateQuestionDataJson(text) {
   return { ok: true, parsed };
 }
 
-const typeLabel = (t) => t ? t.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : 'Multiple Choice';
+const typeLabel = (t) => t ? t.charAt(0) + t.slice(1).toLowerCase() : 'Vocabulary';
 
 function DiffBadge({ diff }) {
   const label = diff || 'Easy';
@@ -153,7 +153,7 @@ const ExerciseList = () => {
 
   const openCreate = () => {
     setEditId(null);
-    setForm(EMPTY_FORM);
+    setForm({ ...EMPTY_FORM, type: 'VOCABULARY' });
     setQuestionJsonError('');
     setShowModal(true);
   };
@@ -162,7 +162,7 @@ const ExerciseList = () => {
     setEditId(ex.id);
     setForm({
       title: ex.title || '',
-      type: ex.type || 'MULTIPLE_CHOICE',
+      type: ex.type || 'VOCABULARY',
       questionData: normalizeQuestionDataForForm(ex.questionData),
       orderIndex: ex.orderIndex ?? 0,
       points: ex.points ?? 10,
@@ -226,7 +226,8 @@ const ExerciseList = () => {
     return 'Hard';
   };
 
-  const getAutoGraded = (type) => ['MULTIPLE_CHOICE', 'FILL_IN_BLANK', 'DRAG_DROP', 'LISTENING'].includes(type);
+  const getAutoGraded = (type) =>
+    ['VOCABULARY', 'GRAMMAR', 'READING', 'LISTENING'].includes(type);
 
   const currentLesson = lessons.find((l) => l.id === selectedLesson);
 
@@ -341,7 +342,7 @@ const ExerciseList = () => {
                           type="button"
                           className="btn btn-sm btn-outline-secondary"
                           onClick={() => {
-                            const tpl = QUESTION_DATA_TEMPLATES[form.type] || QUESTION_DATA_TEMPLATES.MULTIPLE_CHOICE;
+                            const tpl = QUESTION_DATA_TEMPLATES[form.type] || QUESTION_DATA_TEMPLATES.VOCABULARY;
                             setForm((f) => ({ ...f, questionData: tpl }));
                             setQuestionJsonError('');
                           }}

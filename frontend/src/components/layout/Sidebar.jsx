@@ -8,11 +8,12 @@ import {
   MdLogout,
   MdLanguage,
   MdSchool,
-  MdTrendingUp,
   MdStorage,
   MdRoute,
   MdCategory,
   MdConfirmationNumber,
+  MdAssessment,
+  MdEmojiEvents,
 } from 'react-icons/md'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -23,7 +24,6 @@ const menuConfig = [
     icon: MdHome,
     children: [
       { id: 'dashboard', label: 'Dashboard', path: '/' },
-      { id: 'analytics', label: 'Analytics', path: '/analytics' },
     ],
   },
   {
@@ -45,21 +45,12 @@ const menuConfig = [
     ],
   },
   {
-    id: 'progress',
-    label: 'Progress',
-    icon: MdTrendingUp,
-    children: [
-      { id: 'my-progress', label: 'My Progress', path: '/progress' },
-    ],
-  },
-  {
     id: 'db-tables',
-    label: 'Subscriptions',
+    label: 'Data Tables',
     icon: MdStorage,
     children: [
       { id: 'tbl-payment-transactions', label: 'payment_transactions', path: '/data/payment-transactions' },
       { id: 'tbl-study-logs', label: 'study_logs', path: '/data/study-logs' },
-      { id: 'tbl-subscriptions', label: 'subscriptions', path: '/data/subscriptions' },
     ],
   },
   {
@@ -87,6 +78,32 @@ const menuConfig = [
     ],
   },
   {
+    id: 'admin-users',
+    label: 'User Management',
+    icon: MdAssessment,
+    children: [
+      { id: 'admin-users-list', label: 'User Management', path: '/admin/users' },
+    ],
+  },
+  {
+    id: 'reports',
+    label: 'Reports',
+    icon: MdAssessment,
+    children: [
+      { id: 'weekly-report', label: 'Weekly Report', path: '/reports/weekly' },
+      { id: 'review-mistakes', label: 'Review Mistakes', path: '/reviews/mistakes' },
+    ],
+  },
+  {
+    id: 'gamification',
+    label: 'Achievements',
+    icon: MdEmojiEvents,
+    children: [
+      { id: 'game-profile', label: 'My Profile', path: '/game/profile' },
+      { id: 'leaderboard', label: 'Leaderboard', path: '/game/leaderboard' },
+    ],
+  },
+  {
     id: 'pages',
     label: 'Pages',
     icon: MdPages,
@@ -106,7 +123,7 @@ function Sidebar({ onNavigate }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { logout } = useAuth()
-  const [expandedIds, setExpandedIds] = useState(new Set(['home', 'languages', 'courses', 'progress', 'db-tables', 'pages', 'account', 'learning-paths', 'topics', 'admin-plans']))
+  const [expandedIds, setExpandedIds] = useState(new Set(['home', 'languages', 'courses', 'db-tables', 'pages', 'account', 'learning-paths', 'topics', 'admin-plans']))
 
   const handleLogout = () => {
     onNavigate?.()

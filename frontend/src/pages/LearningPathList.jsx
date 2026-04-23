@@ -13,6 +13,7 @@ import {
   getMyPaths,
 } from '../services/learningPathService';
 import { getLanguages } from '../services/languageService';
+import { getCourses } from '../services/courseService';
 import { isAdmin, hasRole } from '../utils/roleUtils';
 
 
@@ -21,8 +22,11 @@ const EMPTY_FORM = {
   description: '',
   languageId: '',
   targetLevel: 'BEGINNER',
+  estimatedDays: 0,
+  goal: '',
   thumbnailUrl: '',
   isPublished: false,
+  courseIds: [],
 };
 
 function levelLabel(l) {
@@ -63,6 +67,14 @@ function normalizeLanguageList(payload) {
   return [];
 }
 
+function normalizeCourses(payload) {
+  if (payload == null) return [];
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.content)) return payload.content;
+  if (Array.isArray(payload.data)) return payload.data;
+  return [];
+}
+
 /** Lộ trình demo (offline) — không gọi API để tránh 403 */
 function isDemoLearningPathId(id) {
   return id != null && String(id).startsWith('demo-');
@@ -72,6 +84,7 @@ const LearningPathList = () => {
   const [paths, setPaths] = useState([]);
   const [myPaths, setMyPaths] = useState([]);
   const [languages, setLanguages] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [loadWarning, setLoadWarning] = useState('');
@@ -128,6 +141,13 @@ const LearningPathList = () => {
       } catch {
         setLanguages(pathsFromApi ? [] : [...DEMO_LANGUAGES_FOR_PATH]);
       }
+
+      try {
+        const courseRes = await getCourses({ size: 100 });
+        setCourses(normalizeCourses(courseRes.data));
+      } catch {
+        setCourses([]);
+      }
     }
 
     if (pathsFromApi && pathList.length === 0) {
@@ -150,10 +170,13 @@ const LearningPathList = () => {
     setForm({
       title: p.title || '',
       description: p.description || '',
-      languageId: p.languageId || '',
+      languageId: p.languageId || p.language?.id || '',
       targetLevel: p.targetLevel || 'BEGINNER',
+      estimatedDays: p.estimatedHours || p.estimatedDays || 0,
+      goal: p.goal || '',
       thumbnailUrl: p.thumbnailUrl || '',
       isPublished: p.isPublished ?? false,
+      courseIds: p.steps?.map((s) => s.courseId) || [],
     });
     setShowModal(true);
   };
@@ -248,13 +271,27 @@ const LearningPathList = () => {
       setShowModal(false);
       return;
     }
+
+    const payload = {
+      title: form.title,
+      description: form.description,
+      languageId: form.languageId,
+      targetLevel: form.targetLevel,
+      estimatedHours: Number(form.estimatedDays),
+      goal: form.goal,
+      thumbnailUrl: form.thumbnailUrl,
+      isPublished: form.isPublished,
+      isOfficial: false,
+      steps: form.courseIds.map((courseId) => ({ courseId, note: '', isRequired: true })),
+    };
+
     setSaving(true);
     try {
       if (editId) {
-        const res = await updateLearningPath(editId, form);
+        const res = await updateLearningPath(editId, payload);
         setPaths((prev) => prev.map((p) => (p.id === editId ? res.data : p)));
       } else {
-        const res = await createLearningPath(form);
+        const res = await createLearningPath(payload);
         setPaths((prev) => [res.data, ...prev]);
       }
       setShowModal(false);
@@ -426,10 +463,58 @@ const LearningPathList = () => {
                         </select>
                       </div>
                     </div>
+                    <div className="row">
+                      <div className="col-md-6 mb-2">
+                        <label className="form-label small fw-semibold">Estimated Days</label>
+                        <input type="number" className="form-control" value={form.estimatedDays}
+                          onChange={(e) => setForm({ ...form, estimatedDays: Number(e.target.value) })}
+                          min={0} max={365} />
+                      </div>
+                      <div className="col-md-6 mb-2">
+                        <label className="form-label small fw-semibold">Goal</label>
+                        <input type="text" className="form-control" value={form.goal}
+                          onChange={(e) => setForm({ ...form, goal: e.target.value })} maxLength={300}
+                          placeholder="e.g. Pass JLPT N5" />
+                      </div>
+                    </div>
                     <div className="mb-2">
                       <label className="form-label small fw-semibold">Thumbnail URL</label>
                       <input type="text" className="form-control" value={form.thumbnailUrl}
                         onChange={(e) => setForm({ ...form, thumbnailUrl: e.target.value })} placeholder="https://…" />
+                    </div>
+                    <div className="mb-2">
+                      <label className="form-label small fw-semibold">Courses ({form.courseIds.length} selected)</label>
+                      {courses.length === 0 ? (
+                        <div className="form-control" style={{ color: '#64748b', fontSize: '0.875rem' }}>
+                          {canManage ? 'Đang tải khóa học…' : 'Không có khóa học nào.'}
+                        </div>
+                      ) : (
+                        <div className="border rounded p-2" style={{ maxHeight: 200, overflowY: 'auto' }}>
+                          {courses.map((c) => {
+                            const checked = form.courseIds.includes(c.id);
+                            return (
+                              <div key={c.id} className="form-check">
+                                <input
+                                  type="checkbox"
+                                  className="form-check-input"
+                                  id={`course-${c.id}`}
+                                  checked={checked}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setForm((f) => ({ ...f, courseIds: [...f.courseIds, c.id] }));
+                                    } else {
+                                      setForm((f) => ({ ...f, courseIds: f.courseIds.filter((id) => id !== c.id) }));
+                                    }
+                                  }}
+                                />
+                                <label className="form-check-label" htmlFor={`course-${c.id}`}>
+                                  {c.title}
+                                </label>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                     <div className="form-check">
                       <input type="checkbox" className="form-check-input" id="lpPub"
