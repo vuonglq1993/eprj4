@@ -64,7 +64,7 @@
   color: #1e293b;
 }
 
-/* Subscriptions: layout dạng menu / thẻ, không dùng bảng trường–giá trị */
+/* Study streak: layout dạng menu / thẻ */
 .sub-menu {
   display: flex;
   flex-direction: column;

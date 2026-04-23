@@ -39,14 +39,17 @@ export const updateProfile = (data) => {
   };
   const phone = (data.phone ?? '').trim();
   const ui = (data.uiLanguage ?? '').trim();
+  const bio = (data.bio ?? '').trim();
+  const tz = (data.timezone ?? '').trim();
   if (phone !== '') body.phone = phone;
   if (ui !== '') body.uiLanguage = ui;
+  if (bio !== '') body.bio = bio;
+  if (tz !== '') body.timezone = tz;
   return api.put('/users/me', body);
 };
 
 /**
- * Đổi mật khẩu — gửi đủ camelCase + snake_case để khớp Express hoặc Spring.
- * Thử PUT → PATCH nếu 404/405; nếu 500/400 thử PATCH (một số server chỉ đăng ký PATCH).
+ * PUT /users/me/password — đổi mật khẩu (thử PUT → PATCH nếu 404/405; nếu 500/400 thử PATCH).
  */
 export async function changePassword(data) {
   const currentPassword = data.currentPassword;
@@ -90,3 +93,14 @@ export async function changePassword(data) {
     throw err;
   }
 }
+
+// GET /users — Admin only — lấy danh sách tất cả user
+export const getUsers = () => api.get('/users');
+
+// PUT /users/:id/role — Admin only — cập nhật role của user
+export const updateUserRole = (id, role) =>
+  api.put(`/users/${id}/role`, { role });
+
+// DELETE /users/:id — Admin only — xóa user
+export const deleteUser = (id) =>
+  api.delete(`/users/${id}`);
