@@ -27,13 +27,6 @@ spring:
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
 
-#  data:
-#    redis:
-#      host: ${REDIS_HOST}
-#      port: ${REDIS_PORT}
-#      password: ${REDIS_PASSWORD}
-#      timeout: 5000ms
-
   cache:
     type: simple
 
@@ -69,11 +62,12 @@ paypal:
 
 vnpay:
   payment-url: ${VNPAY_PAYMENT_URL}
-  tmn-code: ${VNPAY_TMN_CODE}
-  hash-secret: ${VNPAY_HASH_SECRET}
   return-url: ${VNPAY_RETURN_URL}
   ipn-url: ${VNPAY_IPN_URL}
+  api-url: ${VNPAY_API_URL:https://sandbox.vnpayment.vn/merchant_webapi/api/transaction}
   version: ${VNPAY_VERSION}
+  tmn-code: ${VNPAY_TMN_CODE}
+  hash-secret: ${VNPAY_HASH_SECRET}
 
 
 ai:

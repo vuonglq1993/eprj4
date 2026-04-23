@@ -190,6 +190,61 @@ class ApiService {
     }
   }
 
+  static Future<Map<String, dynamic>?> getOnboardingMe() async {
+    try {
+      final res = await http.get(
+        Uri.parse('$_base/onboarding/me'),
+        headers: await _authHeaders(),
+      );
+      if (res.statusCode == 200) return jsonDecode(res.body) as Map<String, dynamic>;
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? avatarUrl,
+    String? uiLanguage,
+  }) async {
+    try {
+      final res = await http.put(
+        Uri.parse('$_base/users/me'),
+        headers: await _authHeaders(),
+        body: jsonEncode({
+          if (firstName != null) 'firstName': firstName,
+          if (lastName != null) 'lastName': lastName,
+          if (avatarUrl != null) 'avatarUrl': avatarUrl,
+          if (uiLanguage != null) 'uiLanguage': uiLanguage,
+        }),
+      );
+      if (res.statusCode == 200) return jsonDecode(res.body) as Map<String, dynamic>;
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<String?> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final res = await http.patch(
+        Uri.parse('$_base/users/me/password'),
+        headers: await _authHeaders(),
+        body: jsonEncode({'currentPassword': currentPassword, 'newPassword': newPassword}),
+      );
+      if (res.statusCode == 200) return null; // success
+      final msg = (jsonDecode(res.body) as Map)['message'] as String? ?? 'Đổi mật khẩu thất bại';
+      return msg;
+    } catch (_) {
+      return 'Lỗi mạng';
+    }
+  }
+
   /// Submit onboarding và trả về full response (recommendedPath, motivationMessage, v.v.).
   /// Trả về null nếu lỗi.
   ///
