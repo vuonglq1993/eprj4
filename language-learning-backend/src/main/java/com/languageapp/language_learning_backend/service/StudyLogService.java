@@ -56,12 +56,10 @@ public class StudyLogService {
                         .build()
                 );
 
-// update time
+        // Lưu thời gian tốt nhất (không cộng dồn)
         progress.setTimeSpentSeconds(
-                progress.getTimeSpentSeconds() + req.getDurationSeconds()
+                Math.max(progress.getTimeSpentSeconds(), req.getDurationSeconds())
         );
-
-        progress.setAttempts(progress.getAttempts() + 1);
 
         if (progress.getStartedAt() == null) {
             progress.setStartedAt(Instant.now());
@@ -77,9 +75,28 @@ public class StudyLogService {
         UserGameProfile gp = gameRepo.findByUserId(p.getUserId())
                 .orElseThrow(() -> new NotFoundException("Profile not found"));
 
+        LocalDate today = LocalDate.now();
+        LocalDate since35 = today.minusDays(34);
+
+        // Distinct dates for the last 35 days
+        List<LocalDate> studyDates = logRepo.studyDates(p.getUserId(), since35);
+
+        // Per-day lesson count (all activity types)
+        List<Object[]> rawCounts = logRepo.dailyCount(p.getUserId(), since35, today);
+        Map<LocalDate, Integer> dailyCounts = new LinkedHashMap<>();
+        for (Object[] row : rawCounts) {
+            dailyCounts.put((LocalDate) row[0], ((Number) row[1]).intValue());
+        }
+
+        boolean studiedToday = studyDates.contains(today);
+
         return StreakResponse.builder()
                 .currentStreak(gp.getCurrentStreak())
                 .longestStreak(gp.getLongestStreak())
+                .lastStudyDate(studyDates.isEmpty() ? null : studyDates.get(0))
+                .studiedToday(studiedToday)
+                .studyDates(studyDates)
+                .dailyCounts(dailyCounts)
                 .build();
     }
 

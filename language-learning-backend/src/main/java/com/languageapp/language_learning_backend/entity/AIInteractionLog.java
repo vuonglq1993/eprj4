@@ -68,7 +68,7 @@ public class AIInteractionLog {
     @CreationTimestamp private Instant createdAt;
 
     public enum InteractionType {
-        CHAT_EXPLAIN, GRAMMAR_CHECK, PRONUNCIATION, RECOMMENDATION, PLACEMENT_TEST
+        CHAT_EXPLAIN, GRAMMAR_CHECK, PRONUNCIATION, RECOMMENDATION, PLACEMENT_TEST, VOCAB_GENERATE
     }
     public enum AIStatus { SUCCESS, FAILED, TIMEOUT }
 }

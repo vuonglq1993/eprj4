@@ -50,4 +50,14 @@ public class PaymentController {
         service.capturePayPalOrder(orderId);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "Kiểm tra trạng thái giao dịch (polling)")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/status/{transactionId}")
+    public ResponseEntity<java.util.Map<String, String>> status(
+            @PathVariable String transactionId,
+            @AuthenticationPrincipal UserPrincipal p) {
+        return ResponseEntity.ok(service.getTransactionStatus(transactionId, p));
+    }
 }

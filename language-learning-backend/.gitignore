@@ -74,6 +74,7 @@ application-secrets.yml
 application-local.yml
 *.pem
 *.key
+src/main/resources/firebase-service-account.json
 
 # Database (nếu dùng H2 file-based)
 *.mv.db
