@@ -2,6 +2,8 @@ package com.languageapp.language_learning_backend.service;
 
 import com.languageapp.language_learning_backend.dto.user.*;
 import com.languageapp.language_learning_backend.entity.User;
+import com.languageapp.language_learning_backend.firebase.document.OtpDocument;
+import com.languageapp.language_learning_backend.firebase.repository.FirebaseOtpRepository;
 import com.languageapp.language_learning_backend.repository.UserRepository;
 import com.languageapp.language_learning_backend.security.*;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import com.languageapp.language_learning_backend.exception.GlobalExceptionHandle
 import com.languageapp.language_learning_backend.entity.User.Role;
 import com.languageapp.language_learning_backend.entity.User.AuthProvider;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Slf4j
@@ -22,14 +25,13 @@ public class UserService {
 
     private final UserRepository userRepo;
     private final PasswordEncoder encoder;
-
-
+    private final EmailService emailService;
+    private final FirebaseOtpRepository otpRepository;
     private final JwtTokenProvider jwt;
 
     // TODO enable email OTP verification later
     // private final EmailService emailService;
 
-    // ── REGISTER ──────────────────────────────────────────────
     @Transactional
     public AuthResponse register(RegisterRequest req) {
 
@@ -46,16 +48,24 @@ public class UserService {
                 .provider(AuthProvider.LOCAL)
                 .build());
 
-        /*
-        // Generate OTP for email verification
-        String otp = otp6();
+        try {
+            String otp = otp6();
 
-        // Store OTP in Redis (5 minutes)
-        redis.opsForValue().set(OTP_VER + user.getEmail(), otp, Duration.ofMinutes(5));
+            otpRepository.save(OtpDocument.builder()
+                    .email(user.getEmail())
+                    .otp(otp)
+                    .type("VERIFY_EMAIL")
+                    .createdAt(Instant.now())
+                    .expiresAt(Instant.now().plusSeconds(300))
+                    .used(false)
+                    .attempts(0)
+                    .build());
 
-        // Send verification email
-        emailService.sendVerification(user.getEmail(), otp);
-        */
+            emailService.sendVerificationOtp(user.getEmail(), otp);
+
+        } catch (Exception e) {
+            log.error("❌ Failed to send OTP", e);
+        }
 
         return buildTokens(user);
     }
@@ -70,8 +80,9 @@ public class UserService {
         if (!user.getIsActive())
             throw new UnauthorizedException("Account is disabled");
 
-        if (user.getProvider() != AuthProvider.LOCAL)
-            throw new BadRequestException("Please login with " + user.getProvider().name().toLowerCase());
+        // Google user chưa set password → không thể login bằng email
+        if (user.getPassword() == null)
+            throw new BadRequestException("no_password_set");
 
         if (!encoder.matches(req.getPassword(), user.getPassword()))
             throw new UnauthorizedException("Invalid credentials");
@@ -107,76 +118,91 @@ public class UserService {
         log.warn("Logout handled on client side (no Redis)");
     }
 
-    // ── VERIFY EMAIL (DISABLED) ───────────────────────────────
     @Transactional
     public void verifyEmail(String email, String otp) {
 
-        /*
-        String stored = redis.opsForValue().get(OTP_VER + email);
+        try {
+            OtpDocument doc = otpRepository.findByEmailAndType(email, "VERIFY_EMAIL")
+                    .orElseThrow(() -> new BadRequestException("OTP not found"));
 
-        if (stored == null || !stored.equals(otp))
-            throw new BadRequestException("Invalid or expired OTP");
+            if (doc.isUsed())
+                throw new BadRequestException("OTP already used");
 
-        userRepo.findByEmail(email).ifPresent(u -> {
-            u.setEmailVerified(true);
-            userRepo.save(u);
-        });
+            if (!doc.getOtp().equals(otp))
+                throw new BadRequestException("Invalid OTP");
 
-        redis.delete(OTP_VER + email);
-        */
+            if (doc.getExpiresAt().isBefore(Instant.now()))
+                throw new BadRequestException("OTP expired");
 
-        throw new UnsupportedOperationException("Email verification is currently disabled");
+            User user = userRepo.findByEmail(email)
+                    .orElseThrow(() -> new NotFoundException("User not found"));
+
+            user.setEmailVerified(true);
+            userRepo.save(user);
+
+            otpRepository.markAsUsed(email, "VERIFY_EMAIL");
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    // ── FORGOT PASSWORD (DISABLED) ────────────────────────────
     public void forgotPassword(String email) {
-
-        /*
-        userRepo.findByEmail(email)
-                .filter(u -> u.getProvider() == AuthProvider.LOCAL)
-                .ifPresent(u -> {
-
-                    String otp = otp6();
-
-                    redis.opsForValue().set(OTP_RST + email, otp, Duration.ofMinutes(5));
-
-                    emailService.sendPasswordReset(email, otp);
-                });
-        */
-
-        log.warn("Forgot password requested but OTP is disabled");
-    }
-
-    // ── RESET PASSWORD (DISABLED) ─────────────────────────────
-    @Transactional
-    public void resetPassword(String token, String newPassword) {
-
-        /*
-        String decoded = new String(java.util.Base64.getDecoder().decode(token));
-        String[] parts = decoded.split(":", 2);
-
-        if (parts.length != 2)
-            throw new BadRequestException("Invalid token format");
-
-        String email = parts[0];
-        String otp = parts[1];
-
-        String stored = redis.opsForValue().get(OTP_RST + email);
-
-        if (stored == null || !stored.equals(otp))
-            throw new BadRequestException("Invalid or expired OTP");
 
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        user.setPassword(encoder.encode(newPassword));
-        userRepo.save(user);
+        try {
+            String otp = otp6();
 
-        redis.delete(OTP_RST + email);
-        redis.delete(REFRESH + user.getId());
-        */
+            otpRepository.save(OtpDocument.builder()
+                    .email(email)
+                    .otp(otp)
+                    .type("RESET_PASSWORD")
+                    .createdAt(Instant.now())
+                    .expiresAt(Instant.now().plusSeconds(300))
+                    .used(false)
+                    .attempts(0)
+                    .build());
 
-        throw new UnsupportedOperationException("Reset password feature is disabled");
+            emailService.sendPasswordResetOtp(email, otp);
+
+            log.info("✅ OTP reset password sent to {}", email);
+
+        } catch (Exception e) {
+            log.error("❌ Failed to send reset OTP", e);
+        }
+    }
+
+    @Transactional
+    public void resetPassword(String email, String otp, String newPassword) {
+
+        try {
+            OtpDocument doc = otpRepository.findByEmailAndType(email, "RESET_PASSWORD")
+                    .orElseThrow(() -> new BadRequestException("OTP not found"));
+
+            if (doc.isUsed())
+                throw new BadRequestException("OTP already used");
+
+            if (!doc.getOtp().equals(otp))
+                throw new BadRequestException("Invalid OTP");
+
+            if (doc.getExpiresAt().isBefore(Instant.now()))
+                throw new BadRequestException("OTP expired");
+
+            User user = userRepo.findByEmail(email)
+                    .orElseThrow(() -> new NotFoundException("User not found"));
+
+            user.setPassword(encoder.encode(newPassword));
+            userRepo.save(user);
+
+            otpRepository.markAsUsed(email, "RESET_PASSWORD");
+
+            log.info("✅ Password reset success for {}", email);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // ── GET PROFILE ───────────────────────────────────────────
