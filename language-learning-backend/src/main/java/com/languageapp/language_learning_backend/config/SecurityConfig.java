@@ -50,6 +50,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,
                                 "/api/v1/courses/*/lessons/*/exercises/submit"
                         ).authenticated()
+                        .requestMatchers(
+                                "/firebase-messaging-sw.js",
+                                "/index.html",
+                                "/favicon.ico",
+                                "/static/**"
+                        ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
