@@ -6,15 +6,12 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-/**
- * VNPay Payment Client
- * Docs: https://sandbox.vnpayment.vn/apis/docs/huong-dan-tich-hop/
- */
 @Slf4j
 @Component
 public class VNPayClient {
@@ -25,7 +22,7 @@ public class VNPayClient {
     @Value("${vnpay.hash-secret}")
     private String hashSecret;
 
-    @Value("${vnpay.payment-url:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}")
+    @Value("${vnpay.payment-url}")
     private String paymentUrl;
 
     @Value("${vnpay.return-url}")
@@ -37,137 +34,188 @@ public class VNPayClient {
     @Value("${vnpay.version:2.1.0}")
     private String version;
 
-    // ── TẠO URL THANH TOÁN ───────────────────────────────────
-
-    /**
-     * Tạo URL redirect sang cổng VNPay.
-     *
-     * @param txnRef   mã giao dịch nội bộ (PaymentTransaction.id dạng string)
-     * @param amount   số tiền VNĐ (ví dụ: 119000)
-     * @param orderInfo mô tả đơn hàng
-     * @param ipAddr   IP của client
-     * @return URL redirect sang VNPay
-     */
+    // ================= CREATE PAYMENT =================
     public String createPaymentUrl(String txnRef, long amount, String orderInfo, String ipAddr) {
-        String createDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-        String expireDate = new SimpleDateFormat("yyyyMMddHHmmss")
-                .format(new Date(System.currentTimeMillis() + 15 * 60 * 1000)); // 15 phút
 
-        Map<String, String> params = new TreeMap<>(); // TreeMap tự sort theo key
-        params.put("vnp_Version",    version);
-        params.put("vnp_Command",    "pay");
-        params.put("vnp_TmnCode",    tmnCode);
-        params.put("vnp_Amount",     String.valueOf(amount * 100)); // VNPay nhân 100
-        params.put("vnp_CurrCode",   "VND");
-        params.put("vnp_TxnRef",     txnRef);
-        params.put("vnp_OrderInfo",  orderInfo);
-        params.put("vnp_OrderType",  "other");
-        params.put("vnp_Locale",     "vn");
-        params.put("vnp_ReturnUrl",  returnUrl);
-        params.put("vnp_IpAddr",     ipAddr);
+        if ("0:0:0:0:0:0:0:1".equals(ipAddr) || "::1".equals(ipAddr)) {
+            ipAddr = "127.0.0.1";
+        }
+
+        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+
+        String createDate = formatter.format(cld.getTime());
+        cld.add(Calendar.MINUTE, 15);
+        String expireDate = formatter.format(cld.getTime());
+
+        String sanitizedOrderInfo = sanitizeOrderInfo(orderInfo);
+
+        Map<String, String> params = new HashMap<>();
+        params.put("vnp_Version", version);
+        params.put("vnp_Command", "pay");
+        params.put("vnp_TmnCode", tmnCode);
+        params.put("vnp_Amount", String.valueOf(amount * 100));
+        params.put("vnp_CurrCode", "VND");
+        params.put("vnp_TxnRef", txnRef);
+        params.put("vnp_OrderInfo", sanitizedOrderInfo);
+        params.put("vnp_OrderType", "other");
+        params.put("vnp_Locale", "vn");
+        params.put("vnp_ReturnUrl", returnUrl);
+        params.put("vnp_IpAddr", ipAddr);
         params.put("vnp_CreateDate", createDate);
         params.put("vnp_ExpireDate", expireDate);
 
-        if (ipnUrl != null && !ipnUrl.isBlank()) {
-            params.put("vnp_IpnUrl", ipnUrl);
+
+
+        // ===== SORT PARAMS =====
+        List<String> fieldNames = new ArrayList<>(params.keySet());
+        Collections.sort(fieldNames);
+
+        StringBuilder hashData = new StringBuilder();
+        StringBuilder query = new StringBuilder();
+
+        boolean first = true;
+
+        for (String fieldName : fieldNames) {
+            String value = params.get(fieldName);
+
+            if (value != null && !value.isEmpty()) {
+                try {
+                    String encodedValue = URLEncoder.encode(value, StandardCharsets.US_ASCII.toString());
+
+                    if (!first) {
+                        hashData.append('&');
+                        query.append('&');
+                    }
+
+                    hashData.append(fieldName).append('=').append(encodedValue);
+                    query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()))
+                            .append('=').append(encodedValue);
+
+                    first = false;
+
+                } catch (UnsupportedEncodingException e) {
+                    log.error("Encode error", e);
+                }
+            }
         }
 
-        // Build raw query string for hashing (no URL-encode on values)
-        String hashData = buildHashData(params);
-        String secureHash = hmacSHA512(hashSecret, hashData);
+        String hash = hmacSHA512(hashSecret, hashData.toString());
+        String finalUrl = paymentUrl + "?" + query + "&vnp_SecureHash=" + hash;
 
-        // Build encoded query string for URL
-        String queryString = buildQueryString(params);
-        String fullUrl = paymentUrl + "?" + queryString + "&vnp_SecureHash=" + secureHash;
-        log.info("VNPay URL created for txnRef={}", txnRef);
-        return fullUrl;
+        // ===== DEBUG =====
+        log.info("========== VNPay DEBUG ==========");
+        log.info("txnRef       : {}", txnRef);
+        log.info("amount       : {} (x100={})", amount, amount * 100);
+        log.info("orderInfo    : {}", sanitizedOrderInfo);
+        log.info("createDate   : {}", createDate);
+        log.info("expireDate   : {}", expireDate);
+
+        log.info("hashData RAW : {}", hashData);
+        log.info("hash length  : {}", hash.length());
+        log.info("secureHash   : {}", hash);
+
+        log.info("FINAL URL    : {}", finalUrl);
+        log.info("=================================");
+
+        return finalUrl;
     }
 
-    // ── VERIFY IPN / RETURN URL ──────────────────────────────
+    // ================= HELPER METHODS =================
 
-    /**
-     * Xác minh chữ ký từ VNPay gửi về (IPN hoặc return URL).
-     *
-     * @param params toàn bộ query params nhận được
-     * @return true nếu chữ ký hợp lệ
-     */
-    public boolean verifySignature(Map<String, String> params) {
-        String receivedHash = params.get("vnp_SecureHash");
-        if (receivedHash == null || receivedHash.isBlank()) return false;
-
-        // Bỏ vnp_SecureHash ra khỏi map trước khi tính lại hash
-        Map<String, String> filtered = new TreeMap<>(params);
-        filtered.remove("vnp_SecureHash");
-        filtered.remove("vnp_SecureHashType");
-
-        String queryString   = buildHashData(filtered);
-        String expectedHash  = hmacSHA512(hashSecret, queryString);
-
-        boolean ok = expectedHash.equalsIgnoreCase(receivedHash);
-        if (!ok) log.warn("VNPay signature mismatch! expected={} received={}", expectedHash, receivedHash);
-        return ok;
-    }
-
-    /**
-     * Kiểm tra giao dịch thành công.
-     * VNPay trả về vnp_ResponseCode = "00" khi thành công.
-     */
+    // Check giao dịch thành công
     public boolean isSuccess(Map<String, String> params) {
         return "00".equals(params.get("vnp_ResponseCode"));
     }
 
-    /**
-     * Lấy mã giao dịch nội bộ từ params trả về.
-     */
+    // Lấy mã giao dịch của bạn (txnRef)
     public String getTxnRef(Map<String, String> params) {
         return params.get("vnp_TxnRef");
     }
 
-    /**
-     * Lấy mã giao dịch VNPay (dùng để đối soát).
-     */
+    // Lấy mã giao dịch bên VNPay
     public String getVnpTransactionNo(Map<String, String> params) {
         return params.get("vnp_TransactionNo");
     }
 
-    // ── HELPERS ───────────────────────────────────────────────
+    // ================= VERIFY =================
+    public boolean verifySignature(Map<String, String> rawParams) {
 
-    /** Dùng để tính HMAC — key và value KHÔNG encode */
-    private String buildHashData(Map<String, String> params) {
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> e : params.entrySet()) {
-            if (e.getValue() != null && !e.getValue().isBlank()) {
-                if (!sb.isEmpty()) sb.append("&");
-                sb.append(e.getKey()).append("=").append(e.getValue());
+        String receivedHash = rawParams.get("vnp_SecureHash");
+
+        if (receivedHash == null) {
+            log.error("Missing vnp_SecureHash");
+            return false;
+        }
+
+        Map<String, String> fields = new HashMap<>();
+
+        for (Map.Entry<String, String> entry : rawParams.entrySet()) {
+            if (!entry.getKey().equals("vnp_SecureHash") &&
+                    !entry.getKey().equals("vnp_SecureHashType")) {
+
+                try {
+                    fields.put(
+                            entry.getKey(),
+                            URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII.toString())
+                    );
+                } catch (Exception e) {
+                    log.error("Encode error", e);
+                }
             }
         }
-        return sb.toString();
-    }
 
-    /** Dùng để build URL cuối — value được URL-encode */
-    private String buildQueryString(Map<String, String> params) {
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> e : params.entrySet()) {
-            if (e.getValue() != null && !e.getValue().isBlank()) {
-                if (!sb.isEmpty()) sb.append("&");
-                sb.append(URLEncoder.encode(e.getKey(),   StandardCharsets.UTF_8));
-                sb.append("=");
-                sb.append(URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8));
+        List<String> keys = new ArrayList<>(fields.keySet());
+        Collections.sort(keys);
+
+        StringBuilder hashData = new StringBuilder();
+        boolean first = true;
+
+        for (String key : keys) {
+            String value = fields.get(key);
+
+            if (value != null && !value.isEmpty()) {
+
+                if (!first) hashData.append('&');
+
+                hashData.append(key).append('=').append(value);
+                first = false;
             }
         }
-        return sb.toString();
+
+        String computedHash = hmacSHA512(hashSecret, hashData.toString());
+
+        // ===== DEBUG =====
+        log.info("========== VERIFY DEBUG ==========");
+        log.info("RAW PARAMS   : {}", rawParams);
+        log.info("hashData     : {}", hashData);
+        log.info("computedHash : {}", computedHash);
+        log.info("receivedHash : {}", receivedHash);
+        log.info("MATCH        : {}", computedHash.equals(receivedHash));
+        log.info("=================================");
+
+        return computedHash.equals(receivedHash);
     }
 
+    // ================= HMAC =================
     private String hmacSHA512(String key, String data) {
         try {
             Mac mac = Mac.getInstance("HmacSHA512");
             mac.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512"));
-            byte[] hash = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            byte[] raw = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+
             StringBuilder sb = new StringBuilder();
-            for (byte b : hash) sb.append(String.format("%02x", b));
+            for (byte b : raw) sb.append(String.format("%02x", b));
             return sb.toString();
+
         } catch (Exception e) {
-            throw new RuntimeException("VNPay HMAC error", e);
+            throw new RuntimeException("HMAC error", e);
         }
+    }
+
+    // ================= CLEAN TEXT =================
+    private String sanitizeOrderInfo(String input) {
+        if (input == null) return "Payment";
+        return input.replaceAll("[^a-zA-Z0-9 ]", "").trim();
     }
 }
