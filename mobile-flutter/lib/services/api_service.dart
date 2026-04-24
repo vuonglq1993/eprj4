@@ -228,14 +228,16 @@ class ApiService {
   }
 
   static Future<String?> changePassword({
-    required String currentPassword,
+    String? currentPassword,   // null khi Google user set password lần đầu
     required String newPassword,
   }) async {
     try {
+      final body = <String, dynamic>{'newPassword': newPassword};
+      if (currentPassword != null) body['currentPassword'] = currentPassword;
       final res = await http.patch(
         Uri.parse('$_base/users/me/password'),
         headers: await _authHeaders(),
-        body: jsonEncode({'currentPassword': currentPassword, 'newPassword': newPassword}),
+        body: jsonEncode(body),
       );
       if (res.statusCode == 200) return null; // success
       final msg = (jsonDecode(res.body) as Map)['message'] as String? ?? 'Đổi mật khẩu thất bại';

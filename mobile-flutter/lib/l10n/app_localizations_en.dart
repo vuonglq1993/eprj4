@@ -388,6 +388,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enrollPath => 'Enroll in Path';
 
   @override
+  String get enrollToUnlock => 'Enroll to unlock';
+
+  @override
   String get enrolledPath => 'Enrolled in path!';
 
   @override
@@ -786,6 +789,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changePassword => 'Change Password';
+
+  @override
+  String get setPassword => 'Set Password';
+
+  @override
+  String get passwordSetSuccess =>
+      'Password set! You can now log in with your email.';
+
+  @override
+  String get googleSetPasswordInfo =>
+      'Your account uses Google login. Set a password to also log in with email.';
 
   @override
   String get currentPassword => 'Current Password';

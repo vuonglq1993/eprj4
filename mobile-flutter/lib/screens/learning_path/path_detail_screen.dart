@@ -250,18 +250,43 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
                       const SizedBox(height: 20),
 
                       // Steps timeline
-                      Text(
-                        context.l10n.pathSteps,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            context.l10n.pathSteps,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          if (!isEnrolled) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppColors.textHint.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.lock_rounded, size: 11, color: AppColors.textHint),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    context.l10n.enrollToUnlock,
+                                    style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 12),
 
                       ...List.generate(steps.length, (i) {
-                        return _stepItem(steps[i], i, steps.length);
+                        return _stepItem(steps[i], i, steps.length, isEnrolled);
                       }),
 
                       const SizedBox(height: 24),
@@ -287,7 +312,7 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
   }
 
   Widget _stepItem(
-      Map<String, dynamic> step, int index, int total) {
+      Map<String, dynamic> step, int index, int total, bool isEnrolled) {
     final courseId = step['courseId'] as String? ?? '';
     final courseTitle = step['courseTitle'] as String? ?? '';
     final courseLevel = step['courseLevel'] as String? ?? '';
@@ -295,11 +320,11 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
     final totalLessons = step['totalLessons'] as int? ?? 0;
     final courseProgress =
         step['courseProgressPercent'] as int? ?? 0;
-    final isUnlocked = step['isUnlocked'] as bool? ?? false;
+    final isUnlocked = isEnrolled && (step['isUnlocked'] as bool? ?? false);
     final isRequired = step['isRequired'] as bool? ?? true;
     final note = step['note'] as String? ?? '';
 
-    final isCompleted = courseProgress == 100;
+    final isCompleted = isEnrolled && courseProgress == 100;
     final isLast = index == total - 1;
 
     Color statusColor;
@@ -363,7 +388,7 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
           // Step card
           Expanded(
             child: TappableScale(
-              onTap: isUnlocked || isCompleted
+              onTap: isEnrolled && (isUnlocked || isCompleted)
                   ? () => Navigator.push(
                         context,
                         _route(CourseLessonsScreen(

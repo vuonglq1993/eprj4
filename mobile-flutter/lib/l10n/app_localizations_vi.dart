@@ -388,6 +388,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get enrollPath => 'Đăng ký lộ trình';
 
   @override
+  String get enrollToUnlock => 'Đăng ký để mở khóa';
+
+  @override
   String get enrolledPath => 'Đã đăng ký lộ trình!';
 
   @override
@@ -786,6 +789,17 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get changePassword => 'Đổi mật khẩu';
+
+  @override
+  String get setPassword => 'Tạo mật khẩu';
+
+  @override
+  String get passwordSetSuccess =>
+      'Tạo mật khẩu thành công! Bạn có thể đăng nhập bằng email.';
+
+  @override
+  String get googleSetPasswordInfo =>
+      'Tài khoản của bạn được đăng nhập qua Google. Tạo mật khẩu để có thể đăng nhập bằng email.';
 
   @override
   String get currentPassword => 'Mật khẩu hiện tại';

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme.dart';
-import '../../core/ai_button_controller.dart';
 import '../../l10n/l10n_ext.dart';
 import 'dashboard_tab.dart';
 import '../learning_path/learning_path_tab.dart';
@@ -21,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    AiButtonController.show();
     _tabs = [
       DashboardTab(onGoToLearningPath: () => setState(() => _tab = 1)),
       const LearningPathTab(),
@@ -31,7 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    AiButtonController.hide();
     super.dispose();
   }
 

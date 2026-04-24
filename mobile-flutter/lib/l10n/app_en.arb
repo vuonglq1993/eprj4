@@ -138,6 +138,7 @@
   "lessons": "{count} lessons",
   "@lessons": { "placeholders": { "count": { "type": "int" } } },
   "enrollPath": "Enroll in Path",
+  "enrollToUnlock": "Enroll to unlock",
   "enrolledPath": "Enrolled in path!",
   "enrollFailed": "Could not enroll. Try again.",
 
@@ -286,6 +287,9 @@
   "user": "User",
 
   "changePassword": "Change Password",
+  "setPassword": "Set Password",
+  "passwordSetSuccess": "Password set! You can now log in with your email.",
+  "googleSetPasswordInfo": "Your account uses Google login. Set a password to also log in with email.",
   "currentPassword": "Current Password",
   "newPassword": "New Password",
   "confirmNewPassword": "Confirm New Password",

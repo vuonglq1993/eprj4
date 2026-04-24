@@ -7,7 +7,6 @@ import 'package:just_audio/just_audio.dart' as ja;
 import 'package:path_provider/path_provider.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
-import '../../core/ai_button_controller.dart';
 import '../../services/learning_service.dart';
 import 'lesson_result_screen.dart';
 
@@ -85,13 +84,11 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
   @override
   void initState() {
     super.initState();
-    AiButtonController.show();
     _loadExercises();
   }
 
   @override
   void dispose() {
-    AiButtonController.hide();
     _fillCtrl.dispose();
     _scrollCtrl.dispose();
     _audioPlayer.dispose();

@@ -384,6 +384,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get enrollPath => 'パスに登録';
 
   @override
+  String get enrollToUnlock => '登録して解除する';
+
+  @override
   String get enrolledPath => 'パスに登録しました！';
 
   @override
@@ -780,6 +783,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get changePassword => 'パスワード変更';
+
+  @override
+  String get setPassword => 'パスワード設定';
+
+  @override
+  String get passwordSetSuccess => 'パスワードを設定しました！メールでログインできます。';
+
+  @override
+  String get googleSetPasswordInfo =>
+      'アカウントはGoogleでログインしています。メールでもログインできるようにパスワードを設定してください。';
 
   @override
   String get currentPassword => '現在のパスワード';
