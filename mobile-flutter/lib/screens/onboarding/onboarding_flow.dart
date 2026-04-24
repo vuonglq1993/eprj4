@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n_ext.dart';
 import '../../services/api_service.dart';
 import 'step1_language.dart';
 import 'step2_goal.dart';
@@ -75,8 +76,8 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
               const Icon(Icons.wifi_off_rounded,
                   size: 48, color: AppColors.textSecondary),
               const SizedBox(height: 16),
-              const Text(
-                'Không tải được danh sách ngôn ngữ',
+              Text(
+                context.l10n.cannotLoadLanguages,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 16,
@@ -84,8 +85,8 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                     color: AppColors.textPrimary),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Kiểm tra kết nối mạng và backend, sau đó thử lại.',
+              Text(
+                context.l10n.checkNetworkAndBackend,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 13, color: AppColors.textSecondary),
@@ -99,7 +100,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                       borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: _loadLanguages,
-                child: const Text('Thử lại'),
+                child: Text(context.l10n.retry),
               ),
             ],
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../services/game_service.dart';
+import '../../l10n/l10n_ext.dart';
 
 class LevelScreen extends StatefulWidget {
   const LevelScreen({super.key});
@@ -100,8 +101,8 @@ class _LevelScreenState extends State<LevelScreen> with SingleTickerProviderStat
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
-          const Text('Cấp độ & XP',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          Text(context.l10n.levelAndXp,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
         ],
       ),
     );
@@ -137,10 +138,10 @@ class _LevelScreenState extends State<LevelScreen> with SingleTickerProviderStat
             ),
           ),
           const SizedBox(height: 12),
-          Text('Level $level · $title',
+          Text(context.l10n.levelTitle(level, title),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 4),
-          Text('${_fmtXp(totalXp)} tổng XP',
+          Text(context.l10n.totalXpAmount(_fmtXp(totalXp)),
               style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.75))),
           const SizedBox(height: 16),
           ClipRRect(
@@ -161,7 +162,7 @@ class _LevelScreenState extends State<LevelScreen> with SingleTickerProviderStat
             children: [
               Text('Level $level',
                   style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.7))),
-              Text('$xpToNext XP nữa lên Level ${level + 1}',
+              Text(context.l10n.xpToNextLevel(xpToNext, level + 1),
                   style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.7))),
             ],
           ),
@@ -176,9 +177,9 @@ class _LevelScreenState extends State<LevelScreen> with SingleTickerProviderStat
 
     return Row(
       children: [
-        _miniStatCard('⚡', _fmtXp(weeklyXp), 'XP tuần này', AppColors.warning),
+        _miniStatCard('⚡', _fmtXp(weeklyXp), context.l10n.xpThisWeek, AppColors.warning),
         const SizedBox(width: 12),
-        _miniStatCard('👑', _fmtXp(totalXp), 'Tổng XP', AppColors.primary),
+        _miniStatCard('👑', _fmtXp(totalXp), context.l10n.totalXpLabel, AppColors.primary),
       ],
     );
   }
@@ -213,10 +214,10 @@ class _LevelScreenState extends State<LevelScreen> with SingleTickerProviderStat
 
   Widget _weeklyXpCard() {
     final xpSources = [
-      _XpSource('Hoàn thành bài học', Icons.school_rounded, AppColors.primary, 20),
-      _XpSource('Bài tập đúng', Icons.check_circle_rounded, AppColors.success, 5),
-      _XpSource('Streak ngày học', Icons.local_fire_department_rounded, AppColors.warning, 10),
-      _XpSource('Điểm hoàn hảo', Icons.star_rounded, const Color(0xFFFFD700), 15),
+      _XpSource(context.l10n.completeLessons, Icons.school_rounded, AppColors.primary, 20),
+      _XpSource(context.l10n.correctExercises, Icons.check_circle_rounded, AppColors.success, 5),
+      _XpSource(context.l10n.streakDays, Icons.local_fire_department_rounded, AppColors.warning, 10),
+      _XpSource(context.l10n.perfectScore, Icons.star_rounded, const Color(0xFFFFD700), 15),
     ];
 
     return Container(
@@ -230,8 +231,8 @@ class _LevelScreenState extends State<LevelScreen> with SingleTickerProviderStat
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('CÁCH TÍCH LŨY XP',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
+          Text(context.l10n.howToEarnXp,
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
                   color: AppColors.textSecondary, letterSpacing: 0.8)),
           const SizedBox(height: 14),
           ...xpSources.map((s) => Padding(
@@ -282,8 +283,8 @@ class _LevelScreenState extends State<LevelScreen> with SingleTickerProviderStat
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('XP THEO NGÀY (TUẦN NÀY)',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
+          Text(context.l10n.xpByDay,
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
                   color: AppColors.textSecondary, letterSpacing: 0.8)),
           const SizedBox(height: 20),
           SizedBox(

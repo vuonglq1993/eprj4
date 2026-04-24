@@ -4,6 +4,7 @@ import '../../core/app_widgets.dart';
 import '../../core/ai_button_controller.dart';
 import '../../services/learning_service.dart';
 import '../lesson/lesson_player_screen.dart';
+import '../../l10n/l10n_ext.dart';
 
 class CourseLessonsScreen extends StatefulWidget {
   final String courseId;
@@ -108,14 +109,14 @@ class _CourseLessonsScreenState extends State<CourseLessonsScreen> {
     }
   }
 
-  String _typeLabel(String type) {
-    const m = {
-      'GRAMMAR': 'Ngữ pháp',
-      'VOCABULARY': 'Từ vựng',
-      'LISTENING': 'Nghe',
-      'SPEAKING': 'Nói',
-      'READING': 'Đọc',
-      'WRITING': 'Viết',
+  String _typeLabel(BuildContext context, String type) {
+    final m = {
+      'GRAMMAR': context.l10n.grammar,
+      'VOCABULARY': context.l10n.vocabulary,
+      'LISTENING': context.l10n.listening,
+      'SPEAKING': context.l10n.speaking,
+      'READING': context.l10n.reading,
+      'WRITING': context.l10n.writing,
       'MIXED': 'Tổng hợp',
     };
     return m[type.toUpperCase()] ?? type;
@@ -216,7 +217,7 @@ class _CourseLessonsScreenState extends State<CourseLessonsScreen> {
               child: Row(
                 children: [
                   Text(
-                    '$completedCount / $totalLessons bài hoàn thành',
+                    context.l10n.courseLessons(completedCount, totalLessons),
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -265,18 +266,18 @@ class _CourseLessonsScreenState extends State<CourseLessonsScreen> {
             const Icon(Icons.book_outlined,
                 color: AppColors.textSecondary, size: 48),
             const SizedBox(height: 16),
-            const Text(
-              'Chưa có bài học nào',
-              style: TextStyle(
+            Text(
+              context.l10n.noLessonsYet,
+              style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
                 fontSize: 16,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Bài học sẽ được thêm vào sớm',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            Text(
+              context.l10n.lessonsComingSoon,
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
           ],
         ),
@@ -312,7 +313,7 @@ class _CourseLessonsScreenState extends State<CourseLessonsScreen> {
       onTap: isAccessible
           ? () => _openLesson(lesson)
           : () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Bài học này yêu cầu gói cao hơn')),
+                SnackBar(content: Text(context.l10n.lessonRequiresPlan)),
               ),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -361,7 +362,7 @@ class _CourseLessonsScreenState extends State<CourseLessonsScreen> {
                   Row(
                     children: [
                       Text(
-                        _typeLabel(type),
+                        _typeLabel(context, type),
                         style:
                             TextStyle(fontSize: 11, color: color),
                       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
 import '../../services/payment_service.dart';
+import '../../l10n/l10n_ext.dart';
 
 class InvoiceScreen extends StatelessWidget {
   final SubscriptionPlan plan;
@@ -36,7 +37,7 @@ class InvoiceScreen extends StatelessWidget {
                 children: [
                   _topBar(context),
                   const SizedBox(height: 16),
-                  _successHero(),
+                  _successHero(context),
                   const SizedBox(height: 20),
                   _invoiceCard(invoiceNo, dateStr, gwLabel, baseAmount, vat, isYearly),
                   const SizedBox(height: 16),
@@ -76,7 +77,7 @@ class InvoiceScreen extends StatelessWidget {
     );
   }
 
-  Widget _successHero() {
+  Widget _successHero(BuildContext context) {
     return Column(
       children: [
         Container(
@@ -89,11 +90,11 @@ class InvoiceScreen extends StatelessWidget {
           child: const Icon(Icons.check_rounded, color: Colors.white, size: 44),
         ),
         const SizedBox(height: 16),
-        const Text('Thanh toán thành công!',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
+        Text(context.l10n.invoiceTitle,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary)),
         const SizedBox(height: 6),
-        const Text('Chào mừng bạn đến với Pro',
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+        Text(context.l10n.welcomeToPro,
+            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
       ],
     );
   }

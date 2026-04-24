@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../services/api_service.dart';
+import '../../l10n/l10n_ext.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -34,7 +35,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final last = _lastName.text.trim();
     if (first.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Họ không được để trống')));
+          SnackBar(content: Text(context.l10n.lastNameRequired)));
       return;
     }
     setState(() => _saving = true);
@@ -43,11 +44,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _saving = false);
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã cập nhật hồ sơ')));
+          SnackBar(content: Text(context.l10n.profileUpdated)));
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cập nhật thất bại. Thử lại.')));
+          SnackBar(content: Text(context.l10n.updateFailed)));
     }
   }
 
@@ -100,7 +101,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Email', style: TextStyle(fontSize: 12, color: AppColors.textHint)),
+                            Text(context.l10n.email, style: const TextStyle(fontSize: 12, color: AppColors.textHint)),
                             const SizedBox(height: 2),
                             Text(email, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
                           ],
@@ -123,7 +124,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                       onPressed: _saving ? null : _save,
                       child: Text(
-                        _saving ? 'Đang lưu...' : 'Lưu thay đổi',
+                        _saving ? context.l10n.saving : context.l10n.save,
                         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -146,8 +147,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
-          const Text('Chỉnh sửa hồ sơ',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          Text(context.l10n.editProfile,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
         ],
       ),
     );
