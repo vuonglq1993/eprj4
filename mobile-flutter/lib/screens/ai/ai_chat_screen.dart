@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../services/ai_service.dart';
+import '../../l10n/l10n_ext.dart';
 
 class AiChatScreen extends StatefulWidget {
   /// Optional lesson context passed from LessonPlayerScreen
@@ -88,7 +89,7 @@ class _AiChatScreenState extends State<AiChatScreen>
       } else {
         _messages.add(AiChatMessage(
           role: 'assistant',
-          text: '❌ Không thể kết nối đến AI. Vui lòng kiểm tra mạng và thử lại.',
+          text: context.l10n.aiConnectionError,
         ));
       }
     });
@@ -168,9 +169,9 @@ class _AiChatScreenState extends State<AiChatScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'AI Teacher',
-                  style: TextStyle(
+                Text(
+                  context.l10n.aiTeacher,
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
@@ -179,7 +180,7 @@ class _AiChatScreenState extends State<AiChatScreen>
                 Text(
                   widget.lessonTitle != null
                       ? widget.lessonTitle!
-                      : 'Gia sư ngôn ngữ thông minh',
+                      : context.l10n.aiTutor,
                   style: const TextStyle(
                       fontSize: 11, color: AppColors.textSecondary),
                   maxLines: 1,
@@ -198,7 +199,7 @@ class _AiChatScreenState extends State<AiChatScreen>
                     color: AppColors.primary.withValues(alpha: 0.4)),
               ),
               child: Text(
-                '$_remainingToday còn lại',
+                context.l10n.remainingToday(_remainingToday),
                 style: const TextStyle(
                     fontSize: 10,
                     color: AppColors.primaryLight,
@@ -332,11 +333,11 @@ class _AiChatScreenState extends State<AiChatScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 38, bottom: 8),
+          Padding(
+            padding: const EdgeInsets.only(left: 38, bottom: 8),
             child: Text(
-              'Gợi ý câu hỏi:',
-              style: TextStyle(
+              context.l10n.suggestedQuestions,
+              style: const TextStyle(
                   fontSize: 11,
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500),
@@ -435,8 +436,8 @@ class _AiChatScreenState extends State<AiChatScreen>
                 maxLines: 4,
                 minLines: 1,
                 textInputAction: TextInputAction.newline,
-                decoration: const InputDecoration(
-                  hintText: 'Hỏi AI Teacher...',
+                decoration: InputDecoration(
+                  hintText: context.l10n.askAiTeacher,
                   hintStyle:
                       TextStyle(color: AppColors.textHint, fontSize: 14),
                   border: InputBorder.none,

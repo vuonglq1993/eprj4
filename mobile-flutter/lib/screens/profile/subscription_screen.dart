@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n_ext.dart';
 import '../../core/app_widgets.dart';
 import '../../services/payment_service.dart';
 import '../subscription/plan_selection_screen.dart';
@@ -43,18 +44,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('Hủy gia hạn tự động', style: TextStyle(color: AppColors.textPrimary)),
-        content: const Text(
-            'Gói Pro vẫn còn hiệu lực đến ngày hết hạn. Sau đó sẽ không gia hạn tự động.',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+        title: Text(context.l10n.cancelAutoRenew, style: const TextStyle(color: AppColors.textPrimary)),
+        content: Text(
+            context.l10n.cancelAutoRenewDesc,
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Giữ nguyên', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(context.l10n.keepPlan, style: const TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Hủy gia hạn', style: TextStyle(color: AppColors.error)),
+            child: Text(context.l10n.cancelRenewal, style: const TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -116,8 +117,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
-          const Text('Subscription',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          Text(context.l10n.subscription,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
         ],
       ),
     );

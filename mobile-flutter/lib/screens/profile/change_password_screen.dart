@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../services/api_service.dart';
+import '../../l10n/l10n_ext.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -32,15 +33,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final confirm = _confirmCtrl.text;
 
     if (current.isEmpty || newPw.isEmpty || confirm.isEmpty) {
-      _snack('Vui lòng điền đầy đủ thông tin');
+      _snack(context.l10n.fillAllFields);
       return;
     }
     if (newPw.length < 6) {
-      _snack('Mật khẩu mới phải có ít nhất 6 ký tự');
+      _snack(context.l10n.newPasswordMinLength);
       return;
     }
     if (newPw != confirm) {
-      _snack('Mật khẩu xác nhận không khớp');
+      _snack(context.l10n.passwordsDoNotMatch);
       return;
     }
 
@@ -50,11 +51,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     setState(() => _saving = false);
 
     if (error == null) {
-      _snack('Đổi mật khẩu thành công');
+      _snack(context.l10n.passwordChangedSuccess);
       Navigator.pop(context);
     } else {
       _snack(error.contains('incorrect') || error.contains('wrong')
-          ? 'Mật khẩu hiện tại không đúng'
+          ? context.l10n.currentPasswordWrong
           : error);
     }
   }
@@ -78,18 +79,18 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 children: [
                   _topBar(),
                   const SizedBox(height: 28),
-                  _pwField('Mật khẩu hiện tại', _currentCtrl, _showCurrent,
+                  _pwField(context.l10n.currentPassword, _currentCtrl, _showCurrent,
                       () => setState(() => _showCurrent = !_showCurrent)),
                   const SizedBox(height: 16),
-                  _pwField('Mật khẩu mới', _newCtrl, _showNew,
+                  _pwField(context.l10n.newPassword, _newCtrl, _showNew,
                       () => setState(() => _showNew = !_showNew)),
                   const SizedBox(height: 16),
-                  _pwField('Xác nhận mật khẩu mới', _confirmCtrl, _showConfirm,
+                  _pwField(context.l10n.confirmNewPassword, _confirmCtrl, _showConfirm,
                       () => setState(() => _showConfirm = !_showConfirm)),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Mật khẩu tối thiểu 6 ký tự',
-                    style: TextStyle(fontSize: 12, color: AppColors.textHint),
+                  Text(
+                    context.l10n.passwordMinLength,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textHint),
                   ),
                   const SizedBox(height: 28),
                   SizedBox(
@@ -104,7 +105,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       ),
                       onPressed: _saving ? null : _save,
                       child: Text(
-                        _saving ? 'Đang lưu...' : 'Đổi mật khẩu',
+                        _saving ? context.l10n.saving : context.l10n.save,
                         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -127,8 +128,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
-          const Text('Đổi mật khẩu',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          Text(context.l10n.changePassword,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
         ],
       ),
     );

@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class CreatePaymentResponse {
     private String        transactionId;
+    private String        gatewayRef;   // PayPal orderId hoặc VNPay txnRef
     private String        paymentUrl;
     private String        gateway;
     private BigDecimal    amount;

@@ -58,6 +58,7 @@ class SubscriptionStatus {
 
 class CreatePaymentResult {
   final String transactionId;
+  final String gatewayRef; // PayPal orderId hoặc VNPay txnRef
   final String paymentUrl;
   final String gateway;
   final double amount;
@@ -66,6 +67,7 @@ class CreatePaymentResult {
 
   CreatePaymentResult({
     required this.transactionId,
+    required this.gatewayRef,
     required this.paymentUrl,
     required this.gateway,
     required this.amount,
@@ -75,6 +77,7 @@ class CreatePaymentResult {
 
   factory CreatePaymentResult.fromJson(Map<String, dynamic> j) => CreatePaymentResult(
         transactionId: j['transactionId'] ?? '',
+        gatewayRef: j['gatewayRef'] ?? '',
         paymentUrl: j['paymentUrl'] ?? '',
         gateway: j['gateway'] ?? '',
         amount: (j['amount'] as num?)?.toDouble() ?? 0,
@@ -128,6 +131,26 @@ class PaymentService {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     };
+  }
+
+  static Future<bool> waitForPaymentSuccess(String transactionId) async {
+    for (int i = 0; i < 15; i++) {
+      try {
+        final status = await pollStatus(transactionId);
+
+        if (status == 'SUCCESS') {
+          return true;
+        }
+
+        if (status == 'FAILED') {
+          return false;
+        }
+      } catch (_) {}
+
+      await Future.delayed(const Duration(seconds: 1));
+    }
+
+    return false;
   }
 
   static Future<List<SubscriptionPlan>> getPlans() async {

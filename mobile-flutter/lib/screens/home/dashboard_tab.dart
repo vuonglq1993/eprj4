@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../services/learning_service.dart';
+import '../../l10n/l10n_ext.dart';
 import '../course/course_lessons_screen.dart';
 import '../lesson/lesson_player_screen.dart';
 
@@ -152,11 +153,11 @@ class _DashboardTabState extends State<DashboardTab> {
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
-  String _greeting() {
+  String _greeting(BuildContext context) {
     final h = DateTime.now().hour;
-    if (h < 12) return 'Chào buổi sáng';
-    if (h < 18) return 'Chào buổi chiều';
-    return 'Chào buổi tối';
+    if (h < 12) return context.l10n.morningGreeting;
+    if (h < 18) return context.l10n.afternoonGreeting;
+    return context.l10n.eveningGreeting;
   }
 
   Color _typeColor(String type) {
@@ -198,14 +199,13 @@ class _DashboardTabState extends State<DashboardTab> {
   }
 
   String _typeLabel(String type) {
-    const m = {
-      'GRAMMAR': 'Ngữ pháp',
-      'VOCABULARY': 'Từ vựng',
-      'LISTENING': 'Nghe',
-      'SPEAKING': 'Nói',
-      'READING': 'Đọc',
-      'WRITING': 'Viết',
-      'MIXED': 'Tổng hợp',
+    final m = {
+      'GRAMMAR': context.l10n.grammar,
+      'VOCABULARY': context.l10n.vocabulary,
+      'LISTENING': context.l10n.listening,
+      'SPEAKING': context.l10n.speaking,
+      'READING': context.l10n.reading,
+      'WRITING': context.l10n.writing,
     };
     return m[type.toUpperCase()] ?? type;
   }
@@ -274,16 +274,16 @@ class _DashboardTabState extends State<DashboardTab> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _greeting(),
+                  _greeting(context),
                   style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 2),
-                const Text(
-                  'LinguaNext',
-                  style: TextStyle(
+                Text(
+                  context.l10n.appName,
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
@@ -366,21 +366,21 @@ class _DashboardTabState extends State<DashboardTab> {
           _statCard(
             Icons.check_circle_outline_rounded,
             '$totalLessons',
-            'Bài hoàn thành',
+            context.l10n.lessonsCompleted,
             AppColors.success,
           ),
           const SizedBox(width: 10),
           _statCard(
             Icons.timer_outlined,
             '$totalMinutes',
-            'Phút học',
+            context.l10n.minutesLearned,
             AppColors.vocabulary,
           ),
           const SizedBox(width: 10),
           _statCard(
             Icons.star_border_rounded,
             '${avgScore.toStringAsFixed(0)}%',
-            'Điểm TB',
+            context.l10n.avgScore,
             AppColors.warning,
           ),
         ],
@@ -454,9 +454,9 @@ class _DashboardTabState extends State<DashboardTab> {
         children: [
           Row(
             children: [
-              const Text(
-                'Tuần này',
-                style: TextStyle(
+              Text(
+                context.l10n.thisWeek,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -560,9 +560,9 @@ class _DashboardTabState extends State<DashboardTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Đang học',
-            style: TextStyle(
+          Text(
+            context.l10n.currentlyLearning,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
@@ -593,18 +593,18 @@ class _DashboardTabState extends State<DashboardTab> {
           const Icon(Icons.school_outlined,
               color: AppColors.textSecondary, size: 36),
           const SizedBox(height: 12),
-          const Text(
-            'Chưa có khóa học nào',
-            style: TextStyle(
+          Text(
+            context.l10n.noCourses,
+            style: const TextStyle(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.w600,
               fontSize: 15,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Hãy khám phá lộ trình học và bắt đầu bài học đầu tiên',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          Text(
+            context.l10n.exploreLearningPath,
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
             textAlign: TextAlign.center,
           ),
           if (widget.onGoToLearningPath != null) ...[
@@ -619,9 +619,9 @@ class _DashboardTabState extends State<DashboardTab> {
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: AppShadows.primaryGlow,
                 ),
-                child: const Text(
-                  'Khám phá lộ trình học',
-                  style: TextStyle(
+                child: Text(
+                  context.l10n.explorePath,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
@@ -644,7 +644,7 @@ class _DashboardTabState extends State<DashboardTab> {
     final total = course['totalLessons'] as int? ?? 0;
     final nextLessonId = course['nextLessonId'] as String?;
     final nextLessonTitle =
-        course['nextLessonTitle'] as String? ?? 'Tiếp tục học';
+        course['nextLessonTitle'] as String? ?? context.l10n.continueLearning;
 
     return TappableScale(
       onTap: () => Navigator.push(
@@ -748,9 +748,9 @@ class _DashboardTabState extends State<DashboardTab> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Tiếp theo:',
-                              style: TextStyle(
+                            Text(
+                              context.l10n.nextLesson,
+                              style: const TextStyle(
                                 fontSize: 11,
                                 color: AppColors.textSecondary,
                               ),
@@ -806,12 +806,12 @@ class _DashboardTabState extends State<DashboardTab> {
     if (skills == null) return const SizedBox.shrink();
 
     final skillList = [
-      ('listening', 'Nghe', AppColors.listening),
-      ('speaking', 'Nói', AppColors.success),
-      ('reading', 'Đọc', AppColors.reading),
-      ('writing', 'Viết', AppColors.warning),
-      ('vocabulary', 'Từ vựng', AppColors.vocabulary),
-      ('grammar', 'Ngữ pháp', AppColors.grammar),
+      ('listening', context.l10n.listening, AppColors.listening),
+      ('speaking', context.l10n.speaking, AppColors.success),
+      ('reading', context.l10n.reading, AppColors.reading),
+      ('writing', context.l10n.writing, AppColors.warning),
+      ('vocabulary', context.l10n.vocabulary, AppColors.vocabulary),
+      ('grammar', context.l10n.grammar, AppColors.grammar),
     ];
 
     return Padding(
@@ -819,9 +819,9 @@ class _DashboardTabState extends State<DashboardTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Kỹ năng',
-            style: TextStyle(
+          Text(
+            context.l10n.skill,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
@@ -921,13 +921,13 @@ class _DashboardTabState extends State<DashboardTab> {
       }
     }
 
-    const labelMap = {
-      'listening': 'Nghe',
-      'speaking': 'Nói',
-      'reading': 'Đọc',
-      'writing': 'Viết',
-      'vocabulary': 'Từ vựng',
-      'grammar': 'Ngữ pháp',
+    final labelMap = {
+      'listening': context.l10n.listening,
+      'speaking': context.l10n.speaking,
+      'reading': context.l10n.reading,
+      'writing': context.l10n.writing,
+      'vocabulary': context.l10n.vocabulary,
+      'grammar': context.l10n.grammar,
     };
 
     return Padding(
@@ -956,9 +956,9 @@ class _DashboardTabState extends State<DashboardTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'AI gợi ý',
-                    style: TextStyle(
+                  Text(
+                    context.l10n.aiSuggestion,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primaryLight,
@@ -966,7 +966,7 @@ class _DashboardTabState extends State<DashboardTab> {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    'Tập trung cải thiện ${labelMap[weakestKey] ?? weakestKey} ($lowestScore%) để tiến bộ nhanh hơn.',
+                    context.l10n.focusImprove(labelMap[weakestKey] ?? weakestKey),
                     style: const TextStyle(
                       fontSize: 13,
                       color: AppColors.textSecondary,

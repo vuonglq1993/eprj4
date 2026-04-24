@@ -21,12 +21,13 @@ class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserv
   StreamSubscription? _deepLinkSub;
   Timer? _pollTimer;
   String? _pendingTxId;
-  String? _pendingPayPalOrderId; // lưu PayPal orderId để poll khi app resume
+  String? _pendingPayPalOrderId;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _setupDeepLinkListener(); // listen 1 lần duy nhất
   }
 
   @override
@@ -37,72 +38,63 @@ class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserv
     super.dispose();
   }
 
-  // Khi app resume từ background (sau khi user xong PayPal)
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _waiting && _selectedGateway == 'PAYPAL') {
-      // Thử check initial link trước
-      _checkInitialLink();
-    }
-  }
-
-  Future<void> _checkInitialLink() async {
-    try {
-      final appLinks = AppLinks();
-      final uri = await appLinks.getInitialLink();
-      if (uri != null) {
-        final path = uri.path;
-        if (path.contains('/payment/paypal/success')) {
-          final token = uri.queryParameters['token'];
-          if (token != null && mounted) _onPayPalReturn(token);
-          return;
-        } else if (path.contains('/payment/paypal/cancel')) {
-          if (mounted) _onPayPalCancel();
-          return;
-        }
-      }
-    } catch (_) {}
-    // Nếu không có initial link, fall back sang poll status
-    if (_pendingTxId != null && _waiting && mounted) {
-      _startPolling(_pendingTxId!, isPayPal: true);
-    }
-  }
-
-  void _listenDeepLinks() {
-    final appLinks = AppLinks();
-    _deepLinkSub = appLinks.uriLinkStream.listen((uri) async {
+  // Listener đặt sẵn từ đầu — không cancel/recreate để tránh buffer replay
+  void _setupDeepLinkListener() {
+    _deepLinkSub = AppLinks().uriLinkStream.listen((uri) {
+      if (!mounted) return;
       final path = uri.path;
-
       if (path.contains('/payment/paypal/success')) {
         final token = uri.queryParameters['token'];
-        if (token != null && mounted) _onPayPalReturn(token);
+        if (token != null) _handlePayPalSuccess(token);
       } else if (path.contains('/payment/paypal/cancel')) {
-        if (mounted) _onPayPalCancel();
+        _handlePayPalCancel();
       } else if (path.contains('/payment/vnpay')) {
-        final status = uri.queryParameters['status'];
-        if (mounted) _onVNPayReturn(status == 'success');
+        _handleVNPayReturn(uri.queryParameters['status'] == 'success');
       }
     });
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Không cần xử lý gì — backend tự capture khi poll phát hiện APPROVED
+  }
+
+  void _handlePayPalSuccess(String orderId) {
+    // Poll sẽ tự detect SUCCESS sau khi backend capture — không cần làm gì thêm
+    // Nhưng nếu deep link đến, tăng tốc poll ngay
+    if (_waiting) _startPolling(_pendingTxId!);
+  }
+
+  void _handlePayPalCancel() {
+    if (!_waiting) return;
+    _onPaymentFailed();
+  }
+
+  void _handleVNPayReturn(bool success) {
+    if (!_waiting) return;
+    if (success) {
+      _onPaymentSuccess();
+    } else {
+      _onPaymentFailed();
+    }
+  }
+
   Future<void> _pay() async {
-    setState(() => _processing = true);
+    setState(() { _processing = true; });
     try {
       final result = await PaymentService.createPayment(
         plan: widget.plan.name,
         gateway: _selectedGateway,
       );
-
       _pendingTxId = result.transactionId;
-      _listenDeepLinks();
+      _pendingPayPalOrderId = _selectedGateway == 'PAYPAL' ? result.gatewayRef : null;
 
-      final uri = Uri.parse(result.paymentUrl);
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      await launchUrl(Uri.parse(result.paymentUrl), mode: LaunchMode.externalApplication);
 
       if (mounted) setState(() { _processing = false; _waiting = true; });
 
-      // Cả VNPay và PayPal đều poll — deep link là fast path, poll là fallback
-      _startPolling(result.transactionId, isPayPal: _selectedGateway == 'PAYPAL');
+      // Cả VNPay và PayPal đều poll — backend tự capture PayPal khi APPROVED
+      _startPolling(result.transactionId);
     } catch (e) {
       if (mounted) {
         setState(() { _processing = false; _waiting = false; });
@@ -113,104 +105,48 @@ class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserv
     }
   }
 
-  void _startPolling(String txId, {bool isPayPal = false}) {
+  void _startPolling(String txId) {
     _pollTimer?.cancel();
     int attempts = 0;
-    _pollTimer = Timer.periodic(const Duration(seconds: 4), (t) async {
+    _pollTimer = Timer.periodic(const Duration(seconds: 3), (t) async {
       attempts++;
-      if (attempts > 45 || !mounted) { t.cancel(); return; }
+      if (attempts > 60 || !mounted) { t.cancel(); return; } // 3 min
       try {
         final status = await PaymentService.pollStatus(txId);
         if (status == 'SUCCESS') {
           t.cancel();
-          _deepLinkSub?.cancel();
-          if (mounted) {
-            if (isPayPal) {
-              // PayPal đã SUCCESS trong DB nghĩa là capture đã xong
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Thanh toán PayPal thành công!'),
-                    backgroundColor: AppColors.success),
-              );
-              _goInvoice(true);
-            } else {
-              _onVNPayReturn(true);
-            }
-          }
+          if (mounted) _onPaymentSuccess();
         } else if (status == 'FAILED' || status == 'CANCELLED') {
           t.cancel();
-          _deepLinkSub?.cancel();
-          if (mounted) {
-            if (isPayPal) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Thanh toán PayPal thất bại hoặc bị hủy'),
-                    backgroundColor: AppColors.error),
-              );
-              setState(() { _processing = false; _waiting = false; });
-            } else {
-              _onVNPayReturn(false);
-            }
-          }
+          if (mounted) _onPaymentFailed();
         }
       } catch (_) {}
     });
   }
 
-  Future<void> _onPayPalReturn(String orderId) async {
-    _deepLinkSub?.cancel();
+  void _onPaymentSuccess() {
     _pollTimer?.cancel();
-    setState(() { _processing = true; _waiting = false; });
-    try {
-      await PaymentService.capturePayPal(orderId);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Thanh toán PayPal thành công!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-        _goInvoice(true);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Thanh toán thất bại: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        setState(() { _processing = false; _waiting = false; });
-      }
-    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Thanh toán ${_selectedGateway} thành công!'),
+        backgroundColor: AppColors.success,
+      ),
+    );
+    _goInvoice();
   }
 
-  void _onPayPalCancel() {
-    _deepLinkSub?.cancel();
+  void _onPaymentFailed() {
     _pollTimer?.cancel();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bạn đã hủy thanh toán PayPal'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      setState(() { _processing = false; _waiting = false; });
-    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Thanh toán thất bại hoặc bị hủy'),
+          backgroundColor: AppColors.error),
+    );
+    setState(() { _processing = false; _waiting = false; });
   }
 
-  void _onVNPayReturn(bool success) {
-    _deepLinkSub?.cancel();
-    _pollTimer?.cancel();
-    if (success) {
-      _goInvoice(true);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Thanh toán thất bại hoặc bị hủy'), backgroundColor: AppColors.error),
-      );
-      if (mounted) setState(() { _processing = false; _waiting = false; });
-    }
-  }
-
-  void _goInvoice(bool success) {
+  void _goInvoice() {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -266,7 +202,7 @@ class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserv
                   children: [
                     CircularProgressIndicator(color: AppColors.primary),
                     SizedBox(height: 16),
-                    Text('Đang tạo đơn hàng...', style: TextStyle(color: Colors.white, fontSize: 14)),
+                    Text('Đang xử lý...', style: TextStyle(color: Colors.white, fontSize: 14)),
                   ],
                 ),
               ),
@@ -292,12 +228,16 @@ class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserv
                               color: AppColors.textPrimary),
                           textAlign: TextAlign.center),
                       const SizedBox(height: 8),
-                      const Text('Hoàn tất thanh toán trên trình duyệt\nrồi quay lại app',
-                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                          textAlign: TextAlign.center),
+                      Text(
+                        _selectedGateway == 'PAYPAL'
+                            ? 'Hoàn tất thanh toán trên PayPal\nrồi quay lại app'
+                            : 'Hoàn tất thanh toán trên trình duyệt\nrồi quay lại app',
+                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                        textAlign: TextAlign.center,
+                      ),
                       const SizedBox(height: 20),
                       TextButton(
-                        onPressed: () => setState(() => _waiting = false),
+                        onPressed: () { _pollTimer?.cancel(); setState(() { _waiting = false; }); },
                         child: const Text('Hủy chờ',
                             style: TextStyle(color: AppColors.error, fontSize: 13)),
                       ),
@@ -358,7 +298,8 @@ class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserv
           ),
           const SizedBox(height: 4),
           Text(
-            isYearly ? 'Thanh toán ${_formatPrice(plan.price)}đ / năm' : 'Thanh toán ${_formatPrice(plan.price)}đ / tháng',
+            isYearly ? 'Thanh toán ${_formatPrice(plan.price)}đ / năm'
+                     : 'Thanh toán ${_formatPrice(plan.price)}đ / tháng',
             style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
           ),
           const Padding(
@@ -388,7 +329,7 @@ class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserv
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('VÍ & NGÂN HÀNG NỘI ĐỊA',
+        const Text('PHƯƠNG THỨC THANH TOÁN',
             style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
                 color: AppColors.textSecondary, letterSpacing: 0.8)),
         const SizedBox(height: 12),
@@ -451,7 +392,7 @@ class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserv
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 0,
         ),
-        onPressed: _processing ? null : _pay,
+        onPressed: (_processing || _waiting) ? null : _pay,
         child: Text(
           _processing ? 'Đang xử lý...' : 'Thanh toán ngay',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -462,7 +403,8 @@ class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserv
 
   String _formatPrice(int price) {
     if (price >= 1000000) return '${(price / 1000).round()}k';
-    if (price >= 1000) return '${price ~/ 1000}.${((price % 1000) ~/ 100).toString().padLeft(1, '0')}00'.replaceAll(RegExp(r'\.?0+$'), '');
+    if (price >= 1000) return '${price ~/ 1000}.${((price % 1000) ~/ 100).toString().padLeft(1, '0')}00'
+        .replaceAll(RegExp(r'\.?0+$'), '');
     return price.toString();
   }
 }

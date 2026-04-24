@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../services/payment_service.dart';
+import '../../l10n/l10n_ext.dart';
 import 'payment_screen.dart';
 
 class PlanSelectionScreen extends StatefulWidget {
@@ -91,7 +92,7 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
-          const Text('Chọn gói', style: TextStyle(
+          Text(context.l10n.choosePlan, style: const TextStyle(
               fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
         ],
       ),

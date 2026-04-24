@@ -7,6 +7,7 @@ import '../onboarding/onboarding_flow.dart';
 import '../home/home_placeholder.dart';
 import 'register_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../l10n/l10n_ext.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -45,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (user == null) {
       setState(() => _isLoading = false);
-      _snack('Email hoặc mật khẩu không đúng');
+      _snack(context.l10n.wrongCredentials);
       return;
     }
 
@@ -107,18 +108,18 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 20),
 
                 // Header
-                const Text(
-                  'Chào mừng trở lại',
-                  style: TextStyle(
+                Text(
+                  context.l10n.welcomeBack,
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Đăng nhập để tiếp tục học',
-                  style: TextStyle(
+                Text(
+                  context.l10n.loginToContinue,
+                  style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
                   ),
@@ -131,19 +132,19 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 24),
 
                 // Divider
-                _divider('hoặc email'),
+                _divider(context.l10n.orEmail),
                 const SizedBox(height: 24),
 
                 // Email
                 _input(
                   controller: _email,
-                  hint: 'Email',
+                  hint: context.l10n.email,
                   icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Nhập email';
+                    if (v == null || v.trim().isEmpty) return context.l10n.enterEmail;
                     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                        .hasMatch(v.trim())) return 'Email không hợp lệ';
+                        .hasMatch(v.trim())) return context.l10n.invalidEmail;
                     return null;
                   },
                 ),
@@ -152,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                 // Password
                 _input(
                   controller: _password,
-                  hint: 'Mật khẩu',
+                  hint: context.l10n.password,
                   icon: Icons.lock_outline_rounded,
                   obscure: !_showPassword,
                   suffix: IconButton(
@@ -167,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
                         setState(() => _showPassword = !_showPassword),
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Nhập mật khẩu';
+                    if (v == null || v.isEmpty) return context.l10n.enterPassword;
                     return null;
                   },
                 ),
@@ -176,10 +177,10 @@ class _LoginPageState extends State<LoginPage> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () => _snack('Tính năng đang phát triển'),
-                    child: const Text(
-                      'Quên mật khẩu?',
-                      style: TextStyle(
+                    onPressed: () => _snack(context.l10n.featureInDevelopment),
+                    child: Text(
+                      context.l10n.forgotPassword,
+                      style: const TextStyle(
                         color: AppColors.primaryLight,
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -195,7 +196,7 @@ class _LoginPageState extends State<LoginPage> {
                     ? const Center(
                         child: CircularProgressIndicator(
                             color: AppColors.primary))
-                    : _primaryButton('Đăng nhập', _login),
+                    : _primaryButton(context.l10n.login, _login),
 
                 const SizedBox(height: 20),
 
@@ -213,10 +214,10 @@ class _LoginPageState extends State<LoginPage> {
                       const Icon(Icons.shield_outlined,
                           color: AppColors.textSecondary, size: 20),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Bật xác thực 2 lớp (2FA)\nđể bảo vệ tài khoản',
-                          style: TextStyle(
+                          context.l10n.twoFaTitle,
+                          style: const TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 13,
                             height: 1.4,
@@ -227,7 +228,7 @@ class _LoginPageState extends State<LoginPage> {
                         value: _enable2FA,
                         onChanged: (v) {
                           setState(() => _enable2FA = v);
-                          if (v) _snack('2FA sẽ được kích hoạt sau khi đăng nhập');
+                          if (v) _snack(context.l10n.twoFaActivated);
                         },
                         activeColor: AppColors.primary,
                         trackColor: WidgetStateProperty.all(AppColors.border),
@@ -247,14 +248,14 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     child: Text.rich(
                       TextSpan(
-                        text: 'Chưa có tài khoản? ',
+                        text: context.l10n.noAccount,
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 14,
                         ),
                         children: [
                           TextSpan(
-                            text: 'Đăng ký',
+                            text: context.l10n.register,
                             style: TextStyle(
                               color: AppColors.primaryLight,
                               fontWeight: FontWeight.w600,
@@ -302,7 +303,7 @@ Future<void> _signInWithGoogle() async {
 
     if (idToken == null) {
       setState(() => _isGoogleLoading = false);
-      _snack('Không lấy được idToken. Kiểm tra Web Client ID.');
+      _snack(context.l10n.googleIdTokenError);
       return;
     }
 
@@ -329,7 +330,7 @@ Future<void> _signInWithGoogle() async {
         (r) => false,
       );
     } else {
-      _snack('Backend từ chối đăng nhập Google');
+      _snack(context.l10n.googleBackendRejected);
     }
   } catch (e) {
     setState(() => _isGoogleLoading = false);
@@ -338,13 +339,13 @@ Future<void> _signInWithGoogle() async {
     final msg = e.toString();
 
     if (msg.contains('10')) {
-      _snack('Lỗi SHA-1 (ApiException: 10)');
+      _snack(context.l10n.googleSha1Error);
     } else if (msg.contains('12500')) {
-      _snack('OAuth config sai');
+      _snack(context.l10n.googleOAuthError);
     } else if (msg.contains('7')) {
-      _snack('Lỗi mạng hoặc Google Play');
+      _snack(context.l10n.googleNetworkError);
     } else {
-      _snack('Google Sign-In lỗi: $msg');
+      _snack(context.l10n.googleSignInError(msg));
     }
   }
 }
@@ -374,7 +375,7 @@ Future<void> _signInWithGoogle() async {
                   color: Colors.white,
                 )),
         label: Text(
-          _isGoogleLoading ? 'Đang xử lý...' : 'Tiếp tục với Google',
+          _isGoogleLoading ? context.l10n.processing : context.l10n.continueWithGoogle,
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 15,

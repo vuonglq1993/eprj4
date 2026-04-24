@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n_ext.dart';
 import '../../core/app_widgets.dart';
+import '../../main.dart';
 import '../../services/api_service.dart';
 import '../../services/token_service.dart';
 import '../splash/splash_screen.dart';
@@ -50,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _weeklyReport = prefs.getBool(_kWeeklyReport) ?? false;
         _xpGoal = prefs.getInt(_kXpGoal) ?? 200;
         _learningStyle = prefs.getString(_kLearningStyle) ?? 'Visual';
-        _uiLanguage = user?['uiLanguage'] as String? ?? 'vi';
+        _uiLanguage = user?['uiLanguage'] as String? ?? 'en';
         _loading = false;
       });
     }
@@ -66,17 +68,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('Đăng xuất', style: TextStyle(color: AppColors.textPrimary)),
-        content: const Text('Bạn có chắc muốn đăng xuất?',
-            style: TextStyle(color: AppColors.textSecondary)),
+        title: Text(context.l10n.logout, style: const TextStyle(color: AppColors.textPrimary)),
+        content: Text(context.l10n.logoutConfirm,
+            style: const TextStyle(color: AppColors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Hủy', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(context.l10n.cancel, style: const TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Đăng xuất', style: TextStyle(color: AppColors.error)),
+            child: Text(context.l10n.confirm, style: const TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -110,15 +112,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         _topBar(),
                         const SizedBox(height: 16),
-                        _sectionLabel('HỌC TẬP'),
+                        _sectionLabel(context.l10n.settingsLearning),
                         const SizedBox(height: 8),
                         _learningSection(),
                         const SizedBox(height: 20),
-                        _sectionLabel('THÔNG BÁO'),
+                        _sectionLabel(context.l10n.settingsNotifications),
                         const SizedBox(height: 8),
                         _notifSection(),
                         const SizedBox(height: 20),
-                        _sectionLabel('BẢO MẬT'),
+                        _sectionLabel(context.l10n.settingsSecurity),
                         const SizedBox(height: 8),
                         _securitySection(),
                         const SizedBox(height: 24),
@@ -141,8 +143,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
-          const Text('Cài đặt',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          Text(context.l10n.settings,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
         ],
       ),
     );
@@ -159,7 +161,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return _card([
       _rowItem(
         label: 'Ngôn ngữ giao diện',
-        subtitle: _uiLanguage == 'vi' ? 'Tiếng Việt' : 'English',
+        subtitle: _uiLanguage == 'vi' ? 'Tiếng Việt' : _uiLanguage == 'ja' ? '日本語' : 'English',
         onTap: () => _pickLanguage(),
       ),
       _divider(),
@@ -313,7 +315,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           foregroundColor: AppColors.error,
         ),
         icon: const Icon(Icons.logout_rounded),
-        label: const Text('Đăng xuất', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+        label: Text(context.l10n.logout, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
         onPressed: _logout,
       ),
     );
@@ -343,13 +345,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: const Text('en'),
             onTap: () => Navigator.pop(context, 'en'),
           ),
+          ListTile(
+            title: const Text('日本語', style: TextStyle(color: AppColors.textPrimary)),
+            trailing: const Text('ja'),
+            onTap: () => Navigator.pop(context, 'ja'),
+          ),
           const SizedBox(height: 16),
         ],
       ),
     );
     if (chosen != null && chosen != _uiLanguage) {
       await ApiService.updateProfile(uiLanguage: chosen);
-      if (mounted) setState(() => _uiLanguage = chosen);
+      if (!mounted) return;
+      setState(() => _uiLanguage = chosen);
+      appStateKey.currentState?.setLocale(Locale(chosen));
     }
   }
 
