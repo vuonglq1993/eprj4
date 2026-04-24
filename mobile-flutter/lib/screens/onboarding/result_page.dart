@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../l10n/l10n_ext.dart';
 import '../home/home_placeholder.dart';
 
 class ResultPage extends StatefulWidget {
@@ -160,9 +161,9 @@ class _ResultPageState extends State<ResultPage>
                                   size: 50, color: Colors.white),
                             ),
                             const SizedBox(height: 28),
-                            const Text(
-                              'Trình độ của bạn',
-                              style: TextStyle(
+                            Text(
+                              context.l10n.yourLevel,
+                              style: const TextStyle(
                                   fontSize: 14,
                                   color: AppColors.textSecondary),
                             ),
@@ -192,7 +193,7 @@ class _ResultPageState extends State<ResultPage>
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '${widget.score} / ${widget.total} câu đúng',
+                              context.l10n.correctAnswers(widget.score, widget.total),
                               style: const TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textSecondary),

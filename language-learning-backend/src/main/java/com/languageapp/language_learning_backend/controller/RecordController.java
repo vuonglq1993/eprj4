@@ -21,14 +21,18 @@ public class RecordController {
     private final RecordService recordService;
 
     @PostMapping("/upload")
-    public ResponseEntity<Record> upload(
+    public ResponseEntity<RecordResponse> upload(
             @RequestParam MultipartFile file,
             @RequestParam String title,
             @RequestParam UUID userId,
             @RequestParam UUID exerciseId
     ) {
+        Record record = recordService.upload(file, title, userId, exerciseId);
         return ResponseEntity.ok(
-                recordService.upload(file, title, userId, exerciseId)
+                RecordResponse.builder()
+                        .audioUrl(record.getAudioUrl())
+                        .title(record.getTitle())
+                        .build()
         );
     }
 

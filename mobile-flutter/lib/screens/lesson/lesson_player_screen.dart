@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart' as ja;
+import 'package:path_provider/path_provider.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../core/ai_button_controller.dart';
@@ -68,6 +72,16 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
   final _fillCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
 
+  // Audio playback (LISTENING_CHOICE)
+  final ja.AudioPlayer _audioPlayer = ja.AudioPlayer();
+  bool _isPlaying = false;
+
+  // Speaking recording
+  final RecorderController _recorderCtrl = RecorderController();
+  bool _isRecording = false;
+  String? _uploadedAudioUrl;
+  bool _isUploading = false;
+
   @override
   void initState() {
     super.initState();
@@ -80,8 +94,11 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
     AiButtonController.hide();
     _fillCtrl.dispose();
     _scrollCtrl.dispose();
+    _audioPlayer.dispose();
+    _recorderCtrl.dispose();
     super.dispose();
   }
+
 
   Future<void> _loadExercises() async {
     final list = await LearningService.getExercises(
@@ -188,8 +205,8 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
           answer = _fillAnswer.trim();
           attempt.userAnswer = _fillAnswer.trim();
         case 'SPEAKING':
-          answer = 'true';
-          attempt.userAnswer = null;
+          answer = _uploadedAudioUrl ?? 'speaking_submitted';
+          attempt.userAnswer = _uploadedAudioUrl;
         default:
           if (_selectedOption != null) {
             answer = _selectedOption.toString();
@@ -213,6 +230,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
       answer: answer,
       clientStartMs: startMs,
       clientSubmitMs: now.millisecondsSinceEpoch,
+      audioUrl: _exType == 'SPEAKING' ? _uploadedAudioUrl : null,
     );
 
     if (!mounted) return;
@@ -248,6 +266,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
   }
 
   void _next() {
+    _audioPlayer.stop();
     if (_current < _exercises.length - 1) {
       setState(() {
         _current++;
@@ -261,6 +280,11 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
         _leftToRight = {};
         _activeLeft = null;
         _shuffledRights = [];
+        // reset speaking / listening
+        _uploadedAudioUrl = null;
+        _isRecording = false;
+        _isUploading = false;
+        _isPlaying = false;
       });
       _scrollCtrl.animateTo(0,
           duration: const Duration(milliseconds: 300),
@@ -310,9 +334,9 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppColors.bg,
-        body: const Center(
+        body: Center(
             child: CircularProgressIndicator(color: AppColors.primary)),
       );
     }
@@ -478,26 +502,92 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
     return -1;
   }
 
+  Future<void> _playListeningAudio() async {
+    final audioUrl = _exercises[_current]['audioUrl'] as String?;
+    if (audioUrl == null || audioUrl.isEmpty) return;
+
+    if (_isPlaying) {
+      await _audioPlayer.stop();
+      if (mounted) setState(() => _isPlaying = false);
+      return;
+    }
+
+    try {
+      setState(() => _isPlaying = true);
+      await _audioPlayer.setUrl(audioUrl);
+      await _audioPlayer.play();
+      _audioPlayer.playerStateStream.listen((state) {
+        if (!mounted) return;
+        if (!state.playing) setState(() => _isPlaying = false);
+      });
+    } catch (e) {
+      if (mounted) setState(() => _isPlaying = false);
+    }
+  }
+
   Widget _buildMCQ() {
     final question = _qData['question'] as String? ?? '';
     final options = (_qData['options'] as List?)?.cast<String>() ?? [];
     final correctIndex = _resolveCorrectIndex(_qData);
+    final audioUrl = _exercises[_current]['audioUrl'] as String?;
+    final isListening = _exType == 'LISTENING_CHOICE';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _exTypeBadge(),
         const SizedBox(height: 16),
-        Text(
-          question,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-            height: 1.4,
+        if (question.isNotEmpty) ...[
+          Text(
+            question,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+              height: 1.4,
+            ),
           ),
-        ),
-        const SizedBox(height: 24),
+          const SizedBox(height: 16),
+        ],
+        if (isListening && audioUrl != null && audioUrl.isNotEmpty) ...[
+          Center(
+            child: Column(
+              children: [
+                TappableScale(
+                  onTap: _playListeningAudio,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      gradient: _isPlaying ? null : AppGradients.primaryIcon,
+                      color: _isPlaying ? AppColors.primary : null,
+                      shape: BoxShape.circle,
+                      boxShadow: AppShadows.primaryGlowSoft,
+                    ),
+                    child: Icon(
+                      _isPlaying
+                          ? Icons.stop_rounded
+                          : Icons.volume_up_rounded,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _isPlaying ? 'Đang phát...' : 'Nhấn để nghe',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+        ] else
+          const SizedBox(height: 8),
         ...List.generate(options.length, (i) {
           final label = String.fromCharCode(65 + i);
           Color bg = AppColors.surface;
@@ -788,9 +878,59 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
 
   // ── Speaking ───────────────────────────────────────────────────────────────
 
+  Future<void> _toggleRecording() async {
+    if (_isRecording) {
+      // Stop recording
+      final path = await _recorderCtrl.stop();
+      setState(() {
+        _isRecording = false;
+        _isUploading = true;
+      });
+
+      if (path != null) {
+        final url = await LearningService.uploadSpeakingRecord(
+          audioFile: File(path),
+          exerciseId: _exercises[_current]['id'] as String,
+          title: _exercises[_current]['title'] as String? ?? 'Speaking Record',
+        );
+        if (mounted) {
+          setState(() {
+            _uploadedAudioUrl = url;
+            _isUploading = false;
+          });
+          if (url == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Upload thất bại, thử lại')),
+            );
+          }
+        }
+      } else {
+        if (mounted) setState(() => _isUploading = false);
+      }
+    } else {
+      // Start recording
+      final dir = await getTemporaryDirectory();
+      final filePath =
+          '${dir.path}/speaking_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      await _recorderCtrl.record(path: filePath);
+      setState(() {
+        _isRecording = true;
+        _uploadedAudioUrl = null;
+      });
+    }
+  }
+
   Widget _buildSpeaking() {
-    final text = _qData['text'] as String? ?? '';
+    // Backend stores SPEAKING questionData as {"targetText": "..."} per ExerciseService.grade()
+    final targetText = (_qData['targetText'] as String?)?.trim().isNotEmpty == true
+        ? _qData['targetText'] as String
+        : (_qData['text'] as String?)?.trim().isNotEmpty == true
+            ? _qData['text'] as String
+            : (_qData['question'] as String?)?.trim().isNotEmpty == true
+                ? _qData['question'] as String
+                : (_qData['sentence'] as String?) ?? '';
     final translation = _qData['translation'] as String? ?? '';
+    final exerciseTitle = _exercises[_current]['title'] as String? ?? '';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -805,6 +945,16 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
             fontWeight: FontWeight.w500,
           ),
         ),
+        if (exerciseTitle.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            exerciseTitle,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
         Container(
           width: double.infinity,
@@ -815,88 +965,150 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
             border: Border.all(
                 color: AppColors.primary.withValues(alpha: 0.3)),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                text,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                  height: 1.5,
-                ),
-              ),
-              if (translation.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  translation,
-                  style: const TextStyle(
+          child: targetText.isNotEmpty
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      targetText,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                        height: 1.5,
+                      ),
+                    ),
+                    if (translation.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        translation,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ],
+                )
+              : const Text(
+                  'Không tìm thấy nội dung bài tập.\nVui lòng liên hệ giáo viên.',
+                  style: TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
-                    fontStyle: FontStyle.italic,
+                    height: 1.5,
                   ),
                 ),
-              ],
-            ],
-          ),
         ),
-        const SizedBox(height: 32),
-        // Mic button (UI only, no recording)
-        Center(
-          child: Column(
-            children: [
-              TappableScale(
-                onTap: _answered
-                    ? null
-                    : () => setState(() => _answered = true),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    gradient: _answered
-                        ? null
-                        : AppGradients.primaryIcon,
-                    color: _answered ? AppColors.success : null,
-                    shape: BoxShape.circle,
-                    boxShadow: _answered
-                        ? [
-                            BoxShadow(
-                              color: AppColors.success
-                                  .withValues(alpha: 0.4),
-                              blurRadius: 20,
-                              offset: const Offset(0, 6),
-                            ),
-                          ]
-                        : AppShadows.primaryGlowSoft,
-                  ),
-                  child: Icon(
-                    _answered ? Icons.check_rounded : Icons.mic_rounded,
-                    color: Colors.white,
-                    size: 36,
-                  ),
-                ),
+        const SizedBox(height: 28),
+
+        // Waveform (visible while recording)
+        if (_isRecording)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: AudioWaveforms(
+              recorderController: _recorderCtrl,
+              size: Size(MediaQuery.of(context).size.width - 48, 56),
+              waveStyle: const WaveStyle(
+                waveColor: AppColors.primary,
+                showDurationLabel: true,
+                spacing: 8.0,
+                showBottom: true,
+                extendWaveform: true,
+                showMiddleLine: false,
               ),
-              const SizedBox(height: 12),
-              Text(
-                _answered ? 'Đã ghi âm' : 'Nhấn để ghi âm',
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                '(Tính năng ghi âm đang phát triển)',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textHint,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ],
+            ),
           ),
+        if (_isRecording) const SizedBox(height: 16),
+
+        // Mic button / upload spinner
+        Center(
+          child: _isUploading
+              ? const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(color: AppColors.primary),
+                    SizedBox(height: 10),
+                    Text(
+                      'Đang tải lên...',
+                      style: TextStyle(
+                          fontSize: 13, color: AppColors.textSecondary),
+                    ),
+                  ],
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TappableScale(
+                      onTap: _answered ? null : _toggleRecording,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: _isRecording
+                              ? const Color(0xFFE53935)
+                              : _uploadedAudioUrl != null
+                                  ? AppColors.success
+                                  : null,
+                          gradient: _isRecording || _uploadedAudioUrl != null
+                              ? null
+                              : AppGradients.primaryIcon,
+                          shape: BoxShape.circle,
+                          boxShadow: _isRecording
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFFE53935)
+                                        .withValues(alpha: 0.4),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 6),
+                                  )
+                                ]
+                              : AppShadows.primaryGlowSoft,
+                        ),
+                        child: Icon(
+                          _isRecording
+                              ? Icons.stop_rounded
+                              : _uploadedAudioUrl != null
+                                  ? Icons.check_rounded
+                                  : Icons.mic_rounded,
+                          color: Colors.white,
+                          size: 36,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      _isRecording
+                          ? 'Nhấn để dừng'
+                          : _uploadedAudioUrl != null
+                              ? 'Đã ghi âm ✓'
+                              : 'Nhấn để ghi âm',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: _uploadedAudioUrl != null
+                            ? AppColors.success
+                            : AppColors.textSecondary,
+                        fontWeight: _uploadedAudioUrl != null
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                      ),
+                    ),
+                    if (_uploadedAudioUrl != null && !_answered) ...[
+                      const SizedBox(height: 12),
+                      TextButton.icon(
+                        icon: const Icon(Icons.refresh_rounded,
+                            size: 16, color: AppColors.primaryLight),
+                        label: const Text(
+                          'Ghi âm lại',
+                          style: TextStyle(
+                              color: AppColors.primaryLight, fontSize: 13),
+                        ),
+                        onPressed: _toggleRecording,
+                      ),
+                    ],
+                  ],
+                ),
         ),
       ],
     );
@@ -1252,7 +1464,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
                     ),
                   ),
                 ],
-                if (!isCorrect && attempt.pointsEarned == 0) ...[
+                if (attempt.pointsEarned == 0) ...[
                   const SizedBox(height: 4),
                   Text(
                     '+0 XP',
@@ -1262,14 +1474,14 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
                     ),
                   ),
                 ],
-                if (isCorrect && attempt.pointsEarned > 0) ...[
+                if (attempt.pointsEarned > 0) ...[
                   const SizedBox(height: 4),
                   Text(
                     '+${attempt.pointsEarned} XP',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.success,
+                      color: isCorrect ? AppColors.success : AppColors.warning,
                     ),
                   ),
                 ],
@@ -1298,27 +1510,40 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
         case 'TRANSLATION':
           canSubmit = _fillAnswer.trim().isNotEmpty;
         case 'SPEAKING':
-          canSubmit = true;
+          canSubmit = _uploadedAudioUrl != null;
         default:
           canSubmit = _selectedOption != null;
       }
     }
 
     if (_exType == 'SPEAKING') {
-      return _answered
-          ? SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                child: GradientButton(
-                  label: _current < _exercises.length - 1
-                      ? 'Câu tiếp theo'
-                      : 'Xem kết quả',
-                  onTap: _next,
-                ),
-              ),
-            )
-          : const SizedBox.shrink();
+      if (_answered) {
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+            child: GradientButton(
+              label: _current < _exercises.length - 1
+                  ? 'Câu tiếp theo'
+                  : 'Xem kết quả',
+              onTap: _next,
+            ),
+          ),
+        );
+      }
+      // Show submit only after recording uploaded
+      return SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          child: GradientButton(
+            label: 'Nộp bài',
+            enabled: _uploadedAudioUrl != null && !_isUploading,
+            isLoading: _submitting,
+            onTap: _submitAnswer,
+          ),
+        ),
+      );
     }
 
     return SafeArea(

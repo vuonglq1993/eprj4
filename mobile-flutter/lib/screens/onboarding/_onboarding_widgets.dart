@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../l10n/l10n_ext.dart';
 
 /// Progress bar header dùng chung cho các bước onboarding
 class OnboardingHeader extends StatelessWidget {
@@ -34,7 +35,7 @@ class OnboardingHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Bước $step / $total',
+                  context.l10n.onboardingStep(step, total),
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,

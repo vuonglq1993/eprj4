@@ -10,5 +10,6 @@ public class StreakResponse {
     private int             longestStreak;
     private LocalDate       lastStudyDate;
     private boolean         studiedToday;
-    private List<LocalDate> studyDates;     // 30 ngày gần nhất
+    private List<LocalDate> studyDates;         // 35 ngày gần nhất (unique)
+    private java.util.Map<LocalDate, Integer> dailyCounts; // date → số lần học
 }

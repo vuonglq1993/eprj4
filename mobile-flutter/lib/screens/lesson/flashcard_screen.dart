@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../l10n/l10n_ext.dart';
 import '../../services/learning_service.dart';
 import 'lesson_player_screen.dart';
 import 'lesson_result_screen.dart';
@@ -172,8 +173,8 @@ class _FlashcardScreenState extends State<FlashcardScreen>
               const Expanded(
                 child: Center(
                   child: Text(
-                    'Không có thẻ từ vựng',
-                    style: TextStyle(
+                    context.l10n.noFlashcards,
+                    style: const TextStyle(
                         color: AppColors.textSecondary, fontSize: 14),
                   ),
                 ),

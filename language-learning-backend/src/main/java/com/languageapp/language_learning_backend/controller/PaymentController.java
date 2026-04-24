@@ -45,9 +45,22 @@ public class PaymentController {
     }
 
     @Operation(summary = "Capture PayPal order")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/capture")
-    public ResponseEntity<Void> capture(@RequestParam String orderId) {
-        service.capturePayPalOrder(orderId);
+    public ResponseEntity<Void> capture(@RequestParam String orderId,
+                                        @AuthenticationPrincipal UserPrincipal p) {
+        service.capturePayPalOrder(orderId, p);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Kiểm tra trạng thái giao dịch (polling)")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/status/{transactionId}")
+    public ResponseEntity<java.util.Map<String, String>> status(
+            @PathVariable String transactionId,
+            @AuthenticationPrincipal UserPrincipal p) {
+        return ResponseEntity.ok(service.getTransactionStatus(transactionId, p));
     }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme.dart';
 import '../../services/ai_service.dart';
+import '../../l10n/l10n_ext.dart';
 
 class AiGrammarScreen extends StatefulWidget {
   const AiGrammarScreen({super.key});
@@ -50,7 +51,7 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
       if (res != null) {
         _result = res;
       } else {
-        _error = 'Không thể kết nối. Vui lòng thử lại.';
+        _error = context.l10n.error;
       }
     });
   }
@@ -158,20 +159,20 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
                 color: Color(0xFF4CAF50), size: 18),
           ),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'AI Grammar Check',
-                  style: TextStyle(
+                  context.l10n.aiGrammarCheck,
+                  style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary),
                 ),
                 Text(
-                  'Kiểm tra và sửa lỗi ngữ pháp',
-                  style: TextStyle(
+                  context.l10n.checkAndFixGrammar,
+                  style: const TextStyle(
                       fontSize: 11, color: AppColors.textSecondary),
                 ),
               ],
@@ -188,9 +189,9 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: AppColors.border),
                 ),
-                child: const Text(
-                  'Làm mới',
-                  style: TextStyle(
+                child: Text(
+                  context.l10n.refresh,
+                  style: const TextStyle(
                       fontSize: 11, color: AppColors.textSecondary),
                 ),
               ),
@@ -219,9 +220,9 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
                 const Icon(Icons.edit_rounded,
                     size: 14, color: AppColors.textSecondary),
                 const SizedBox(width: 6),
-                const Text(
-                  'Nhập câu cần kiểm tra',
-                  style: TextStyle(
+                Text(
+                  context.l10n.enterSentenceToCheck,
+                  style: const TextStyle(
                       fontSize: 11,
                       color: AppColors.textSecondary,
                       fontWeight: FontWeight.w500),
@@ -235,9 +236,9 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
                       _inputCtrl.text = data!.text!;
                     }
                   },
-                  child: const Text(
-                    'Dán',
-                    style: TextStyle(
+                  child: Text(
+                    context.l10n.paste,
+                    style: const TextStyle(
                         fontSize: 11, color: AppColors.primaryLight),
                   ),
                 ),
@@ -268,11 +269,14 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
                 Expanded(
                   child: ValueListenableBuilder<TextEditingValue>(
                     valueListenable: _inputCtrl,
-                    builder: (_, val, __) => Text(
-                      '${val.text.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length} từ',
-                      style: const TextStyle(
-                          fontSize: 11, color: AppColors.textHint),
-                    ),
+                    builder: (_, val, __) {
+                      final count = val.text.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+                      return Text(
+                        context.l10n.wordCount(count),
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textHint),
+                      );
+                    },
                   ),
                 ),
                 GestureDetector(
@@ -302,9 +306,9 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
                               color: AppColors.primaryLight,
                             ),
                           )
-                        : const Text(
-                            'Kiểm tra',
-                            style: TextStyle(
+                        : Text(
+                            context.l10n.check,
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -326,9 +330,9 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Thử với câu mẫu:',
-          style: TextStyle(
+        Text(
+          context.l10n.trySampleSentences,
+          style: const TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary,
               fontWeight: FontWeight.w500),
@@ -397,18 +401,18 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          const Text(
-            'AI đang phân tích...',
-            style: TextStyle(
+          Text(
+            context.l10n.aiAnalyzing,
+            style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Đang kiểm tra ngữ pháp, chính tả và cách dùng từ',
+          Text(
+            context.l10n.checkingGrammar,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -480,7 +484,7 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isOk ? 'Câu đúng ngữ pháp! ✓' : 'Phát hiện lỗi ngữ pháp',
+                  isOk ? context.l10n.sentenceCorrect : context.l10n.grammarErrorsFound,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -490,8 +494,8 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
                 const SizedBox(height: 2),
                 Text(
                   isOk
-                      ? 'Câu văn này hoàn toàn chính xác.'
-                      : '${result.errors.length} lỗi được tìm thấy',
+                      ? context.l10n.sentencePerfect
+                      : context.l10n.errorsFound(result.errors.length),
                   style: const TextStyle(
                       fontSize: 12, color: AppColors.textSecondary),
                 ),
@@ -508,7 +512,7 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
   Widget _buildCorrectedCard() {
     final result = _result!;
     return _SectionCard(
-      title: 'Câu đã sửa',
+      title: context.l10n.correctedSentence,
       icon: Icons.auto_fix_high_rounded,
       iconColor: const Color(0xFF4CAF50),
       child: Column(
@@ -580,9 +584,9 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
                     Clipboard.setData(
                         ClipboardData(text: result.corrected));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Đã sao chép câu đã sửa'),
-                        duration: Duration(seconds: 1),
+                      SnackBar(
+                        content: Text(context.l10n.copiedCorrectedSentence),
+                        duration: const Duration(seconds: 1),
                       ),
                     );
                   },
@@ -601,7 +605,7 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
 
   Widget _buildErrorsList() {
     return _SectionCard(
-      title: 'Chi tiết lỗi',
+      title: context.l10n.errorDetails,
       icon: Icons.list_alt_rounded,
       iconColor: AppColors.warning,
       child: Column(
@@ -618,7 +622,7 @@ class _AiGrammarScreenState extends State<AiGrammarScreen> {
 
   Widget _buildBetterExpressionCard() {
     return _SectionCard(
-      title: 'Cách diễn đạt tốt hơn',
+      title: context.l10n.betterExpressions,
       icon: Icons.trending_up_rounded,
       iconColor: AppColors.primaryLight,
       child: Container(
@@ -752,14 +756,14 @@ class _ErrorItemState extends State<_ErrorItem> {
     }
   }
 
-  static String _typeLabel(String type) {
+  String _typeLabel(BuildContext context, String type) {
     switch (type.toUpperCase()) {
       case 'GRAMMAR':
-        return 'Ngữ pháp';
+        return context.l10n.grammarType;
       case 'SPELLING':
-        return 'Chính tả';
+        return context.l10n.spellingType;
       case 'PUNCTUATION':
-        return 'Dấu câu';
+        return context.l10n.punctuationType;
       default:
         return type;
     }
@@ -818,7 +822,7 @@ class _ErrorItemState extends State<_ErrorItem> {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                _typeLabel(err.type),
+                                _typeLabel(context, err.type),
                                 style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.bold,
@@ -829,26 +833,30 @@ class _ErrorItemState extends State<_ErrorItem> {
                             Expanded(
                               child: Row(
                                 children: [
-                                  Text(
-                                    '"${err.wrong}"',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.error,
-                                      decoration:
-                                          TextDecoration.lineThrough,
+                                  Flexible(
+                                    child: Text(
+                                      '"${err.wrong}"',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.error,
+                                        decoration: TextDecoration.lineThrough,
+                                      ),
                                     ),
                                   ),
                                   const Text(' → ',
                                       style: TextStyle(
                                           fontSize: 11,
-                                          color:
-                                              AppColors.textHint)),
-                                  Text(
-                                    '"${err.correct}"',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.success,
+                                          color: AppColors.textHint)),
+                                  Flexible(
+                                    child: Text(
+                                      '"${err.correct}"',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.success,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -886,9 +894,9 @@ class _ErrorItemState extends State<_ErrorItem> {
                   Divider(color: color.withValues(alpha: 0.15)),
                   const SizedBox(height: 6),
                   if (err.explanation.isNotEmpty) ...[
-                    const Text(
-                      'Giải thích:',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.explanation,
+                      style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textHint),

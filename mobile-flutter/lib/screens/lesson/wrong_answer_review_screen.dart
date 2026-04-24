@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../l10n/l10n_ext.dart';
 import 'lesson_player_screen.dart';
 
 class WrongAnswerReviewScreen extends StatefulWidget {
@@ -144,16 +146,16 @@ class _WrongAnswerReviewScreenState extends State<WrongAnswerReviewScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Review câu sai',
-                  style: TextStyle(
+                Text(
+                  context.l10n.reviewWrongAnswers,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
                 ),
                 Text(
-                  '${_current + 1} / ${widget.attempts.length}',
+                  context.l10n.questionProgress(_current + 1, widget.attempts.length),
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -192,7 +194,14 @@ class _WrongAnswerReviewScreenState extends State<WrongAnswerReviewScreen>
     final title = ex['title'] as String? ?? 'Câu hỏi';
     final color = _typeColor(type);
     final qData = ex['questionData'];
-    final qMap = qData is Map<String, dynamic> ? qData : <String, dynamic>{};
+    Map<String, dynamic> qMap;
+    if (qData is Map<String, dynamic>) {
+      qMap = qData;
+    } else if (qData is String && qData.isNotEmpty) {
+      try { qMap = jsonDecode(qData) as Map<String, dynamic>; } catch (_) { qMap = {}; }
+    } else {
+      qMap = {};
+    }
 
     final question = qMap['question'] as String? ??
         qMap['sentence'] as String? ??
@@ -208,6 +217,9 @@ class _WrongAnswerReviewScreenState extends State<WrongAnswerReviewScreen>
     // Derive correct/user answer text
     String correctText = _resolveAnswerText(correctAnswer, options, qMap);
     String userText = _resolveAnswerText(userAnswer, options, qMap);
+
+    final isMatching = type.toUpperCase() == 'MATCHING' || type.toUpperCase() == 'DRAG_DROP';
+    final pairs = (qMap['pairs'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,24 +292,26 @@ class _WrongAnswerReviewScreenState extends State<WrongAnswerReviewScreen>
 
         const SizedBox(height: 16),
 
-        // Your answer (wrong)
-        if (userText.isNotEmpty) ...[
-          const _SectionLabel(label: 'Bạn chọn:'),
+        if (isMatching && pairs.isNotEmpty) ...[
+          const _SectionLabel(label: 'Đáp án đúng:'),
+          const SizedBox(height: 8),
+          _buildMatchingCorrect(pairs),
+        ] else ...[
+          // Your answer (wrong)
+          if (userText.isNotEmpty) ...[
+            const _SectionLabel(label: 'Bạn chọn:'),
+            const SizedBox(height: 8),
+            _answerRow(text: userText, isCorrect: false),
+            const SizedBox(height: 14),
+          ],
+          // Correct answer
+          const _SectionLabel(label: 'Đáp án đúng:'),
           const SizedBox(height: 8),
           _answerRow(
-            text: userText,
-            isCorrect: false,
+            text: correctText.isNotEmpty ? correctText : '—',
+            isCorrect: true,
           ),
-          const SizedBox(height: 14),
         ],
-
-        // Correct answer
-        const _SectionLabel(label: 'Đáp án đúng:'),
-        const SizedBox(height: 8),
-        _answerRow(
-          text: correctText.isNotEmpty ? correctText : '—',
-          isCorrect: true,
-        ),
 
         const SizedBox(height: 20),
 
@@ -363,26 +377,70 @@ class _WrongAnswerReviewScreenState extends State<WrongAnswerReviewScreen>
     );
   }
 
+  Widget _buildMatchingCorrect(List<Map<String, dynamic>> pairs) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.success.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        children: pairs.map((p) {
+          final left = p['left'] as String? ?? '';
+          final right = p['right'] as String? ?? '';
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(left,
+                      style: const TextStyle(
+                          fontSize: 13, color: AppColors.textPrimary)),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Icon(Icons.arrow_forward_rounded,
+                      size: 14, color: AppColors.success),
+                ),
+                Expanded(
+                  child: Text(right,
+                      style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.success,
+                          fontWeight: FontWeight.w600)),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   String _resolveAnswerText(
       dynamic answer, List<String> options, Map<String, dynamic> qMap) {
     if (answer == null) return '';
 
-    // If it's a map with 'index' or selected index
+    // Map with 'selectedIndex' key (offline grading)
     if (answer is Map) {
-      final idx = answer['index'] as int?;
+      final idx = (answer['selectedIndex'] ?? answer['index']) as int?;
       if (idx != null && idx >= 0 && idx < options.length) {
         return options[idx];
       }
       final ans = answer['answer'] as String?;
       if (ans != null) return ans;
+      return '';
     }
 
-    // If it's an int (index into options)
-    if (answer is int && answer >= 0 && answer < options.length) {
-      return options[answer];
+    // Int index into options list
+    if (answer is int && options.isNotEmpty) {
+      if (answer >= 0 && answer < options.length) return options[answer];
+      return answer.toString();
     }
 
-    // If it's already a string
+    // String: could be an option text or direct answer
     if (answer is String) return answer;
 
     return answer.toString();
@@ -472,7 +530,7 @@ class _WrongAnswerReviewScreenState extends State<WrongAnswerReviewScreen>
           // Next / Finish
           Expanded(
             child: GradientButton(
-              label: isLast ? 'Hoàn thành' : 'Tiếp theo',
+              label: isLast ? context.l10n.done : context.l10n.next,
               onTap: _next,
               height: 52,
               fontSize: 15,

@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # State management (Riverpod 3.x - khuyến nghị mạnh nhất 2026 cho hầu hết project)
   flutter_riverpod: ^2.5.1  # hoặc mới nhất ^3.x nếu đã ra
@@ -79,6 +81,10 @@ dependencies:
   device_info_plus: ^10.1.0
   audioplayers: ^6.6.0
   fl_chart: ^1.2.0
+  path_provider: ^2.1.4
+
+  # Deep linking (payment return)
+  app_links: ^6.3.0
 
   #singin gg
   google_sign_in: ^6.2.1
@@ -95,10 +101,8 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true
 
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
   assets:
     - assets/images/

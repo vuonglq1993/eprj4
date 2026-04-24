@@ -72,10 +72,12 @@ public class VNPayClient {
             params.put("vnp_IpnUrl", ipnUrl);
         }
 
-        // Build query string + checksum
-        String queryString = buildQueryString(params);
-        String secureHash  = hmacSHA512(hashSecret, queryString);
+        // Build raw query string for hashing (no URL-encode on values)
+        String hashData = buildHashData(params);
+        String secureHash = hmacSHA512(hashSecret, hashData);
 
+        // Build encoded query string for URL
+        String queryString = buildQueryString(params);
         String fullUrl = paymentUrl + "?" + queryString + "&vnp_SecureHash=" + secureHash;
         log.info("VNPay URL created for txnRef={}", txnRef);
         return fullUrl;
@@ -98,7 +100,7 @@ public class VNPayClient {
         filtered.remove("vnp_SecureHash");
         filtered.remove("vnp_SecureHashType");
 
-        String queryString   = buildQueryString(filtered);
+        String queryString   = buildHashData(filtered);
         String expectedHash  = hmacSHA512(hashSecret, queryString);
 
         boolean ok = expectedHash.equalsIgnoreCase(receivedHash);
@@ -130,14 +132,27 @@ public class VNPayClient {
 
     // ── HELPERS ───────────────────────────────────────────────
 
+    /** Dùng để tính HMAC — key và value KHÔNG encode */
+    private String buildHashData(Map<String, String> params) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> e : params.entrySet()) {
+            if (e.getValue() != null && !e.getValue().isBlank()) {
+                if (!sb.isEmpty()) sb.append("&");
+                sb.append(e.getKey()).append("=").append(e.getValue());
+            }
+        }
+        return sb.toString();
+    }
+
+    /** Dùng để build URL cuối — value được URL-encode */
     private String buildQueryString(Map<String, String> params) {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> e : params.entrySet()) {
             if (e.getValue() != null && !e.getValue().isBlank()) {
                 if (!sb.isEmpty()) sb.append("&");
-                sb.append(URLEncoder.encode(e.getKey(),   StandardCharsets.US_ASCII));
+                sb.append(URLEncoder.encode(e.getKey(),   StandardCharsets.UTF_8));
                 sb.append("=");
-                sb.append(URLEncoder.encode(e.getValue(), StandardCharsets.US_ASCII));
+                sb.append(URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8));
             }
         }
         return sb.toString();
