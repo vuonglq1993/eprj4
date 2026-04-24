@@ -4,6 +4,7 @@ import '../../core/theme.dart';
 import '../../l10n/l10n_ext.dart';
 import '../../core/app_widgets.dart';
 import '../../main.dart';
+import '../../core/ai_button_controller.dart';
 import '../../services/api_service.dart';
 import '../../services/token_service.dart';
 import '../splash/splash_screen.dart';
@@ -86,6 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (confirmed != true || !mounted) return;
     await ApiService.logout();
     await TokenService.clearTokens();
+    AiButtonController.onLogout();
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,

@@ -20,5 +20,6 @@ public class UserProfileResponse {
     private Instant createdAt;
     private String        subscriptionPlan;
     private Boolean       isPremium;
-    private String uiLanguage;
+    private String  uiLanguage;
+    private Boolean hasPassword;   // false nếu Google user chưa set password
 }

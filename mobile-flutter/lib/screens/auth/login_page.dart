@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../core/ai_button_controller.dart';
 import '../../services/api_service.dart';
 import '../onboarding/onboarding_flow.dart';
 import '../home/home_placeholder.dart';
@@ -54,6 +55,7 @@ class _LoginPageState extends State<LoginPage> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
+    AiButtonController.onLogin();
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
@@ -320,6 +322,7 @@ Future<void> _signInWithGoogle() async {
 
       if (!mounted) return;
 
+      AiButtonController.onLogin();
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
