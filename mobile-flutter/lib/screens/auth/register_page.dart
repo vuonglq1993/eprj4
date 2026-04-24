@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../core/ai_button_controller.dart';
 import '../../services/api_service.dart';
 import '../home/home_placeholder.dart';
 import '../onboarding/onboarding_flow.dart';
@@ -108,6 +109,7 @@ class _RegisterPageState extends State<RegisterPage> {
       if (user != null) {
         final onboardingDone = await ApiService.isOnboardingCompleted();
         if (!mounted) return;
+        AiButtonController.onLogin();
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
@@ -176,6 +178,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     // Tokens are already saved by register (201 response)
     if (!mounted) return;
+    AiButtonController.onLogin();
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const OnboardingFlow()),

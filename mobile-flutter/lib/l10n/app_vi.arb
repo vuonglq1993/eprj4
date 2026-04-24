@@ -140,6 +140,7 @@
   "lessons": "{count} bài",
   "@lessons": { "placeholders": { "count": { "type": "int" } } },
   "enrollPath": "Đăng ký lộ trình",
+  "enrollToUnlock": "Đăng ký để mở khóa",
   "enrolledPath": "Đã đăng ký lộ trình!",
   "enrollFailed": "Không thể đăng ký. Thử lại.",
 
@@ -288,6 +289,9 @@
   "user": "Người dùng",
 
   "changePassword": "Đổi mật khẩu",
+  "setPassword": "Tạo mật khẩu",
+  "passwordSetSuccess": "Tạo mật khẩu thành công! Bạn có thể đăng nhập bằng email.",
+  "googleSetPasswordInfo": "Tài khoản của bạn được đăng nhập qua Google. Tạo mật khẩu để có thể đăng nhập bằng email.",
   "currentPassword": "Mật khẩu hiện tại",
   "newPassword": "Mật khẩu mới",
   "confirmNewPassword": "Xác nhận mật khẩu mới",

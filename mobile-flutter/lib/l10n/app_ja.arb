@@ -138,6 +138,7 @@
   "lessons": "{count}レッスン",
   "@lessons": { "placeholders": { "count": { "type": "int" } } },
   "enrollPath": "パスに登録",
+  "enrollToUnlock": "登録して解除する",
   "enrolledPath": "パスに登録しました！",
   "enrollFailed": "登録できませんでした。再試行してください。",
 
@@ -286,6 +287,9 @@
   "user": "ユーザー",
 
   "changePassword": "パスワード変更",
+  "setPassword": "パスワード設定",
+  "passwordSetSuccess": "パスワードを設定しました！メールでログインできます。",
+  "googleSetPasswordInfo": "アカウントはGoogleでログインしています。メールでもログインできるようにパスワードを設定してください。",
   "currentPassword": "現在のパスワード",
   "newPassword": "新しいパスワード",
   "confirmNewPassword": "新しいパスワードの確認",

@@ -826,6 +826,12 @@ abstract class AppLocalizations {
   /// **'Đăng ký lộ trình'**
   String get enrollPath;
 
+  /// No description provided for @enrollToUnlock.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng ký để mở khóa'**
+  String get enrollToUnlock;
+
   /// No description provided for @enrolledPath.
   ///
   /// In vi, this message translates to:
@@ -1581,6 +1587,24 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Đổi mật khẩu'**
   String get changePassword;
+
+  /// No description provided for @setPassword.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo mật khẩu'**
+  String get setPassword;
+
+  /// No description provided for @passwordSetSuccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo mật khẩu thành công! Bạn có thể đăng nhập bằng email.'**
+  String get passwordSetSuccess;
+
+  /// No description provided for @googleSetPasswordInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài khoản của bạn được đăng nhập qua Google. Tạo mật khẩu để có thể đăng nhập bằng email.'**
+  String get googleSetPasswordInfo;
 
   /// No description provided for @currentPassword.
   ///

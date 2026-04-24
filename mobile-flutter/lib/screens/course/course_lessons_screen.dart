@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
-import '../../core/ai_button_controller.dart';
 import '../../services/learning_service.dart';
 import '../lesson/lesson_player_screen.dart';
 import '../../l10n/l10n_ext.dart';
@@ -29,13 +28,11 @@ class _CourseLessonsScreenState extends State<CourseLessonsScreen> {
   @override
   void initState() {
     super.initState();
-    AiButtonController.show();
     _load();
   }
 
   @override
   void dispose() {
-    AiButtonController.hide();
     super.dispose();
   }
 
