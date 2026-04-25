@@ -4,7 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config/app_config.dart';
-import 'core/ai_button_controller.dart';
 import 'core/theme.dart';
 import 'core/ai_floating_button.dart';
 import 'screens/splash/splash_screen.dart';
@@ -16,7 +15,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
   await AppConfig.init();
-  await AiButtonController.init();
 
   final prefs = await SharedPreferences.getInstance();
   final langCode = prefs.getString(_kLocaleKey) ?? 'vi';

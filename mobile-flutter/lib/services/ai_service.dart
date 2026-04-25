@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import 'token_service.dart';
@@ -121,6 +122,40 @@ class AiRecommendResult {
         focusSkills: ((j['focusSkills'] as List?) ?? []).cast<String>(),
         studyTip: j['studyTip'] as String? ?? '',
       );
+}
+
+// ── Pronunciation models ───────────────────────────────────────────────────
+
+class PronunciationResult {
+  final int score;
+  final String cefrLevel;
+  final String feedback;
+  final String phonemeErrors;
+  final String improvement;
+
+  PronunciationResult({
+    required this.score,
+    required this.cefrLevel,
+    required this.feedback,
+    required this.phonemeErrors,
+    required this.improvement,
+  });
+
+  factory PronunciationResult.fromJson(Map<String, dynamic> j) =>
+      PronunciationResult(
+        score: (j['score'] as num?)?.toInt() ?? 0,
+        cefrLevel: j['cefrLevel'] as String? ?? '',
+        feedback: _asString(j['feedback']),
+        phonemeErrors: _asString(j['phonemeErrors']),
+        improvement: _asString(j['improvement']),
+      );
+
+  static String _asString(dynamic v) {
+    if (v == null) return '';
+    if (v is String) return v;
+    if (v is List) return v.map((e) => '• $e').join('\n');
+    return v.toString();
+  }
 }
 
 // ── Service ────────────────────────────────────────────────────────────────
@@ -301,6 +336,54 @@ class AiService {
         if (data is Map<String, dynamic>) {
           return AiRecommendResult.fromJson(data, titleMap);
         }
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Upload audio phát âm lên Cloudinary qua backend (không lưu DB).
+  static Future<String?> uploadPronunciationAudio(File audioFile) async {
+    try {
+      final token = await TokenService.getAccessToken();
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$_base/ai/pronunciation/upload'),
+      );
+      if (token != null) request.headers['Authorization'] = 'Bearer $token';
+      request.files.add(await http.MultipartFile.fromPath('file', audioFile.path));
+      final streamed = await request.send();
+      final body = await streamed.stream.bytesToString();
+      if (streamed.statusCode == 200 || streamed.statusCode == 201) {
+        final json = jsonDecode(body) as Map<String, dynamic>;
+        return json['audioUrl'] as String?;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Phân tích phát âm từ audio URL (Cloudinary).
+  static Future<PronunciationResult?> analyzePronunciation({
+    required String targetText,
+    required String audioUrl,
+    String cefrLevel = 'B1',
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$_base/ai/pronunciation/analyze-audio'),
+        headers: await _auth(),
+        body: jsonEncode({
+          'targetText': targetText,
+          'audioUrl': audioUrl,
+          'cefrLevel': cefrLevel,
+        }),
+      );
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        return PronunciationResult.fromJson(
+            jsonDecode(res.body) as Map<String, dynamic>);
       }
       return null;
     } catch (_) {

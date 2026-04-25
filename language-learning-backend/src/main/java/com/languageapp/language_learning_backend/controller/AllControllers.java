@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.Map;
 
 
 // ╔══════════════════════════════════════════════════════════╗
@@ -96,6 +98,22 @@ class PronunciationController {
             @Valid @RequestBody PronunciationRequest req,
             @AuthenticationPrincipal UserPrincipal p) {
         return ResponseEntity.ok(service.analyzePronunciation(req, p));
+    }
+
+    @Operation(summary = "Upload audio phát âm lên Cloudinary (không lưu DB)")
+    @PostMapping(value = "/upload", consumes = "multipart/form-data")
+    public ResponseEntity<Map<String, String>> uploadAudio(
+            @RequestParam MultipartFile file) {
+        String url = service.uploadAudio(file);
+        return ResponseEntity.ok(Map.of("audioUrl", url));
+    }
+
+    @Operation(summary = "Phân tích phát âm từ file audio (Cloudinary URL)")
+    @PostMapping("/analyze-audio")
+    public ResponseEntity<PronunciationResponse> analyzeAudio(
+            @Valid @RequestBody PronunciationAudioRequest req,
+            @AuthenticationPrincipal UserPrincipal p) {
+        return ResponseEntity.ok(service.analyzeFromAudio(req, p));
     }
 }
 
