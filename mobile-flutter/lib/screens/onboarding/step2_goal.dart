@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../l10n/l10n_ext.dart';
 import '_onboarding_widgets.dart';
 
 class Step2Goal extends StatelessWidget {
@@ -18,13 +19,22 @@ class Step2Goal extends StatelessWidget {
   });
 
   // Values match backend LearningGoal enum exactly
-  static const _goals = [
-    ('SKILL_IMPROVEMENT', 'Thi TOEIC / IELTS', Icons.workspace_premium_rounded),
-    ('FAMILY_FRIENDS', 'Giao tiếp hàng ngày', Icons.chat_bubble_outline_rounded),
-    ('SCHOOL', 'Du học / định cư', Icons.flight_takeoff_rounded),
-    ('WORK', 'Công việc / kinh doanh', Icons.business_center_rounded),
-    ('TRAVEL', 'Du lịch / khám phá', Icons.explore_rounded),
-    ('OTHERS', 'Mục tiêu khác', Icons.more_horiz_rounded),
+  static const _goalKeys = [
+    ('SKILL_IMPROVEMENT', Icons.workspace_premium_rounded),
+    ('FAMILY_FRIENDS', Icons.chat_bubble_outline_rounded),
+    ('SCHOOL', Icons.flight_takeoff_rounded),
+    ('WORK', Icons.business_center_rounded),
+    ('TRAVEL', Icons.explore_rounded),
+    ('OTHERS', Icons.more_horiz_rounded),
+  ];
+
+  List<(String, String, IconData)> _goals(BuildContext context) => [
+    (_goalKeys[0].$1, context.l10n.goalToeic, _goalKeys[0].$2),
+    (_goalKeys[1].$1, context.l10n.goalCommunication, _goalKeys[1].$2),
+    (_goalKeys[2].$1, context.l10n.goalStudyAbroad, _goalKeys[2].$2),
+    (_goalKeys[3].$1, context.l10n.goalWork, _goalKeys[3].$2),
+    (_goalKeys[4].$1, context.l10n.goalTravel, _goalKeys[4].$2),
+    (_goalKeys[5].$1, context.l10n.goalOther, _goalKeys[5].$2),
   ];
 
   @override
@@ -35,24 +45,24 @@ class Step2Goal extends StatelessWidget {
         children: [
           OnboardingHeader(step: 2, total: 4, onBack: onBack),
 
-          const Padding(
-            padding: EdgeInsets.fromLTRB(24, 8, 24, 20),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Mục tiêu của bạn là\ngì?',
-                  style: TextStyle(
+                  context.l10n.onboardingGoalTitle,
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                     height: 1.3,
                   ),
                 ),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Text(
-                  'AI sẽ tạo lộ trình phù hợp nhất',
-                  style: TextStyle(
+                  context.l10n.onboardingGoalSubtitle,
+                  style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
                   ),
@@ -65,10 +75,10 @@ class Step2Goal extends StatelessWidget {
             child: ListView.separated(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: _goals.length,
+              itemCount: _goals(context).length,
               separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (_, i) {
-                final (value, label, icon) = _goals[i];
+                final (value, label, icon) = _goals(context)[i];
                 final isSelected = value == selected;
                 return TappableScale(
                   onTap: () => onSelect(value),
@@ -141,7 +151,7 @@ class Step2Goal extends StatelessWidget {
           ),
 
           OnboardingNextButton(
-            label: 'Tiếp theo',
+            label: context.l10n.next,
             enabled: selected != null,
             onTap: onNext,
           ),

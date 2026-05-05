@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../l10n/l10n_ext.dart';
 import '../../services/api_service.dart';
 import '../../services/game_service.dart';
 import '../game/streak_screen.dart';
@@ -53,7 +54,7 @@ class _ProfileTabState extends State<ProfileTab> {
     final first = _user?['firstName'] as String? ?? '';
     final last = _user?['lastName'] as String? ?? '';
     final full = '$first $last'.trim();
-    return full.isNotEmpty ? full : 'Người dùng';
+    return full.isNotEmpty ? full : context.l10n.user;
   }
 
   String get _initials {
@@ -131,8 +132,8 @@ class _ProfileTabState extends State<ProfileTab> {
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
         children: [
-          const Text('Hồ sơ',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          Text(context.l10n.profile,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
           const Spacer(),
           TappableScale(
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())).then((_) => _load()),
@@ -143,11 +144,11 @@ class _ProfileTabState extends State<ProfileTab> {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: AppColors.border),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.settings_rounded, size: 16, color: AppColors.textSecondary),
-                  SizedBox(width: 4),
-                  Text('Cài đặt', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                  const Icon(Icons.settings_rounded, size: 16, color: AppColors.textSecondary),
+                  const SizedBox(width: 4),
+                  Text(context.l10n.settings, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                 ],
               ),
             ),

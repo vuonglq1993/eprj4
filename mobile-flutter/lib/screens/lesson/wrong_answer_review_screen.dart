@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../l10n/l10n_ext.dart';
 import 'lesson_player_screen.dart';
 
 class WrongAnswerReviewScreen extends StatefulWidget {
@@ -145,16 +146,16 @@ class _WrongAnswerReviewScreenState extends State<WrongAnswerReviewScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Review câu sai',
-                  style: TextStyle(
+                Text(
+                  context.l10n.reviewWrongAnswers,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
                 ),
                 Text(
-                  '${_current + 1} / ${widget.attempts.length}',
+                  context.l10n.questionProgress(_current + 1, widget.attempts.length),
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -529,7 +530,7 @@ class _WrongAnswerReviewScreenState extends State<WrongAnswerReviewScreen>
           // Next / Finish
           Expanded(
             child: GradientButton(
-              label: isLast ? 'Hoàn thành' : 'Tiếp theo',
+              label: isLast ? context.l10n.done : context.l10n.next,
               onTap: _next,
               height: 52,
               fontSize: 15,

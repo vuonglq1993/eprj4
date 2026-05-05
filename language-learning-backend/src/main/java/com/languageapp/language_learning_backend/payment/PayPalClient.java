@@ -23,12 +23,13 @@ public class PayPalClient {
     @Value("${paypal.client-id}")     private String clientId;
     @Value("${paypal.client-secret}") private String clientSecret;
     @Value("${paypal.base-url:https://api-m.sandbox.paypal.com}") private String baseUrl;
-    @Value("${frontend.url}")     private String frontendUrl;
-    @Value("${android.url:}")     private String androidUrl;
+    @Value("${backend.url}")          private String backendUrl;
+    @Value("${android.url:linguanext://app}") private String androidUrl;
 
     public OrderResponse createOrder(String txId, BigDecimal amount, String desc) {
         String token = getAccessToken();
 
+        // return_url và cancel_url phải là HTTPS — backend xử lý rồi redirect về deep link
         var body = Map.of(
                 "intent", "CAPTURE",
                 "purchase_units", List.of(Map.of(
@@ -36,8 +37,8 @@ public class PayPalClient {
                         "amount", Map.of("currency_code", "USD", "value", amount.toString()),
                         "description", desc)),
                 "application_context", Map.of(
-                        "return_url", (androidUrl != null && !androidUrl.isBlank() ? androidUrl : frontendUrl) + "/payment/paypal/success",
-                        "cancel_url", (androidUrl != null && !androidUrl.isBlank() ? androidUrl : frontendUrl) + "/payment/paypal/cancel",
+                        "return_url", backendUrl + "/api/v1/payments/paypal/return",
+                        "cancel_url", backendUrl + "/api/v1/payments/paypal/cancel",
                         "brand_name", "LinguaNext",
                         "user_action", "PAY_NOW")
         );
@@ -70,7 +71,35 @@ public class PayPalClient {
         return resp.getBody();
     }
 
-    private String getAccessToken() {
+    /** Lấy trạng thái PayPal order: CREATED | SAVED | APPROVED | VOIDED | COMPLETED */
+    public String getOrderStatus(String orderId) {
+        try {
+            var resp = rest.exchange(
+                    baseUrl + "/v2/checkout/orders/" + orderId,
+                    HttpMethod.GET,
+                    new HttpEntity<>(bearerHeaders(getAccessToken())),
+                    OrderStatusResp.class
+            );
+            return resp.getBody() != null ? resp.getBody().status() : "UNKNOWN";
+        } catch (Exception e) {
+            log.warn("PayPal getOrderStatus error: {}", e.getMessage());
+            return "UNKNOWN";
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    record OrderStatusResp(String status) {}
+
+    private String cachedToken;
+    private long tokenExpiry = 0;
+
+    private synchronized String getAccessToken() {
+        long now = System.currentTimeMillis();
+
+        if (cachedToken != null && now < tokenExpiry) {
+            return cachedToken;
+        }
+
         var h = new HttpHeaders();
         h.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         h.setBasicAuth(clientId, clientSecret);
@@ -85,9 +114,13 @@ public class PayPalClient {
                 TokenResp.class
         );
 
-        return resp.getBody().access_token();
-    }
+        cachedToken = resp.getBody().access_token();
 
+        // set 8 tiếng
+        tokenExpiry = now + (8 * 60 * 60 * 1000);
+
+        return cachedToken;
+    }
     private HttpHeaders bearerHeaders(String token) {
         var h = new HttpHeaders();
         h.setBearerAuth(token);

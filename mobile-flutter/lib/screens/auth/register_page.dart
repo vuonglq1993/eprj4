@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../core/ai_button_controller.dart';
 import '../../services/api_service.dart';
 import '../home/home_placeholder.dart';
 import '../onboarding/onboarding_flow.dart';
 import 'login_page.dart';
+import '../../l10n/l10n_ext.dart';
 
 enum _CheckStatus { idle, checking, available, taken, error }
 
@@ -98,7 +100,7 @@ class _RegisterPageState extends State<RegisterPage> {
       if (idToken == null) {
         if (!mounted) return;
         setState(() => _isGoogleLoading = false);
-        _snack('Không lấy được token Google. Thử lại.');
+        _snack(context.l10n.googleIdTokenError);
         return;
       }
       final user = await ApiService.loginWithGoogle(idToken);
@@ -107,6 +109,7 @@ class _RegisterPageState extends State<RegisterPage> {
       if (user != null) {
         final onboardingDone = await ApiService.isOnboardingCompleted();
         if (!mounted) return;
+        AiButtonController.onLogin();
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
@@ -115,12 +118,12 @@ class _RegisterPageState extends State<RegisterPage> {
           (r) => false,
         );
       } else {
-        _snack('Đăng nhập Google thất bại. Thử lại.');
+        _snack(context.l10n.googleBackendRejected);
       }
     } catch (e) {
       if (!mounted) return;
       setState(() => _isGoogleLoading = false);
-      _snack('Lỗi Google Sign-In: ${e.toString()}');
+      _snack(context.l10n.googleSignInError(e.toString()));
     }
   }
 
@@ -130,15 +133,15 @@ class _RegisterPageState extends State<RegisterPage> {
     // Reset check statuses to idle so validator skips "taken" state
     if (!_formKey.currentState!.validate()) return;
     if (!_agreedToTerms) {
-      _snack('Vui lòng đồng ý với Điều khoản & Chính sách bảo mật');
+      _snack(context.l10n.agreeToTermsError);
       return;
     }
     if (_emailStatus == _CheckStatus.taken) {
-      _snack('Email này đã được đăng ký');
+      _snack(context.l10n.emailAlreadyRegistered);
       return;
     }
     if (_phoneStatus == _CheckStatus.taken) {
-      _snack('Số điện thoại này đã được đăng ký');
+      _snack(context.l10n.phoneAlreadyRegistered);
       return;
     }
 
@@ -166,8 +169,8 @@ class _RegisterPageState extends State<RegisterPage> {
     if (error != null) {
       setState(() => _isLoading = false);
       _snack(error == 'network_error'
-          ? 'Không có kết nối mạng. Vui lòng thử lại.'
-          : 'Đăng ký thất bại. Vui lòng thử lại.');
+          ? context.l10n.noNetworkConnection
+          : context.l10n.registerFailed);
       return;
     }
 
@@ -175,6 +178,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     // Tokens are already saved by register (201 response)
     if (!mounted) return;
+    AiButtonController.onLogin();
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const OnboardingFlow()),
@@ -210,25 +214,25 @@ class _RegisterPageState extends State<RegisterPage> {
               children: [
                 const SizedBox(height: 48),
 
-                const Text(
-                  'Tạo tài khoản',
-                  style: TextStyle(
+                Text(
+                  context.l10n.createAccount,
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Miễn phí · Không cần thẻ',
-                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                Text(
+                  context.l10n.freeNoCard,
+                  style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
                 ),
 
                 const SizedBox(height: 32),
 
                 _googleButton(),
                 const SizedBox(height: 24),
-                _divider('hoặc dùng email'),
+                _divider(context.l10n.orUseEmail),
                 const SizedBox(height: 24),
 
                 // Họ + Tên
@@ -237,11 +241,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     Expanded(
                       child: _input(
                         controller: _firstName,
-                        hint: 'Họ',
+                        hint: context.l10n.lastName,
                         icon: Icons.person_outline_rounded,
                         validator: (v) {
-                          if (v == null || v.trim().isEmpty) return 'Nhập họ';
-                          if (v.trim().length < 2) return 'Quá ngắn';
+                          if (v == null || v.trim().isEmpty) return context.l10n.enterLastName;
+                          if (v.trim().length < 2) return context.l10n.tooShort;
                           return null;
                         },
                       ),
@@ -250,11 +254,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     Expanded(
                       child: _input(
                         controller: _lastName,
-                        hint: 'Tên',
+                        hint: context.l10n.firstName,
                         icon: Icons.person_outline_rounded,
                         validator: (v) {
-                          if (v == null || v.trim().isEmpty) return 'Nhập tên';
-                          if (v.trim().length < 2) return 'Quá ngắn';
+                          if (v == null || v.trim().isEmpty) return context.l10n.enterFirstName;
+                          if (v.trim().length < 2) return context.l10n.tooShort;
                           return null;
                         },
                       ),
@@ -266,18 +270,18 @@ class _RegisterPageState extends State<RegisterPage> {
                 // Email + check button
                 _inputWithCheck(
                   controller: _email,
-                  hint: 'Email',
+                  hint: context.l10n.email,
                   icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   status: _emailStatus,
                   onCheck: _checkEmail,
                   onChanged: (_) => setState(() => _emailStatus = _CheckStatus.idle),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Nhập email';
+                    if (v == null || v.trim().isEmpty) return context.l10n.enterEmail;
                     if (!RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,}$').hasMatch(v.trim())) {
-                      return 'Email không hợp lệ';
+                      return context.l10n.invalidEmail;
                     }
-                    if (_emailStatus == _CheckStatus.taken) return 'Email này đã được đăng ký';
+                    if (_emailStatus == _CheckStatus.taken) return context.l10n.emailAlreadyRegistered;
                     return null;
                   },
                 ),
@@ -286,14 +290,14 @@ class _RegisterPageState extends State<RegisterPage> {
                 // Phone + check button
                 _inputWithCheck(
                   controller: _phone,
-                  hint: 'Số điện thoại',
+                  hint: context.l10n.phone,
                   icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
                   status: _phoneStatus,
                   onCheck: _checkPhone,
                   onChanged: (_) => setState(() => _phoneStatus = _CheckStatus.idle),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Nhập số điện thoại';
+                    if (v == null || v.trim().isEmpty) return context.l10n.enterPhone;
                     if (!RegExp(r'^[0-9]{9,15}$').hasMatch(v.trim())) {
                       return 'Số điện thoại không hợp lệ';
                     }
@@ -306,7 +310,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 // Password
                 _input(
                   controller: _password,
-                  hint: 'Mật khẩu',
+                  hint: context.l10n.password,
                   icon: Icons.lock_outline_rounded,
                   obscure: !_showPassword,
                   suffix: IconButton(
@@ -318,10 +322,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     onPressed: () => setState(() => _showPassword = !_showPassword),
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Nhập mật khẩu';
+                    if (v == null || v.isEmpty) return context.l10n.enterPassword;
                     if (v.length < 8) return 'Ít nhất 8 ký tự';
                     if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)').hasMatch(v)) {
-                      return 'Cần có cả chữ và số';
+                      return context.l10n.passwordNeedsLetterNumber;
                     }
                     return null;
                   },
@@ -331,7 +335,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 // Confirm password
                 _input(
                   controller: _confirmPassword,
-                  hint: 'Xác nhận mật khẩu',
+                  hint: context.l10n.confirmPassword,
                   icon: Icons.lock_outline_rounded,
                   obscure: !_showConfirm,
                   suffix: IconButton(
@@ -343,7 +347,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     onPressed: () => setState(() => _showConfirm = !_showConfirm),
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Xác nhận mật khẩu';
+                    if (v == null || v.isEmpty) return context.l10n.confirmPassword;
                     if (v != _password.text) return 'Mật khẩu không khớp';
                     return null;
                   },
@@ -362,14 +366,14 @@ class _RegisterPageState extends State<RegisterPage> {
                       Expanded(
                         child: Text.rich(
                           TextSpan(
-                            text: 'Tôi đồng ý với ',
+                            text: context.l10n.agreeToTerms,
                             style: const TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 13,
                             ),
                             children: [
                               TextSpan(
-                                text: 'Điều khoản',
+                                text: context.l10n.termsOfService,
                                 style: TextStyle(
                                   color: AppColors.primaryLight,
                                   fontWeight: FontWeight.w500,
@@ -377,7 +381,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               const TextSpan(text: ' & '),
                               TextSpan(
-                                text: 'Chính sách bảo mật',
+                                text: context.l10n.privacyPolicy,
                                 style: TextStyle(
                                   color: AppColors.primaryLight,
                                   fontWeight: FontWeight.w500,
@@ -395,7 +399,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 _isLoading
                     ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-                    : _primaryButton('Tạo tài khoản', _register),
+                    : _primaryButton(context.l10n.createAccount, _register),
 
                 const SizedBox(height: 24),
 
@@ -407,11 +411,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     child: Text.rich(
                       TextSpan(
-                        text: 'Đã có tài khoản? ',
+                        text: context.l10n.alreadyHaveAccount,
                         style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
                         children: [
                           TextSpan(
-                            text: 'Đăng nhập',
+                            text: context.l10n.login,
                             style: TextStyle(
                               color: AppColors.primaryLight,
                               fontWeight: FontWeight.w600,
@@ -455,7 +459,7 @@ class _RegisterPageState extends State<RegisterPage> {
             : const Text('G',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
         label: Text(
-          _isGoogleLoading ? 'Đang xử lý...' : 'Tiếp tục với Google',
+          _isGoogleLoading ? context.l10n.processing : context.l10n.continueWithGoogle,
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 15,
@@ -539,8 +543,8 @@ class _RegisterPageState extends State<RegisterPage> {
               padding: const EdgeInsets.symmetric(horizontal: 10),
               minimumSize: Size.zero,
             ),
-            child: const Text('Thử lại',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            child: Text(context.l10n.retry,
+                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
           ),
         );
       case _CheckStatus.idle:
@@ -552,7 +556,7 @@ class _RegisterPageState extends State<RegisterPage> {
               padding: const EdgeInsets.symmetric(horizontal: 10),
               minimumSize: Size.zero,
             ),
-            child: Text('Kiểm tra',
+            child: Text(context.l10n.check,
                 style: TextStyle(
                     fontSize: 12,
                     color: AppColors.primary,
@@ -627,4 +631,3 @@ class _RegisterPageState extends State<RegisterPage> {
     return GradientButton(label: label, onTap: onTap);
   }
 }
-

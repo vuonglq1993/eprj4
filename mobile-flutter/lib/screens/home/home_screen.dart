@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme.dart';
-import '../../core/ai_button_controller.dart';
+import '../../l10n/l10n_ext.dart';
 import 'dashboard_tab.dart';
 import '../learning_path/learning_path_tab.dart';
 import '../profile/profile_tab.dart';
@@ -20,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    AiButtonController.show();
     _tabs = [
       DashboardTab(onGoToLearningPath: () => setState(() => _tab = 1)),
       const LearningPathTab(),
@@ -30,7 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    AiButtonController.hide();
     super.dispose();
   }
 
@@ -58,14 +56,14 @@ class _BottomNav extends StatelessWidget {
 
   const _BottomNav({required this.current, required this.onTap});
 
-  static const _items = [
-    (Icons.home_rounded, Icons.home_outlined, 'Trang chủ'),
-    (Icons.route_rounded, Icons.route_outlined, 'Lộ trình'),
-    (Icons.person_rounded, Icons.person_outline_rounded, 'Hồ sơ'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final items = [
+      (Icons.home_rounded, Icons.home_outlined, context.l10n.home),
+      (Icons.route_rounded, Icons.route_outlined, context.l10n.path),
+      (Icons.person_rounded, Icons.person_outline_rounded, context.l10n.profile),
+    ];
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -83,8 +81,8 @@ class _BottomNav extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
-            children: List.generate(_items.length, (i) {
-              final (activeIcon, inactiveIcon, label) = _items[i];
+            children: List.generate(items.length, (i) {
+              final (activeIcon, inactiveIcon, label) = items[i];
               final isSelected = i == current;
               return Expanded(
                 child: GestureDetector(

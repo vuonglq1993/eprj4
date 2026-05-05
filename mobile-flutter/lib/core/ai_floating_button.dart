@@ -6,6 +6,7 @@ import '../screens/ai/ai_chat_screen.dart';
 import '../screens/ai/ai_grammar_screen.dart';
 import '../screens/ai/ai_vocab_screen.dart';
 import '../screens/ai/ai_recommend_screen.dart';
+import '../screens/ai/ai_pronunciation_screen.dart';
 
 // ── Menu item definition ───────────────────────────────────────────────────
 
@@ -68,7 +69,7 @@ class _AiFloatingButtonState extends State<AiFloatingButton>
       label: 'Phát âm',
       icon: Icons.mic_rounded,
       color: const Color(0xFFFF6B35),
-      onTap: (nav) => () {},  // TODO: PronunciationScreen
+      onTap: (nav) => () => _push(nav, const AiPronunciationScreen()),
     ),
     _AiMenuItem(
       label: 'Gợi ý',

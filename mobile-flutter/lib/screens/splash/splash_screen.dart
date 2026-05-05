@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../l10n/l10n_ext.dart';
+import '../../main.dart';
+import '../../core/ai_button_controller.dart';
 import '../../services/token_service.dart';
 import '../../services/api_service.dart';
 import '../auth/register_page.dart';
 import '../auth/login_page.dart';
 import '../home/home_placeholder.dart';
 import '../onboarding/onboarding_flow.dart';
+import 'dart:developer' as developer;
+
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -30,13 +35,12 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _midOpacity;
   late Animation<double> _bottomOpacity;
 
-  static const _prefKeyLang = 'ui_language';
+  static const _prefKeyLang = 'locale';
 
   static const _langs = [
+    ('vi', '🇻🇳', 'Tiếng Việt'),
     ('en', '🇺🇸', 'English'),
     ('ja', '🇯🇵', '日本語'),
-    ('ko', '🇰🇷', '한국어'),
-    ('zh', '🇨🇳', '中文'),
   ];
 
   @override
@@ -98,7 +102,13 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _init() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString(_prefKeyLang);
-    if (saved != null) setState(() => _selectedLang = saved);
+    developer.log('[splash._init] saved=$saved | stateNull=${appStateKey.currentState == null}', name: 'L10N');
+
+    if (saved != null) {
+      setState(() => _selectedLang = saved);
+      appStateKey.currentState?.setLocale(Locale(saved));
+      developer.log('[splash._init] setLocale($saved) called', name: 'L10N');
+    }
 
     final hasToken = await TokenService.hasToken();
     if (!mounted) return;
@@ -109,6 +119,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (profile != null) {
         final onboardingDone = await ApiService.isOnboardingCompleted();
         if (!mounted) return;
+        AiButtonController.onLogin();
         Navigator.pushReplacement(
           context,
           _buildRoute(
@@ -219,9 +230,9 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'LinguaNext',
-                    style: TextStyle(
+                  Text(
+                    context.l10n.appName,
+                    style: const TextStyle(
                       fontSize: 34,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
@@ -229,9 +240,9 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    'Học ngoại ngữ thông minh\ncùng AI cá nhân hóa',
-                    style: TextStyle(
+                  Text(
+                    context.l10n.splashTagline,
+                    style: const TextStyle(
                       fontSize: 16,
                       color: AppColors.textSecondary,
                       height: 1.5,
@@ -250,9 +261,9 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Chọn ngôn ngữ giao diện',
-                  style: TextStyle(
+                Text(
+                  context.l10n.interfaceLanguage,
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textSecondary,
@@ -262,37 +273,12 @@ class _SplashScreenState extends State<SplashScreen>
                 const SizedBox(height: 14),
 
                 Row(
-                  children: [
-                    Expanded(child: _langChip(_langs[0])),
-                    const SizedBox(width: 10),
-                    Expanded(child: _langChip(_langs[1])),
-                  ],
+                  children: _langs
+                      .map((l) => Expanded(child: _langChip(l)))
+                      .expand((w) => [w, const SizedBox(width: 10)])
+                      .toList()
+                    ..removeLast(),
                 ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(child: _langChip(_langs[2])),
-                    const SizedBox(width: 10),
-                    Expanded(child: _langChip(_langs[3])),
-                  ],
-                ),
-
-                if (_selectedLang != null && _selectedLang != 'vi')
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.info_outline_rounded,
-                            size: 14, color: AppColors.textSecondary),
-                        const SizedBox(width: 6),
-                        const Text(
-                          'Giao diện hiện tại: Tiếng Việt',
-                          style: TextStyle(
-                              fontSize: 12, color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
-                  ),
               ],
             ),
           ),
@@ -305,7 +291,7 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               children: [
                 GradientButton(
-                  label: 'Bắt đầu miễn phí',
+                  label: context.l10n.splashGetStarted,
                   enabled: _selectedLang != null,
                   onTap: _onStart,
                 ),
@@ -318,12 +304,12 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                     child: Text.rich(
                       TextSpan(
-                        text: 'Đã có tài khoản? ',
+                        text: context.l10n.alreadyHaveAccount,
                         style: const TextStyle(
                             color: AppColors.textSecondary, fontSize: 14),
                         children: [
                           TextSpan(
-                            text: 'Đăng nhập',
+                            text: context.l10n.login,
                             style: TextStyle(
                                 color: AppColors.primaryLight,
                                 fontWeight: FontWeight.w600),
@@ -347,7 +333,17 @@ class _SplashScreenState extends State<SplashScreen>
     final isSelected = _selectedLang == code;
 
     return TappableScale(
-      onTap: () => setState(() => _selectedLang = code),
+      onTap: () {
+        developer.log('[langChip.tap] code=$code | stateNull=${appStateKey.currentState == null}', name: 'L10N');
+        setState(() => _selectedLang = code);
+        final state = appStateKey.currentState;
+        if (state != null) {
+          state.setLocale(Locale(code));
+          developer.log('[langChip.tap] setLocale($code) OK', name: 'L10N');
+        } else {
+          developer.log('[langChip.tap] ERROR: appStateKey.currentState is null!', name: 'L10N');
+        }
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,

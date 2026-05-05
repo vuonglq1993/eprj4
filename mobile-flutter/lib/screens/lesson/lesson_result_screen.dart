@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../l10n/l10n_ext.dart';
 import 'lesson_player_screen.dart';
 import 'wrong_answer_review_screen.dart';
 
@@ -86,11 +87,11 @@ class _LessonResultScreenState extends State<LessonResultScreen>
   List<ExerciseAttempt> get _wrongAttempts =>
       widget.attempts.where((a) => a.isCorrect == false).toList();
 
-  String get _resultLabel {
-    if (_scorePercent >= 90) return 'Xuất sắc! 🎉';
-    if (_scorePercent >= 70) return 'Tốt lắm! 👍';
-    if (_scorePercent >= 50) return 'Cố gắng hơn!';
-    return 'Cần ôn tập thêm';
+  String _resultLabel(BuildContext context) {
+    if (_scorePercent >= 90) return context.l10n.excellent;
+    if (_scorePercent >= 70) return context.l10n.goodJob;
+    if (_scorePercent >= 50) return context.l10n.tryHarder;
+    return context.l10n.needMorePractice;
   }
 
   Color get _scoreColor {
@@ -204,7 +205,7 @@ class _LessonResultScreenState extends State<LessonResultScreen>
         ),
         const SizedBox(height: 20),
         Text(
-          _resultLabel,
+          _resultLabel(context),
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -222,7 +223,7 @@ class _LessonResultScreenState extends State<LessonResultScreen>
         ),
         const SizedBox(height: 8),
         Text(
-          '$_correctCount / $_totalCount câu đúng',
+          context.l10n.correctAnswers(_correctCount, _totalCount),
           style: TextStyle(
             fontSize: 13,
             color: _scoreColor,
