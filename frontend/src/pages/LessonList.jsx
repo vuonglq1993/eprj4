@@ -131,7 +131,7 @@ const LessonList = () => {
       }
       setShowModal(false);
     } catch (err) {
-      alert(err.response?.data?.message || 'Lưu thất bại.');
+      alert(err.response?.status === 409 ? 'Đã tồn tại.' : (err.response?.data?.message || 'Lưu thất bại.'));
     } finally {
       setSaving(false);
     }

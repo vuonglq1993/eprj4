@@ -128,7 +128,6 @@ export default function SubscriptionPlansAdminPage() {
       name: form.name.trim(),
       description: form.description.trim(),
       price: form.price ? Number(form.price) : 0,
-      currency: form.currency,
       durationDays: Number(form.durationDays) || 30,
       features,
       isActive: form.isActive,
@@ -146,7 +145,7 @@ export default function SubscriptionPlansAdminPage() {
       }
       setShowModal(false);
     } catch (err) {
-      alert(err.response?.data?.message || 'Lưu thất bại.');
+      alert(err.response?.status === 409 ? 'Đã tồn tại.' : (err.response?.data?.message || 'Lưu thất bại.'));
     } finally {
       setSaving(false);
     }

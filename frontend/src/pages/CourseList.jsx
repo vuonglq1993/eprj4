@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/courselist.css';
-import { FiEdit2, FiTrash2, FiPlus, FiEye } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
 import { FaBook, FaStar } from 'react-icons/fa6';
 import { getCourses, createCourse, updateCourse, publishCourse, deleteCourse } from '../services/courseService';
 import { getLanguages } from '../services/languageService';
@@ -56,6 +56,9 @@ function formatSaveError(err) {
     (Array.isArray(d?.errors) && d.errors.map((x) => x?.defaultMessage || x?.message).filter(Boolean).join(' '));
   if (!msg && status === 413) {
     msg = 'Dữ liệu gửi lên quá lớn (413). Thường do dán ảnh base64 vào URL — hãy dùng link https ngắn.';
+  }
+  if (!msg && status === 409) {
+    msg = 'Đã tồn tại.';
   }
   if (!msg && !err.response) {
     msg = err.message || 'Không kết nối được server hoặc request bị chặn.';
@@ -242,10 +245,6 @@ const CourseList = () => {
                       {course.totalLessons ?? 0} lessons
                     </span>
                     <div className="cl-actions">
-                      <button type="button" className="cl-action-btn" title="View">
-                        <FiEye size={14} aria-hidden />
-                        <span>View</span>
-                      </button>
                       {canManage && (
                         <>
                           <button type="button" className="cl-action-btn" title="Edit" onClick={() => openEdit(course)}>

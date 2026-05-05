@@ -6,16 +6,26 @@ import { getCourses } from '../services/courseService';
 import { getLessons } from '../services/lessonService';
 import { isAdmin, hasRole } from '../utils/roleUtils';
 
-const EXERCISE_TYPES = ['VOCABULARY', 'GRAMMAR', 'SPEAKING', 'READING', 'LISTENING', 'WRITING'];
-const EMPTY_FORM = { title: '', type: 'VOCABULARY', questionData: '{}', orderIndex: 0, points: 10, timeLimitSeconds: 0 };
+// Backend ExerciseType enum: MULTIPLE_CHOICE | FILL_IN_BLANK | LISTENING_CHOICE | SPEAKING | TRANSLATION | MATCHING | DRAG_DROP
+const EXERCISE_TYPES = [
+  { value: 'MULTIPLE_CHOICE',  label: 'Multiple Choice' },
+  { value: 'FILL_IN_BLANK',     label: 'Fill in Blank' },
+  { value: 'LISTENING_CHOICE',  label: 'Listening Choice' },
+  { value: 'SPEAKING',          label: 'Speaking' },
+  { value: 'TRANSLATION',       label: 'Translation' },
+  { value: 'MATCHING',           label: 'Matching' },
+  { value: 'DRAG_DROP',          label: 'Drag & Drop' },
+];
+const EMPTY_FORM = { title: '', type: 'MULTIPLE_CHOICE', questionData: '{}', orderIndex: 0, points: 10, timeLimitSeconds: 0 };
 
 const QUESTION_DATA_TEMPLATES = {
-  VOCABULARY: '{\n  "word": "example",\n  "translation": "ví dụ",\n  "phonetic": "/ɪɡˈzæmpəl/",\n  "exampleSentence": "This is an example sentence."\n}',
-  GRAMMAR: '{\n  "sentence": "She go to school yesterday.",\n  "correctSentence": "She went to school yesterday.",\n  "explanation": "Use past tense for actions that happened in the past."\n}',
-  SPEAKING: '{\n  "prompt": "Introduce yourself in 5 sentences.",\n  "targetLanguage": "en"\n}',
-  READING: '{\n  "passage": "Short text here...",\n  "question": "What is the main topic?",\n  "options": ["Topic A", "Topic B", "Topic C"],\n  "correctAnswer": "Topic A"\n}',
-  LISTENING: '{\n  "question": "Listen and choose the correct answer.",\n  "audioUrl": "https://...",\n  "options": ["A", "B", "C"],\n  "correctAnswer": "A"\n}',
-  WRITING: '{\n  "prompt": "Write a short paragraph about your favorite hobby.",\n  "wordLimit": 100,\n  "scoringCriteria": "Grammar, vocabulary, coherence"\n}',
+  MULTIPLE_CHOICE: '{\n  "question": "Which greeting is correct at 3 PM?",\n  "options": ["Good morning", "Good afternoon", "Good night", "See you"],\n  "correctIndex": 1,\n  "explanation": "3 PM is afternoon, so use Good afternoon."\n}',
+  FILL_IN_BLANK: '{\n  "question": "My name _____ John. Nice to meet you.",\n  "answer": "is",\n  "hints": ["verb to be"],\n  "explanation": "Use is with singular name in present simple."\n}',
+  LISTENING_CHOICE: '{\n  "question": "Listen and choose the correct answer.",\n  "audioUrl": "https://example.com/audio.mp3",\n  "options": ["Option A", "Option B", "Option C", "Option D"],\n  "correctIndex": 0,\n  "explanation": "Listen carefully to the audio."\n}',
+  SPEAKING: '{\n  "question": "Introduce yourself in 5 sentences.",\n  "targetText": "My name is ... I am ... years old.",\n  "expected_keywords": ["name", "years old", "from", "hobby"],\n  "sample_answer": "My name is John. I am 25 years old. I am from New York. My hobby is reading.",\n  "hint": "Include your name, age, and where you are from."\n}',
+  TRANSLATION: '{\n  "question": "Translate to English: Xin chào, tôi tên là John.",\n  "answer": "Hello, my name is John.",\n  "hints": ["greeting phrase"],\n  "explanation": "Use the appropriate greeting and introduce yourself."\n}',
+  MATCHING: '{\n  "pairs": [\n    { "left": "Good morning", "right": "Before noon" },\n    { "left": "Good afternoon", "right": "Noon to 6 PM" },\n    { "left": "Good evening", "right": "6 PM" },\n    { "left": "Good night", "right": "Before sleep" }\n  ]\n}',
+  DRAG_DROP: '{\n  "pairs": [\n    { "left": "Subject", "right": "The cat" },\n    { "left": "Verb", "right": "jumped" },\n    { "left": "Object", "right": "the fence" }\n  ]\n}',
 };
 
 function normalizeQuestionDataForForm(raw) {
@@ -49,7 +59,18 @@ function validateQuestionDataJson(text) {
   return { ok: true, parsed };
 }
 
-const typeLabel = (t) => t ? t.charAt(0) + t.slice(1).toLowerCase() : 'Vocabulary';
+const typeLabel = (t) => {
+  const map = {
+    MULTIPLE_CHOICE: 'Multiple Choice',
+    FILL_IN_BLANK: 'Fill in Blank',
+    LISTENING_CHOICE: 'Listening Choice',
+    SPEAKING: 'Speaking',
+    TRANSLATION: 'Translation',
+    MATCHING: 'Matching',
+    DRAG_DROP: 'Drag & Drop',
+  };
+  return map[t] || (t ? t.charAt(0) + t.slice(1).toLowerCase() : '—');
+};
 
 function DiffBadge({ diff }) {
   const label = diff || 'Easy';
@@ -144,16 +165,18 @@ const ExerciseList = () => {
     else {
       setLessons([]);
       setSelectedLesson('');
+      setExercises([]);
     }
   }, [selectedCourse]);
 
   useEffect(() => {
     if (selectedCourse && selectedLesson) fetchExercises();
+    else setExercises([]);
   }, [selectedCourse, selectedLesson]);
 
   const openCreate = () => {
     setEditId(null);
-    setForm({ ...EMPTY_FORM, type: 'VOCABULARY' });
+    setForm({ ...EMPTY_FORM, type: 'MULTIPLE_CHOICE' });
     setQuestionJsonError('');
     setShowModal(true);
   };
@@ -162,7 +185,7 @@ const ExerciseList = () => {
     setEditId(ex.id);
     setForm({
       title: ex.title || '',
-      type: ex.type || 'VOCABULARY',
+      type: ex.type || 'MULTIPLE_CHOICE',
       questionData: normalizeQuestionDataForForm(ex.questionData),
       orderIndex: ex.orderIndex ?? 0,
       points: ex.points ?? 10,
@@ -213,7 +236,7 @@ const ExerciseList = () => {
         d?.error ||
         (Array.isArray(d?.errors) && d.errors.map((x) => x?.defaultMessage || x).filter(Boolean).join(' ')) ||
         err.message;
-      alert(serverMsg || 'Lưu thất bại.');
+      alert(serverMsg || (err.response?.status === 409 ? 'Đã tồn tại.' : 'Lưu thất bại.'));
     } finally {
       setSaving(false);
     }
@@ -227,7 +250,7 @@ const ExerciseList = () => {
   };
 
   const getAutoGraded = (type) =>
-    ['VOCABULARY', 'GRAMMAR', 'READING', 'LISTENING'].includes(type);
+    ['MULTIPLE_CHOICE', 'FILL_IN_BLANK', 'LISTENING_CHOICE', 'TRANSLATION', 'MATCHING', 'DRAG_DROP'].includes(type);
 
   const currentLesson = lessons.find((l) => l.id === selectedLesson);
 
@@ -323,7 +346,7 @@ const ExerciseList = () => {
                       <div className="col-md-6 mb-2">
                         <label className="form-label small fw-semibold">Type</label>
                         <select className="form-select" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                          {EXERCISE_TYPES.map((t) => <option key={t} value={t}>{typeLabel(t)}</option>)}
+                          {EXERCISE_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                         </select>
                       </div>
                       <div className="col-md-3 mb-2">
@@ -342,7 +365,7 @@ const ExerciseList = () => {
                           type="button"
                           className="btn btn-sm btn-outline-secondary"
                           onClick={() => {
-                            const tpl = QUESTION_DATA_TEMPLATES[form.type] || QUESTION_DATA_TEMPLATES.VOCABULARY;
+                            const tpl = QUESTION_DATA_TEMPLATES[form.type] || QUESTION_DATA_TEMPLATES.MULTIPLE_CHOICE;
                             setForm((f) => ({ ...f, questionData: tpl }));
                             setQuestionJsonError('');
                           }}
@@ -363,7 +386,7 @@ const ExerciseList = () => {
                           setQuestionJsonError('');
                           setForm({ ...form, questionData: e.target.value });
                         }}
-                        placeholder='{"question":"...","options":["A","B","C","D"],"correctAnswer":"A"}'
+                        placeholder='{"question":"...","options":["A","B","C","D"],"correctIndex":0}'
                       />
                       {questionJsonError ? (
                         <div className="invalid-feedback d-block">{questionJsonError}</div>

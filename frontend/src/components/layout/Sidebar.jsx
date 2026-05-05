@@ -50,7 +50,6 @@ const menuConfig = [
     icon: MdStorage,
     children: [
       { id: 'tbl-payment-transactions', label: 'payment_transactions', path: '/data/payment-transactions' },
-      { id: 'tbl-study-logs', label: 'study_logs', path: '/data/study-logs' },
     ],
   },
   {
@@ -168,7 +167,7 @@ function Sidebar({ onNavigate }) {
     return (
       <div key={item.id} className="sidebar__group">
         {hasPath ? (
-          <Link to={item.path} className={baseClass} onClick={() => onNavigate?.()}>
+          <Link to={item.path} className={baseClass} onClick={() => { window.scrollTo(0, 0); onNavigate?.() }}>
             {content}
           </Link>
         ) : (
