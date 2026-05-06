@@ -46,6 +46,11 @@
   object-fit: contain;
 }
 
+.tl-icon-emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
 .tl-status {
   display: inline-flex;
   align-items: center;

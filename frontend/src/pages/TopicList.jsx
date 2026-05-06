@@ -160,7 +160,11 @@ function TopicList() {
                   <div className="d-flex align-items-start justify-content-between mb-2">
                     <div className="tl-icon-wrap">
                       {t.iconUrl ? (
-                        <img src={t.iconUrl} alt={t.name} className="tl-icon-img" />
+                        /^https?:\/\//i.test(t.iconUrl) ? (
+                          <img src={t.iconUrl} alt={t.name} className="tl-icon-img" />
+                        ) : (
+                          <span className="tl-icon-emoji">{t.iconUrl}</span>
+                        )
                       ) : (
                         <FaLayerGroup size={22} style={{ color: '#6366f1' }} />
                       )}

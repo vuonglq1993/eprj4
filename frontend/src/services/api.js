@@ -7,6 +7,8 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+const TOKENS_KEY = 'auth_tokens';
+
 function isPublicAuthPath(url) {
   const path = (url || '').split('?')[0];
   return (
@@ -18,7 +20,7 @@ function isPublicAuthPath(url) {
 
 function hasStoredAccessToken() {
   try {
-    const raw = localStorage.getItem('auth_tokens');
+    const raw = localStorage.getItem(TOKENS_KEY);
     const t = raw ? JSON.parse(raw).accessToken : null;
     return typeof t === 'string' && t.trim().length > 0;
   } catch {
@@ -27,11 +29,7 @@ function hasStoredAccessToken() {
 }
 
 /**
- * GET danh mục có thể cho phép anonymous.
- * Chỉ bỏ Bearer khi **chưa đăng nhập** — nếu đã có JWT mà vẫn xóa header, Spring thường coi là
- * anonymous và trả 403 dù endpoint yêu cầu authenticated (Admin/User).
- *
- * GET /courses (progress theo user) — không nằm trong danh sách này.
+ * GET danh mục công khai — chỉ bỏ Bearer khi chưa đăng nhập.
  */
 function isPublicCatalogGetPath(path) {
   if (path === '/languages' || path.startsWith('/languages/')) return true;
@@ -53,6 +51,7 @@ function isPublicResourceGet(config) {
   return true;
 }
 
+// ── Request interceptor ───────────────────────────────────────
 api.interceptors.request.use((config) => {
   const url = config.url || '';
   if (isPublicAuthPath(url)) return config;
@@ -61,7 +60,7 @@ api.interceptors.request.use((config) => {
     return config;
   }
 
-  const raw = localStorage.getItem('auth_tokens');
+  const raw = localStorage.getItem(TOKENS_KEY);
   if (raw) {
     try {
       const { accessToken } = JSON.parse(raw);
@@ -71,40 +70,97 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-function clearSessionAndRedirectLogin() {
-  localStorage.removeItem('auth_tokens');
+// ── Refresh token helpers ─────────────────────────────────────
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+function subscribeTokenRefresh(cb) {
+  refreshSubscribers.push(cb);
+}
+
+function onTokenRefreshed(token) {
+  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+}
+
+function clearSession() {
+  localStorage.removeItem(TOKENS_KEY);
   localStorage.removeItem('auth_user');
+}
+
+function redirectToLogin() {
   if (!window.location.pathname.startsWith('/login')) {
     window.location.href = '/login';
   }
 }
 
-/**
- * Các GET chỉ cần đăng nhập (isAuthenticated). Backend gán mọi AccessDenied = 403 + message "admin"
- * trong khi thực tế thường là JWT hết hạn / không hợp lệ / không gửi Bearer → xử lý giống 401.
- */
-function shouldTreat403AsAuthFailure(url) {
-  if (!url) return false;
-  const path = url.split('?')[0];
-  return (
-    path.includes('/payments/history') ||
-    path.includes('/study-logs/streak') ||
-    path.endsWith('/subscriptions/status') ||
-    path.includes('/subscriptions/status')
-  );
-}
-
+// ── Response interceptor ──────────────────────────────────────
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
     const status = error.response?.status;
-    const reqUrl = error.config?.url || '';
-    if (status === 401) {
-      clearSessionAndRedirectLogin();
+    const reqUrl = originalRequest?.url || '';
+
+    // 401 — token hết hạn hoặc không hợp lệ → thử refresh
+    if (status === 401 && originalRequest && !originalRequest._retry) {
+      // Không refresh cho auth endpoints
+      if (isPublicAuthPath(reqUrl)) {
+        return Promise.reject(error);
+      }
+
+      originalRequest._retry = true;
+
+      if (!isRefreshing) {
+        isRefreshing = true;
+
+        try {
+          const raw = localStorage.getItem(TOKENS_KEY);
+          const { refreshToken } = JSON.parse(raw || '{}');
+
+          if (!refreshToken) throw new Error('No refresh token');
+
+          // Gọi endpoint refresh (backend chưa có → tạm thời fallback)
+          // Khi backend có /auth/refresh, uncomment dòng dưới và xóa catch
+          // const res = await axios.post(`${BASE_URL}/auth/refresh`, {}, {
+          //   headers: { Authorization: `Bearer ${refreshToken}` }
+          // });
+          // const { accessToken, refreshToken: newRt } = res.data;
+          // const newTokens = { accessToken, refreshToken: newRt || refreshToken };
+          // localStorage.setItem(TOKENS_KEY, JSON.stringify(newTokens));
+          // onTokenRefreshed(accessToken);
+
+          // Tạm thời: nếu không refresh được, xóa session
+          throw new Error('Refresh not available');
+        } catch {
+          isRefreshing = false;
+          clearSession();
+          redirectToLogin();
+          return Promise.reject(error);
+        }
+      }
+
+      // Đợi token mới rồi retry request gốc
+      return new Promise((resolve) => {
+        subscribeTokenRefresh((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          resolve(api(originalRequest));
+        });
+      });
     }
-    if (status === 403 && (reqUrl.includes('/users/me') || shouldTreat403AsAuthFailure(reqUrl))) {
-      clearSessionAndRedirectLogin();
+
+    // 403 chỉ logout khi chắc chắn là auth failure (/users/me + subscription status)
+    if (status === 403) {
+      const isAuthCheck =
+        reqUrl.includes('/users/me') ||
+        reqUrl.includes('/subscriptions/status');
+
+      if (isAuthCheck) {
+        clearSession();
+        redirectToLogin();
+      }
     }
+
     return Promise.reject(error);
   }
 );

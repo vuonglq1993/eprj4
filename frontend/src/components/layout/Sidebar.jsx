@@ -107,13 +107,7 @@ const menuConfig = [
     label: 'Pages',
     icon: MdPages,
     children: [
-      {
-        id: 'account',
-        label: 'Account',
-        children: [
-          { id: 'setting', label: 'Setting', path: '/setting' },
-        ],
-      },
+      { id: 'setting', label: 'Setting', path: '/setting' },
     ],
   },
 ]
@@ -122,7 +116,7 @@ function Sidebar({ onNavigate }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { logout } = useAuth()
-  const [expandedIds, setExpandedIds] = useState(new Set(['home', 'languages', 'courses', 'db-tables', 'pages', 'account', 'learning-paths', 'topics', 'admin-plans']))
+  const [expandedIds, setExpandedIds] = useState(new Set(['home', 'languages', 'courses', 'db-tables', 'pages', 'learning-paths', 'topics', 'admin-plans', 'gamification', 'reports']))
 
   const handleLogout = () => {
     onNavigate?.()

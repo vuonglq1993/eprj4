@@ -369,7 +369,7 @@ function TopicListRoute() {
 
 function SubscriptionPlansAdminRoute() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute allowedRoles={['admin']}>
       <AppLayout>
         <SubscriptionPlansAdminPage />
       </AppLayout>
@@ -419,7 +419,7 @@ function LeaderboardRoute() {
 
 function AdminUserManagementRoute() {
   return (
-    <ProtectedRoute allowedRoles={['ADMIN']}>
+    <ProtectedRoute allowedRoles={['admin']}>
       <AppLayout>
         <AdminUserManagementPage />
       </AppLayout>

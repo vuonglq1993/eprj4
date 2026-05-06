@@ -9,7 +9,12 @@ export const register = (data) =>
 export const loginWithGoogle = (idToken) =>
   api.post('/auth/google', { idToken });
 
-/** Logout chủ yếu xóa session phía client; gọi API là tuỳ chọn (tránh 500 / noise khi token không hợp lệ). */
+export const refreshTokens = (refreshToken) =>
+  api.post('/auth/refresh', {}, {
+    headers: { Authorization: `Bearer ${refreshToken}` },
+  });
+
+/** Logout chủ yếu xóa session phía client; gọi API là tuỳ chọn. */
 export const logout = async () => {
   try {
     await api.post('/auth/logout');

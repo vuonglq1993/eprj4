@@ -1,21 +1,20 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { hasRole } from '../../utils/roleUtils';
 
 function ProtectedRoute({ children, allowedRoles }) {
-  const { isAuthenticated } = useAuth();
-  const location = useLocation();
+  const { isAuthenticated, user, authLoading } = useAuth();
+
+  if (authLoading) return null;
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (allowedRoles && allowedRoles.length > 0) {
-    const raw = localStorage.getItem('auth_user');
-    if (!raw) return <Navigate to="/login" state={{ from: location }} replace />;
-    const user = JSON.parse(raw);
-    if (!allowedRoles.includes(user?.role)) {
-      return <Navigate to="/" state={{ from: location }} replace />;
+    const userRole = user?.role;
+    const allowed = allowedRoles.map((r) => r.toLowerCase());
+    if (!userRole || !allowed.includes(userRole)) {
+      return <Navigate to="/login" replace />;
     }
   }
 
