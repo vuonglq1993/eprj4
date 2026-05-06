@@ -8,12 +8,11 @@ import {
   updateLearningPath,
   togglePublishLearningPath,
   deleteLearningPath,
-  enrollInPath,
-  unenrollFromPath,
-  getMyPaths,
 } from '../services/learningPathService';
 import { getLanguages } from '../services/languageService';
+import { getCourses } from '../services/courseService';
 import { isAdmin, hasRole } from '../utils/roleUtils';
+import { DEMO_LEARNING_PATHS, DEMO_LANGUAGES_FOR_PATH } from '../data/learningPathDemo';
 
 
 const EMPTY_FORM = {
@@ -21,8 +20,11 @@ const EMPTY_FORM = {
   description: '',
   languageId: '',
   targetLevel: 'BEGINNER',
+  estimatedDays: 0,
+  goal: '',
   thumbnailUrl: '',
   isPublished: false,
+  courseIds: [],
 };
 
 function levelLabel(l) {
@@ -45,17 +47,15 @@ function normalizePathList(payload) {
   return [];
 }
 
-function hasUsableAccessToken() {
-  try {
-    const raw = localStorage.getItem('auth_tokens');
-    const t = raw ? JSON.parse(raw).accessToken : null;
-    return typeof t === 'string' && t.trim().length > 0;
-  } catch {
-    return false;
-  }
+function normalizeLanguageList(payload) {
+  if (payload == null) return [];
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.content)) return payload.content;
+  if (Array.isArray(payload.data)) return payload.data;
+  return [];
 }
 
-function normalizeLanguageList(payload) {
+function normalizeCourses(payload) {
   if (payload == null) return [];
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload.content)) return payload.content;
@@ -70,8 +70,8 @@ function isDemoLearningPathId(id) {
 
 const LearningPathList = () => {
   const [paths, setPaths] = useState([]);
-  const [myPaths, setMyPaths] = useState([]);
   const [languages, setLanguages] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [loadWarning, setLoadWarning] = useState('');
@@ -81,7 +81,6 @@ const LearningPathList = () => {
   const [saving, setSaving] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
-  const [enrollingId, setEnrollingId] = useState(null);
   const canManage = isAdmin() || hasRole('TEACHER');
 
   const fetchAll = async () => {
@@ -105,18 +104,6 @@ const LearningPathList = () => {
 
     setPaths(pathList);
 
-    let myList = [];
-    if (hasUsableAccessToken()) {
-      try {
-        const myRes = await getMyPaths();
-        myList = normalizePathList(myRes.data);
-      } catch {
-        /* GET /learning-paths/my lỗi không làm hỏng cả trang */
-        myList = [];
-      }
-    }
-    setMyPaths(myList);
-
     if (canManage) {
       try {
         const langRes = await getLanguages();
@@ -127,6 +114,13 @@ const LearningPathList = () => {
         setLanguages(langs);
       } catch {
         setLanguages(pathsFromApi ? [] : [...DEMO_LANGUAGES_FOR_PATH]);
+      }
+
+      try {
+        const courseRes = await getCourses({ size: 100 });
+        setCourses(normalizeCourses(courseRes.data));
+      } catch {
+        setCourses([]);
       }
     }
 
@@ -150,10 +144,13 @@ const LearningPathList = () => {
     setForm({
       title: p.title || '',
       description: p.description || '',
-      languageId: p.languageId || '',
+      languageId: p.languageId || p.language?.id || '',
       targetLevel: p.targetLevel || 'BEGINNER',
+      estimatedDays: p.estimatedHours || p.estimatedDays || 0,
+      goal: p.goal || '',
       thumbnailUrl: p.thumbnailUrl || '',
       isPublished: p.isPublished ?? false,
+      courseIds: p.steps?.map((s) => s.courseId) || [],
     });
     setShowModal(true);
   };
@@ -180,7 +177,6 @@ const LearningPathList = () => {
     if (!window.confirm('Xóa lộ trình này?')) return;
     if (isDemoLearningPathId(id)) {
       setPaths((prev) => prev.filter((p) => p.id !== id));
-      setMyPaths((prev) => prev.filter((p) => p.id !== id));
       return;
     }
     setDeletingId(id);
@@ -194,41 +190,14 @@ const LearningPathList = () => {
     }
   };
 
-  const handleEnroll = async (id) => {
-    const row = paths.find((p) => p.id === id);
-    if (isDemoLearningPathId(id) && row) {
-      setMyPaths((prev) => (prev.some((p) => p.id === id) ? prev : [...prev, row]));
-      return;
-    }
-    setEnrollingId(id);
-    try {
-      await enrollInPath(id);
-      await fetchAll();
-    } catch {
-      alert('Đăng ký thất bại.');
-    } finally {
-      setEnrollingId(null);
-    }
-  };
-
-  const handleUnenroll = async (id) => {
-    if (!window.confirm('Huỷ đăng ký lộ trình này?')) return;
-    if (isDemoLearningPathId(id)) {
-      setMyPaths((prev) => prev.filter((p) => p.id !== id));
-      return;
-    }
-    try {
-      await unenrollFromPath(id);
-      await fetchAll();
-    } catch {
-      alert('Huỷ thất bại.');
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.languageId) {
       alert('Vui lòng điền Title và chọn Language.');
+      return;
+    }
+    if (form.courseIds.length === 0) {
+      alert('Vui lòng chọn ít nhất một khóa học.');
       return;
     }
     if (editId && isDemoLearningPathId(editId)) {
@@ -248,24 +217,36 @@ const LearningPathList = () => {
       setShowModal(false);
       return;
     }
+
+    const payload = {
+      title: form.title,
+      description: form.description,
+      languageId: form.languageId,
+      targetLevel: form.targetLevel,
+      estimatedHours: Number(form.estimatedDays),
+      goal: form.goal,
+      thumbnailUrl: form.thumbnailUrl,
+      isPublished: form.isPublished,
+      isOfficial: false,
+      steps: form.courseIds.map((courseId) => ({ courseId, note: '', isRequired: true })),
+    };
+
     setSaving(true);
     try {
       if (editId) {
-        const res = await updateLearningPath(editId, form);
+        const res = await updateLearningPath(editId, payload);
         setPaths((prev) => prev.map((p) => (p.id === editId ? res.data : p)));
       } else {
-        const res = await createLearningPath(form);
+        const res = await createLearningPath(payload);
         setPaths((prev) => [res.data, ...prev]);
       }
       setShowModal(false);
     } catch (err) {
-      alert(err.response?.data?.message || 'Lưu thất bại.');
+      alert(err.response?.status === 409 ? 'Đã tồn tại.' : (err.response?.data?.message || 'Lưu thất bại.'));
     } finally {
       setSaving(false);
     }
   };
-
-  const myPathIds = new Set(myPaths.map((p) => p.id));
 
   return (
     <div className="lp-page py-4 px-3">
@@ -293,9 +274,7 @@ const LearningPathList = () => {
           <div className="text-center py-5 text-muted">Đang tải…</div>
         ) : (
           <div className="lp-grid">
-            {paths.map((p) => {
-              const isEnrolled = myPathIds.has(p.id);
-              return (
+            {paths.map((p) => (
                 <div key={p.id} className="lp-card shadow-sm">
                   <div className="lp-card-img">
                     {p.thumbnailUrl ? (
@@ -323,30 +302,8 @@ const LearningPathList = () => {
                     <div className="d-flex align-items-center justify-content-between">
                       <span className="lp-meta">
                         {p.totalCourses ?? p.courses?.length ?? 0} courses
-                        {isEnrolled && <span className="lp-enrolled-tag">Enrolled</span>}
                       </span>
                       <div className="lp-actions">
-                        {!isEnrolled && (
-                          <button
-                            type="button"
-                            className="lp-action-btn lp-action-btn--join"
-                            title="Enroll"
-                            onClick={() => handleEnroll(p.id)}
-                            disabled={enrollingId === p.id}
-                          >
-                            {enrollingId === p.id ? '…' : 'Join'}
-                          </button>
-                        )}
-                        {isEnrolled && (
-                          <button
-                            type="button"
-                            className="lp-action-btn lp-action-btn--unsub"
-                            title="Unenroll"
-                            onClick={() => handleUnenroll(p.id)}
-                          >
-                            Leave
-                          </button>
-                        )}
                         {canManage && (
                           <>
                             <button type="button" className="lp-action-btn" title="Edit" onClick={() => openEdit(p)}>
@@ -378,8 +335,7 @@ const LearningPathList = () => {
                     </div>
                   </div>
                 </div>
-              );
-            })}
+            ))}
             {paths.length === 0 && (
               <div className="text-center text-muted py-5 w-100">Chưa có lộ trình nào.</div>
             )}
@@ -426,10 +382,58 @@ const LearningPathList = () => {
                         </select>
                       </div>
                     </div>
+                    <div className="row">
+                      <div className="col-md-6 mb-2">
+                        <label className="form-label small fw-semibold">Estimated Days</label>
+                        <input type="number" className="form-control" value={form.estimatedDays}
+                          onChange={(e) => setForm({ ...form, estimatedDays: Number(e.target.value) })}
+                          min={0} max={365} />
+                      </div>
+                      <div className="col-md-6 mb-2">
+                        <label className="form-label small fw-semibold">Goal</label>
+                        <input type="text" className="form-control" value={form.goal}
+                          onChange={(e) => setForm({ ...form, goal: e.target.value })} maxLength={300}
+                          placeholder="e.g. Pass JLPT N5" />
+                      </div>
+                    </div>
                     <div className="mb-2">
                       <label className="form-label small fw-semibold">Thumbnail URL</label>
                       <input type="text" className="form-control" value={form.thumbnailUrl}
                         onChange={(e) => setForm({ ...form, thumbnailUrl: e.target.value })} placeholder="https://…" />
+                    </div>
+                    <div className="mb-2">
+                      <label className="form-label small fw-semibold">Courses ({form.courseIds.length} selected)</label>
+                      {courses.length === 0 ? (
+                        <div className="form-control" style={{ color: '#64748b', fontSize: '0.875rem' }}>
+                          {canManage ? 'Đang tải khóa học…' : 'Không có khóa học nào.'}
+                        </div>
+                      ) : (
+                        <div className="border rounded p-2" style={{ maxHeight: 200, overflowY: 'auto' }}>
+                          {courses.map((c) => {
+                            const checked = form.courseIds.includes(c.id);
+                            return (
+                              <div key={c.id} className="form-check">
+                                <input
+                                  type="checkbox"
+                                  className="form-check-input"
+                                  id={`course-${c.id}`}
+                                  checked={checked}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setForm((f) => ({ ...f, courseIds: [...f.courseIds, c.id] }));
+                                    } else {
+                                      setForm((f) => ({ ...f, courseIds: f.courseIds.filter((id) => id !== c.id) }));
+                                    }
+                                  }}
+                                />
+                                <label className="form-check-label" htmlFor={`course-${c.id}`}>
+                                  {c.title}
+                                </label>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                     <div className="form-check">
                       <input type="checkbox" className="form-check-input" id="lpPub"

@@ -4,7 +4,6 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import AppLayout from './layouts/AppLayout'
 import Dashboard from './pages/Dashboard'
-import Analytics from './pages/Analytics'
 import Teams from './pages/Teams'
 import ProfileOverview from './pages/ProfileOverview'
 import Login from './pages/Login'
@@ -36,16 +35,18 @@ import ExerciseList from "./pages/ExerciseList"
 import ProgressPage from "./pages/ProgressPage"
 import PaymentTransactionsPage from "./pages/data/PaymentTransactionsPage"
 import StudyLogsPage from "./pages/data/StudyLogsPage"
-import SubscriptionsDataPage from "./pages/data/SubscriptionsPage"
-import LearningPathList from "./pages/LearningPathList"
 import TopicList from "./pages/TopicList"
-import OnboardingPage from "./pages/OnboardingPage"
 import SubscriptionPlansAdminPage from "./pages/SubscriptionPlansAdminPage"
+import AdminUserManagementPage from "./pages/AdminUserManagementPage"
+import ReviewMistakesPage from "./pages/ReviewMistakesPage"
+import WeeklyReportPage from "./pages/WeeklyReportPage"
+import GameProfilePage from "./pages/GameProfilePage"
+import LeaderboardPage from "./pages/LeaderboardPage"
+import LearningPathList from "./pages/LearningPathList"
 
 
 import './styles/layout.css'
 import './styles/dashboard.css'
-import './styles/analytics.css'
 import './styles/auth.css'
 import './styles/Timeline.css'
 import './styles/profile-overview.css'
@@ -73,8 +74,9 @@ import './styles/progresspage.css'
 import './styles/dataTablesPages.css'
 import './styles/learningpathlist.css'
 import './styles/topiclist.css'
-import './styles/onboarding.css'
 import './styles/subscriptionplansadmin.css'
+import './styles/adminuser.css'
+import './styles/gamereview.css'
 
 
 
@@ -84,16 +86,6 @@ function DashboardRoute() {
     <ProtectedRoute>
       <AppLayout>
         <Dashboard />
-      </AppLayout>
-    </ProtectedRoute>
-  )
-}
-
-function AnalyticsRoute() {
-  return (
-    <ProtectedRoute>
-      <AppLayout>
-        <Analytics />
       </AppLayout>
     </ProtectedRoute>
   )
@@ -355,16 +347,6 @@ function StudyLogsRoute() {
   )
 }
 
-function SubscriptionsDataRoute() {
-  return (
-    <ProtectedRoute>
-      <AppLayout>
-        <SubscriptionsDataPage />
-      </AppLayout>
-    </ProtectedRoute>
-  )
-}
-
 function LearningPathListRoute() {
   return (
     <ProtectedRoute>
@@ -385,21 +367,61 @@ function TopicListRoute() {
   )
 }
 
-function OnboardingPageRoute() {
+function SubscriptionPlansAdminRoute() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute allowedRoles={['admin']}>
       <AppLayout>
-        <OnboardingPage />
+        <SubscriptionPlansAdminPage />
       </AppLayout>
     </ProtectedRoute>
   )
 }
 
-function SubscriptionPlansAdminRoute() {
+function ReviewMistakesRoute() {
   return (
     <ProtectedRoute>
       <AppLayout>
-        <SubscriptionPlansAdminPage />
+        <ReviewMistakesPage />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function WeeklyReportRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <WeeklyReportPage />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function GameProfileRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <GameProfilePage />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function LeaderboardRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <LeaderboardPage />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
+function AdminUserManagementRoute() {
+  return (
+    <ProtectedRoute allowedRoles={['admin']}>
+      <AppLayout>
+        <AdminUserManagementPage />
       </AppLayout>
     </ProtectedRoute>
   )
@@ -423,7 +445,6 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<DashboardRoute />} />
-          <Route path="/analytics" element={<AnalyticsRoute />} />
           <Route path="/teams" element={<TeamsRoute />} />
           <Route path="/profile-overview" element={<ProfileOverviewRoute />} />
           <Route path="/login" element={<LoginRoute />} />
@@ -455,11 +476,15 @@ function App() {
           <Route path="/progress" element={<ProgressPageRoute />} />
           <Route path="/learning-paths" element={<LearningPathListRoute />} />
           <Route path="/topics" element={<TopicListRoute />} />
-          <Route path="/onboarding" element={<OnboardingPageRoute />} />
+
           <Route path="/admin/subscription-plans" element={<SubscriptionPlansAdminRoute />} />
+          <Route path="/reviews/mistakes" element={<ReviewMistakesRoute />} />
+          <Route path="/reports/weekly" element={<WeeklyReportRoute />} />
+          <Route path="/game/profile" element={<GameProfileRoute />} />
+          <Route path="/game/leaderboard" element={<LeaderboardRoute />} />
+          <Route path="/admin/users" element={<AdminUserManagementRoute />} />
           <Route path="/data/payment-transactions" element={<PaymentTransactionsRoute />} />
           <Route path="/data/study-logs" element={<StudyLogsRoute />} />
-          <Route path="/data/subscriptions" element={<SubscriptionsDataRoute />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

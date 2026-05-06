@@ -4,7 +4,6 @@ import { MdMenu } from 'react-icons/md'
 
 const PAGE_TITLES = {
   '/': 'Dashboard',
-  '/analytics': 'Analytics',
   '/teams': 'Pages/Teams',
   '/profile-overview': 'Profile overview',
   '/report': 'Users / Reports',
@@ -32,6 +31,11 @@ const PAGE_TITLES = {
   '/learning-paths': 'Learning Paths',
   '/topics': 'Topics',
   '/admin/subscription-plans': 'Subscription Plans',
+  '/reviews/mistakes': 'Review Mistakes',
+  '/reports/weekly': 'Weekly Report',
+  '/game/profile': 'My Profile',
+  '/game/leaderboard': 'Leaderboard',
+  '/admin/users': 'User Management',
 }
 
 

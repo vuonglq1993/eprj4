@@ -1,4 +1,13 @@
-function SalesSection() {
+function SalesSection({ data } = {}) {
+  const salesData = data?.salesByAge ?? [
+    { range: '18-24', filled: 40, empty: 60 },
+    { range: '25-34', filled: 70, empty: 30 },
+    { range: '35-44', filled: 55, empty: 45 },
+    { range: '45-54', filled: 85, empty: 15 },
+    { range: '55-64', filled: 35, empty: 65 },
+    { range: '65+', filled: 20, empty: 80 },
+  ]
+
   return (
     <section className="dashboard-section dashboard-section--bottom">
       <article className="dashboard-card dashboard-card--wide">
@@ -16,36 +25,13 @@ function SalesSection() {
 
         <div className="sales-chart">
           <div className="sales-chart__bars">
-            <div className="sales-chart__bar-group">
-              <div className="sales-chart__bar sales-chart__bar--filled" style={{ height: '40%' }} />
-              <div className="sales-chart__bar sales-chart__bar--empty" style={{ height: '60%' }} />
-              <span className="sales-chart__label">18-24</span>
-            </div>
-            <div className="sales-chart__bar-group">
-              <div className="sales-chart__bar sales-chart__bar--filled" style={{ height: '70%' }} />
-              <div className="sales-chart__bar sales-chart__bar--empty" style={{ height: '30%' }} />
-              <span className="sales-chart__label">25-34</span>
-            </div>
-            <div className="sales-chart__bar-group">
-              <div className="sales-chart__bar sales-chart__bar--filled" style={{ height: '55%' }} />
-              <div className="sales-chart__bar sales-chart__bar--empty" style={{ height: '45%' }} />
-              <span className="sales-chart__label">35-44</span>
-            </div>
-            <div className="sales-chart__bar-group">
-              <div className="sales-chart__bar sales-chart__bar--filled" style={{ height: '85%' }} />
-              <div className="sales-chart__bar sales-chart__bar--empty" style={{ height: '15%' }} />
-              <span className="sales-chart__label">45-54</span>
-            </div>
-            <div className="sales-chart__bar-group">
-              <div className="sales-chart__bar sales-chart__bar--filled" style={{ height: '35%' }} />
-              <div className="sales-chart__bar sales-chart__bar--empty" style={{ height: '65%' }} />
-              <span className="sales-chart__label">55-64</span>
-            </div>
-            <div className="sales-chart__bar-group">
-              <div className="sales-chart__bar sales-chart__bar--filled" style={{ height: '20%' }} />
-              <div className="sales-chart__bar sales-chart__bar--empty" style={{ height: '80%' }} />
-              <span className="sales-chart__label">65+</span>
-            </div>
+            {salesData.map((item) => (
+              <div key={item.range} className="sales-chart__bar-group">
+                <div className="sales-chart__bar sales-chart__bar--filled" style={{ height: `${item.filled}%` }} />
+                <div className="sales-chart__bar sales-chart__bar--empty" style={{ height: `${item.empty}%` }} />
+                <span className="sales-chart__label">{item.range}</span>
+              </div>
+            ))}
           </div>
         </div>
       </article>
@@ -84,4 +70,3 @@ function SalesSection() {
 }
 
 export default SalesSection
-
