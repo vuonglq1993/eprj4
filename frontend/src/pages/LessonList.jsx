@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import '../styles/lessonlist.css';
 import { FiEdit2, FiTrash2, FiPlus, FiBookOpen, FiClock } from 'react-icons/fi';
 import { getLessons, createLesson, updateLesson, deleteLesson } from '../services/lessonService';
-import { getCourses } from '../services/courseService';
 import { isAdmin, hasRole } from '../utils/roleUtils';
+import CourseCombobox from '../components/common/CourseCombobox';
 
 const LESSON_TYPES = ['VOCABULARY', 'GRAMMAR', 'SPEAKING', 'READING', 'LISTENING', 'WRITING'];
 const EMPTY_FORM = { title: '', content: '', type: 'VOCABULARY', videoUrl: '', audioUrl: '', orderIndex: 0, durationMinutes: 0, isFree: false };
@@ -31,37 +31,15 @@ function StatusBadge({ status }) {
 
 const LessonList = () => {
   const [lessons, setLessons] = useState([]);
-  const [coursesLoading, setCoursesLoading] = useState(true);
   const [lessonsLoading, setLessonsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [saving, setSaving] = useState(false);
   const canManage = isAdmin() || hasRole('TEACHER');
-  const loading = coursesLoading || lessonsLoading;
-
-  const fetchCourses = async () => {
-    setCoursesLoading(true);
-    setError('');
-    try {
-      const res = await getCourses();
-      const raw = res.data?.content ?? res.data ?? [];
-      const list = Array.isArray(raw) ? raw : [];
-      setCourses(list);
-      if (list.length > 0) setSelectedCourse((prev) => prev || list[0].id);
-    } catch {
-      setError('Không tải được danh sách khóa học.');
-    } finally {
-      setCoursesLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCourses();
-  }, []);
+  const loading = lessonsLoading;
 
   useEffect(() => {
     if (!selectedCourse) {
@@ -131,7 +109,7 @@ const LessonList = () => {
       }
       setShowModal(false);
     } catch (err) {
-      alert(err.response?.data?.message || 'Lưu thất bại.');
+      alert(err.response?.status === 409 ? 'Đã tồn tại.' : (err.response?.data?.message || 'Lưu thất bại.'));
     } finally {
       setSaving(false);
     }
@@ -155,10 +133,7 @@ const LessonList = () => {
         {canManage && (
           <div className="mb-3">
             <label className="form-label small fw-semibold">Course</label>
-            <select className="form-select" style={{ maxWidth: 320 }} value={selectedCourse} onChange={(e) => setSelectedCourse(e.target.value)}>
-              <option value="">Select course…</option>
-              {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
-            </select>
+            <CourseCombobox value={selectedCourse} onChange={setSelectedCourse} />
           </div>
         )}
 
@@ -166,7 +141,7 @@ const LessonList = () => {
 
         {loading ? (
           <div className="text-center py-5 text-muted">
-            {coursesLoading ? 'Đang tải khóa học…' : 'Đang tải bài học…'}
+            Đang tải bài học…
           </div>
         ) : (
           <div className="ls-card shadow-sm">
@@ -176,7 +151,6 @@ const LessonList = () => {
                   <tr>
                     <th scope="col">#</th>
                     <th scope="col">Lesson Title</th>
-                    <th scope="col">Course</th>
                     <th scope="col">Type</th>
                     <th scope="col">Exercises</th>
                     <th scope="col">Duration</th>
@@ -194,7 +168,6 @@ const LessonList = () => {
                           <span className="fw-semibold" style={{ color: '#1e293b' }}>{lesson.title}</span>
                         </div>
                       </td>
-                      <td style={{ color: '#64748b' }}>{courses.find((c) => c.id === selectedCourse)?.title || '—'}</td>
                       <td><TypeBadge type={lesson.type} /></td>
                       <td style={{ color: '#475569' }}>{lesson.totalExercises ?? 0}</td>
                       <td>
@@ -213,7 +186,7 @@ const LessonList = () => {
                     </tr>
                   ))}
                   {lessons.length === 0 && (
-                    <tr><td colSpan={canManage ? 8 : 7} className="text-center text-muted py-4">Chưa có bài học nào.</td></tr>
+                    <tr><td colSpan={canManage ? 6 : 5} className="text-center text-muted py-4">Chưa có bài học nào.</td></tr>
                   )}
                 </tbody>
               </table>

@@ -1,11 +1,19 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import Sidebar from '../components/layout/Sidebar.jsx'
 import Topbar from '../components/layout/Topbar.jsx'
 
 function AppLayout({ children }) {
   const [navOpen, setNavOpen] = useState(false)
+  const location = useLocation()
 
   const closeNav = useCallback(() => setNavOpen(false), [])
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    const main = document.querySelector('.app-layout__content')
+    if (main) main.scrollTop = 0
+  }, [location.pathname])
 
   useEffect(() => {
     if (!navOpen) return

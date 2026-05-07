@@ -1,21 +1,22 @@
-export const isAdmin = () => {
-  try {
-    const raw = localStorage.getItem('auth_user');
-    if (!raw) return false;
-    const user = JSON.parse(raw);
-    return user?.role === 'ADMIN';
-  } catch {
-    return false;
-  }
-};
+/**
+ * Role utilities.
+ *
+ * PREFER: useAuth() → user.role
+ * USE THESE: chỉ khi component không thể access context trực tiếp
+ */
 
-export const hasRole = (...roles) => {
+/** Đọc role từ localStorage (cache login). Nên dùng useAuth().user.role khi có thể. */
+function getStoredRole() {
   try {
     const raw = localStorage.getItem('auth_user');
-    if (!raw) return false;
+    if (!raw) return null;
     const user = JSON.parse(raw);
-    return roles.includes(user?.role);
+    return user?.role || null;
   } catch {
-    return false;
+    return null;
   }
-};
+}
+
+export const isAdmin = () => getStoredRole() === 'admin';
+
+export const hasRole = (...roles) => roles.includes(getStoredRole());

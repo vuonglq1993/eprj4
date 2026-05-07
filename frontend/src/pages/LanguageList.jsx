@@ -91,7 +91,7 @@ function LanguageList() {
       }
       setShowModal(false);
     } catch (err) {
-      alert(getApiErrorMessage(err) || 'Lưu thất bại.');
+      alert(err.response?.status === 409 ? 'Đã tồn tại.' : (getApiErrorMessage(err) || 'Lưu thất bại.'));
     } finally {
       setSaving(false);
     }
@@ -190,7 +190,7 @@ function LanguageList() {
                     type="text"
                     className="form-control"
                     value={form.code}
-                    onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
+                    onChange={(e) => setForm({ ...form, code: e.target.value.toLowerCase() })}
                     maxLength={10}
                     required
                     readOnly={!!editId}
@@ -208,8 +208,8 @@ function LanguageList() {
                   <input type="text" className="form-control" value={form.nativeName} onChange={(e) => setForm({ ...form, nativeName: e.target.value })} maxLength={100} required />
                 </div>
                 <div className="mb-2">
-                  <label className="form-label small fw-semibold">Flag (emoji)</label>
-                  <input type="text" className="form-control" value={form.flag} onChange={(e) => setForm({ ...form, flag: e.target.value })} maxLength={20} placeholder="🇺🇸" />
+                  <label className="form-label small fw-semibold">Flag (country code, viết HOA)</label>
+                  <input type="text" className="form-control" value={form.flag} onChange={(e) => setForm({ ...form, flag: e.target.value.toUpperCase() })} maxLength={20} placeholder="US" />
                 </div>
                 <div className="form-check">
                   <input type="checkbox" className="form-check-input" id="langActive" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />

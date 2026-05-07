@@ -1,4 +1,5 @@
-function ActiveUsersCard() {
+function ActiveUsersCard({ data } = {}) {
+  const activeCount = data?.activeUsers ?? 0
   return (
     <article className="dashboard-card dashboard-card--primary">
       <div className="dashboard-card__header">
@@ -6,7 +7,7 @@ function ActiveUsersCard() {
           <h5 className="dashboard-card__title">Active users right now</h5>
           <p className="dashboard-card__subtitle">Upgrade your payout method in setting</p>
         </div>
-        <span className="dashboard-card__badge">300</span>
+        <span className="dashboard-card__badge">{activeCount > 0 ? activeCount : '—'}</span>
       </div>
 
       <div className="active-users-chart">
@@ -23,4 +24,3 @@ function ActiveUsersCard() {
 }
 
 export default ActiveUsersCard
-
