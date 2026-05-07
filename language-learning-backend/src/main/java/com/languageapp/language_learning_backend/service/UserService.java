@@ -16,7 +16,8 @@ import com.languageapp.language_learning_backend.entity.User.Role;
 import com.languageapp.language_learning_backend.entity.User.AuthProvider;
 
 import java.time.Instant;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -250,6 +251,25 @@ public class UserService {
         return userRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
+
+    // ── SEARCH USERS (for admin) ──────────────────────────────
+    @Transactional(readOnly = true)
+    public List<UserSearchResult> searchUsers(String query) {
+        if (query == null || query.trim().isEmpty()) return List.of();
+
+        return userRepo.findByEmailContainingIgnoreCase(query.trim()).stream()
+                .limit(10)
+                .map(u -> new UserSearchResult(
+                        u.getId().toString(),
+                        u.getEmail(),
+                        (u.getFirstName() != null ? u.getFirstName() : "") +
+                                " " + (u.getLastName() != null ? u.getLastName() : ""),
+                        u.getRole().name()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public record UserSearchResult(String id, String email, String name, String role) {}
 
     // ✅ JWT WORKING
     private AuthResponse buildTokens(User user) {

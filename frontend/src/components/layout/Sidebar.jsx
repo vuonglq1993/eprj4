@@ -14,6 +14,7 @@ import {
   MdConfirmationNumber,
   MdAssessment,
   MdEmojiEvents,
+  MdNotifications,
 } from 'react-icons/md'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -85,6 +86,14 @@ const menuConfig = [
     ],
   },
   {
+    id: 'notifications',
+    label: 'Notifications',
+    icon: MdNotifications,
+    children: [
+      { id: 'notification-list', label: 'Send Notifications', path: '/admin/notifications' },
+    ],
+  },
+  {
     id: 'reports',
     label: 'Reports',
     icon: MdAssessment,
@@ -116,7 +125,7 @@ function Sidebar({ onNavigate }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { logout } = useAuth()
-  const [expandedIds, setExpandedIds] = useState(new Set(['home', 'languages', 'courses', 'db-tables', 'pages', 'learning-paths', 'topics', 'admin-plans', 'gamification', 'reports']))
+  const [expandedIds, setExpandedIds] = useState(new Set(['home', 'languages', 'courses', 'db-tables', 'pages', 'learning-paths', 'topics', 'admin-plans', 'gamification', 'reports', 'notifications']))
 
   const handleLogout = () => {
     onNavigate?.()
