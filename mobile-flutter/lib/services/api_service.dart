@@ -283,4 +283,54 @@ class ApiService {
       return null;
     }
   }
+
+  static Future<void> registerFcmToken(String token) async {
+    try {
+      await http.post(
+        Uri.parse('$_base/fcm/register'),
+        headers: await _authHeaders(),
+        body: jsonEncode({'token': token}),
+      );
+    } catch (_) {}
+  }
+
+  static Future<Map<String, dynamic>?> getReminderSettings() async {
+    try {
+      final res = await http.get(
+        Uri.parse('$_base/notifications/reminder-settings'),
+        headers: await _authHeaders(),
+      );
+      if (res.statusCode == 200) return jsonDecode(res.body) as Map<String, dynamic>;
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<bool> updateReminderSettings({
+    required bool enabled,
+    required int hour,
+    required int minute,
+    String timezone = 'Asia/Ho_Chi_Minh',
+  }) async {
+    try {
+      final res = await http.put(
+        Uri.parse('$_base/notifications/reminder-settings'),
+        headers: await _authHeaders(),
+        body: jsonEncode({'enabled': enabled, 'hour': hour, 'minute': minute, 'timezone': timezone}),
+      );
+      return res.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<void> sendTestNotification() async {
+    try {
+      await http.post(
+        Uri.parse('$_base/notifications/test'),
+        headers: await _authHeaders(),
+      );
+    } catch (_) {}
+  }
 }
