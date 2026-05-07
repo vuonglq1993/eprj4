@@ -1,45 +1,51 @@
 {
   "project_info": {
-    "project_number": "15212272074",
-    "project_id": "language-app-1c9c8",
-    "storage_bucket": "language-app-1c9c8.firebasestorage.app"
+    "project_number": "943935351696",
+    "project_id": "eprj4-notification-49748",
+    "storage_bucket": "eprj4-notification-49748.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:15212272074:android:a2d54ce638740e1e4d1733",
-        "android_client_info": {
-          "package_name": "com.languageapp.flutter"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBNCU--Hy0LNf5DfpcG1PHJgnNpy9bgHK8"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:15212272074:android:d12120f68a7a33234d1733",
+        "mobilesdk_app_id": "1:943935351696:android:c6a2ad72c525c48333a115",
         "android_client_info": {
           "package_name": "com.languageapp.language_learning"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "943935351696-f100ltaq6dgmue3aerp7dcpqi2kr66p0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.languageapp.language_learning",
+            "certificate_hash": "438c3b85d0db104b1b9640801fcf9fba297283a2"
+          }
+        },
+        {
+          "client_id": "943935351696-hb2702f5i6m95gn7bbnmf70m7b3jb3cd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBNCU--Hy0LNf5DfpcG1PHJgnNpy9bgHK8"
+          "current_key": "AIzaSyAra9hxONojgQLn2bB_Tqv_6VL6lql-1Js"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "943935351696-hb2702f5i6m95gn7bbnmf70m7b3jb3cd.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "943935351696-t3kpbm35jc0esq2lpmqhu8991v2d3gvi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.languageapp.languageLearning"
+              }
+            }
+          ]
         }
       }
     }
