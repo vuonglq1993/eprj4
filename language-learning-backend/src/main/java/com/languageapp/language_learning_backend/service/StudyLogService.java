@@ -140,6 +140,16 @@ public class StudyLogService {
     // ── DAILY REMINDER SCHEDULER ──────────────────────────────
     // Gọi bởi StudyReminderScheduler mỗi tối 20:00
     @Transactional(readOnly = true)
+    public int getCurrentStreak(String userId) {
+        try {
+            return gameRepo.findByUserId(UUID.fromString(userId))
+                    .map(UserGameProfile::getCurrentStreak)
+                    .orElse(0);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     public List<Object[]> getUsersToRemind() {
         return userRepo.findUsersToRemind(LocalDate.now(), LocalDate.now().minusDays(1));
     }

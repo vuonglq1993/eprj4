@@ -3,6 +3,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../core/ai_button_controller.dart';
+import '../../services/notification_service.dart';
 import '../../services/api_service.dart';
 import '../home/home_placeholder.dart';
 import '../onboarding/onboarding_flow.dart';
@@ -110,6 +111,7 @@ class _RegisterPageState extends State<RegisterPage> {
         final onboardingDone = await ApiService.isOnboardingCompleted();
         if (!mounted) return;
         AiButtonController.onLogin();
+        NotificationService.instance.registerToken();
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(

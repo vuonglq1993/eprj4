@@ -1,4 +1,5 @@
 import 'dart:developer' as dev;
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -6,7 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'config/app_config.dart';
 import 'core/theme.dart';
 import 'core/ai_floating_button.dart';
+import 'firebase_options.dart';
 import 'screens/splash/splash_screen.dart';
+import 'services/notification_service.dart';
 import 'l10n/app_localizations.dart';
 
 const _kLocaleKey = 'locale';
@@ -15,6 +18,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
   await AppConfig.init();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await NotificationService.instance.init();
 
   final prefs = await SharedPreferences.getInstance();
   final langCode = prefs.getString(_kLocaleKey) ?? 'vi';
