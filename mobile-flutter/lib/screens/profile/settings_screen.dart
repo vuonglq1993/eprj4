@@ -18,10 +18,12 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // Notification prefs (local)
-  bool _studyReminder = true;
-  bool _streakReminder = true;
-  bool _weeklyReport = false;
+  // Reminder settings (from backend)
+  bool _reminderEnabled = false;
+  int _reminderHour = 20;
+  int _reminderMinute = 0;
+  bool _reminderSaving = false;
+
   bool _twoFA = false;
 
   // Learning prefs
@@ -31,9 +33,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   bool _loading = true;
 
-  static const _kStudyReminder = 'pref_study_reminder';
-  static const _kStreakReminder = 'pref_streak_reminder';
-  static const _kWeeklyReport = 'pref_weekly_report';
   static const _kXpGoal = 'pref_xp_goal';
   static const _kLearningStyle = 'pref_learning_style';
 
@@ -46,22 +45,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final user = await ApiService.getProfile();
+    final reminder = await ApiService.getReminderSettings();
     if (mounted) {
       setState(() {
-        _studyReminder = prefs.getBool(_kStudyReminder) ?? true;
-        _streakReminder = prefs.getBool(_kStreakReminder) ?? true;
-        _weeklyReport = prefs.getBool(_kWeeklyReport) ?? false;
         _xpGoal = prefs.getInt(_kXpGoal) ?? 200;
         _learningStyle = prefs.getString(_kLearningStyle) ?? 'Visual';
         _uiLanguage = user?['uiLanguage'] as String? ?? 'en';
+        if (reminder != null) {
+          _reminderEnabled = reminder['enabled'] as bool? ?? false;
+          _reminderHour = reminder['hour'] as int? ?? 20;
+          _reminderMinute = reminder['minute'] as int? ?? 0;
+        }
         _loading = false;
       });
     }
   }
 
-  Future<void> _saveNotifPref(String key, bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(key, value);
+  Future<void> _saveReminder() async {
+    setState(() => _reminderSaving = true);
+    await ApiService.updateReminderSettings(
+      enabled: _reminderEnabled,
+      hour: _reminderHour,
+      minute: _reminderMinute,
+    );
+    if (mounted) setState(() => _reminderSaving = false);
+  }
+
+  Future<void> _pickReminderTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: _reminderHour, minute: _reminderMinute),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: AppColors.primary,
+            onSurface: AppColors.textPrimary,
+            surface: AppColors.surface,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null && mounted) {
+      setState(() {
+        _reminderHour = picked.hour;
+        _reminderMinute = picked.minute;
+      });
+      await _saveReminder();
+    }
   }
 
   Future<void> _logout() async {
@@ -182,35 +213,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _notifSection() {
+    final timeStr =
+        '${_reminderHour.toString().padLeft(2, '0')}:${_reminderMinute.toString().padLeft(2, '0')}';
     return _card([
       _toggleItem(
-        label: 'Nhắc nhở học',
-        subtitle: 'Mỗi ngày lúc 20:00',
-        value: _studyReminder,
+        label: 'Nhắc nhở học hàng ngày',
+        subtitle: _reminderEnabled ? 'Bật · $timeStr mỗi ngày' : 'Đang tắt',
+        value: _reminderEnabled,
         onChanged: (v) {
-          setState(() => _studyReminder = v);
-          _saveNotifPref(_kStudyReminder, v);
+          setState(() => _reminderEnabled = v);
+          _saveReminder();
         },
       ),
+      if (_reminderEnabled) ...[
+        _divider(),
+        _rowItem(
+          label: 'Giờ nhắc nhở',
+          subtitle: timeStr,
+          onTap: _pickReminderTime,
+        ),
+      ],
       _divider(),
-      _toggleItem(
-        label: 'Streak reminder',
-        subtitle: 'Khi sắp mất streak',
-        value: _streakReminder,
-        onChanged: (v) {
-          setState(() => _streakReminder = v);
-          _saveNotifPref(_kStreakReminder, v);
-        },
-      ),
-      _divider(),
-      _toggleItem(
-        label: 'Weekly Report',
-        subtitle: 'Email thứ 2 hàng tuần',
-        value: _weeklyReport,
-        onChanged: (v) {
-          setState(() => _weeklyReport = v);
-          _saveNotifPref(_kWeeklyReport, v);
-        },
+      _rowItem(
+        label: 'Gửi thử notification',
+        subtitle: _reminderSaving ? 'Đang gửi…' : 'Nhận ngay bây giờ',
+        onTap: _reminderSaving
+            ? () {}
+            : () async {
+                await ApiService.sendTestNotification();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Đã gửi test notification!')),
+                  );
+                }
+              },
       ),
     ]);
   }

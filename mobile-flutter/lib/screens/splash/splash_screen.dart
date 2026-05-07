@@ -11,6 +11,7 @@ import '../auth/register_page.dart';
 import '../auth/login_page.dart';
 import '../home/home_placeholder.dart';
 import '../onboarding/onboarding_flow.dart';
+import '../../services/notification_service.dart';
 import 'dart:developer' as developer;
 
 
@@ -120,6 +121,7 @@ class _SplashScreenState extends State<SplashScreen>
         final onboardingDone = await ApiService.isOnboardingCompleted();
         if (!mounted) return;
         AiButtonController.onLogin();
+        NotificationService.instance.registerToken();
         Navigator.pushReplacement(
           context,
           _buildRoute(
