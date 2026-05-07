@@ -125,7 +125,7 @@ public class PronunciationService {
     }
 
     private AiTier getTier(UserPrincipal p) {
-        if ("ADMIN".equals(p.getRole()) || "TEACHER".equals(p.getRole())) return AiTier.UNLIMITED;
+        if ("ADMIN".equals(p.getRole())) return AiTier.UNLIMITED;
         return userRepo.findById(p.getUserId())
                 .map(u -> AiTier.from(u.getSubscription() != null
                         ? u.getSubscription().getPlan() : Subscription.Plan.FREE))

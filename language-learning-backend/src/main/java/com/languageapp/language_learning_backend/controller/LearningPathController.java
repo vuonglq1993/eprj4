@@ -72,10 +72,10 @@ public class LearningPathController {
         return ResponseEntity.ok(service.getMyPaths(p));
     }
 
-    // ── ADMIN / TEACHER ───────────────────────────────────────
+    // ── ADMIN ───────────────────────────────────────
 
-    @Operation(summary = "Tạo lộ trình mới — Teacher / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @Operation(summary = "Tạo lộ trình mới — Admin")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<LearningPathResponse> create(
             @Valid @RequestBody LearningPathRequest req,
@@ -84,7 +84,7 @@ public class LearningPathController {
     }
 
     @Operation(summary = "Cập nhật lộ trình — chủ sở hữu / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<LearningPathResponse> update(
             @PathVariable UUID id, @Valid @RequestBody LearningPathRequest req,
@@ -93,7 +93,7 @@ public class LearningPathController {
     }
 
     @Operation(summary = "Publish / Unpublish lộ trình")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/publish")
     public ResponseEntity<LearningPathResponse> togglePublish(
             @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal p) {
@@ -101,7 +101,7 @@ public class LearningPathController {
     }
 
     @Operation(summary = "Xoá lộ trình — chủ sở hữu / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal p) {

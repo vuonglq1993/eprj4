@@ -5,16 +5,22 @@ import org.springframework.http.*;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDateTime;
 import java.util.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // Custom exceptions — defined first so they are reachable by the handlers below
+    public static class NotFoundException     extends RuntimeException { public NotFoundException(String m)     { super(m); } }
+    public static class ConflictException     extends RuntimeException { public ConflictException(String m)     { super(m); } }
+    public static class UnauthorizedException extends RuntimeException { public UnauthorizedException(String m) { super(m); } }
+    public static class ForbiddenException    extends RuntimeException { public ForbiddenException(String m)    { super(m); } }
+    public static class BadRequestException  extends RuntimeException { public BadRequestException(String m)   { super(m); } }
+
+    // ── Specific handlers (most-specific first) ──────────────
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Err> notFound(NotFoundException e) { return err(404, "NOT_FOUND", e.getMessage()); }
@@ -33,7 +39,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Err> validation(MethodArgumentNotValidException e) {
-        Map<String,String> errors = new LinkedHashMap<>();
+        Map<String, String> errors = new LinkedHashMap<>();
         e.getBindingResult().getAllErrors().forEach(err -> {
             String field = err instanceof FieldError fe ? fe.getField() : err.getObjectName();
             errors.put(field, err.getDefaultMessage());
@@ -41,24 +47,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(new Err("VALIDATION_ERROR", "Validation failed", errors, LocalDateTime.now()));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Err> general(Exception e) {
-        log.error("Unhandled: {}", e.getMessage(), e);
-        return err(500, "INTERNAL_ERROR", "An unexpected error occurred");
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleIllegalArgument(IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(Map.of(
+                "error", e.getMessage(),
+                "timestamp", System.currentTimeMillis()
+        ));
     }
-
-    private ResponseEntity<Err> err(int status, String code, String message) {
-        return ResponseEntity.status(status).body(new Err(code, message, null, LocalDateTime.now()));
-    }
-
-    public record Err(String code, String message, Map<String,String> errors, LocalDateTime timestamp) {}
-
-    // Custom exceptions
-    public static class NotFoundException     extends RuntimeException { public NotFoundException(String m)     { super(m); } }
-    public static class ConflictException     extends RuntimeException { public ConflictException(String m)     { super(m); } }
-    public static class UnauthorizedException extends RuntimeException { public UnauthorizedException(String m) { super(m); } }
-    public static class ForbiddenException    extends RuntimeException { public ForbiddenException(String m)    { super(m); } }
-    public static class BadRequestException   extends RuntimeException { public BadRequestException(String m)   { super(m); } }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<?> handleRuntimeException(RuntimeException e) {
@@ -67,7 +62,6 @@ public class GlobalExceptionHandler {
         String message = e.getMessage();
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
-        // Detect API-specific errors
         if (message != null && message.contains("API error: 429")) {
             status = HttpStatus.TOO_MANY_REQUESTS;
             message = "AI service rate limit exceeded. Please try again later.";
@@ -82,11 +76,17 @@ public class GlobalExceptionHandler {
         ));
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<?> handleIllegalArgument(IllegalArgumentException e) {
-        return ResponseEntity.badRequest().body(Map.of(
-                "error", e.getMessage(),
-                "timestamp", System.currentTimeMillis()
-        ));
+    // ── Catch-all (least-specific last) ──────────────────────
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Err> general(Exception e) {
+        log.error("Unhandled: {}", e.getMessage(), e);
+        return err(500, "INTERNAL_ERROR", "An unexpected error occurred");
     }
+
+    // ── Helpers ──────────────────────────────────────────────
+    private ResponseEntity<Err> err(int status, String code, String message) {
+        return ResponseEntity.status(status).body(new Err(code, message, null, LocalDateTime.now()));
+    }
+
+    public record Err(String code, String message, Map<String, String> errors, LocalDateTime timestamp) {}
 }

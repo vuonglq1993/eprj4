@@ -6,6 +6,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import java.util.*;
 import java.util.UUID;
 
 @Repository
@@ -35,4 +36,7 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
                               Pageable pageable);
 
     boolean existsByIdAndCreatedById(UUID courseId, UUID userId);
+
+    @Query("SELECT c FROM Course c WHERE c.createdBy.id = :userId")
+    List<Course> findByCreatedById(@Param("userId") UUID userId);
 }

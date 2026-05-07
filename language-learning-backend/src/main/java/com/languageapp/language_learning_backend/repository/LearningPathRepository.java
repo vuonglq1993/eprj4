@@ -6,7 +6,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 public interface LearningPathRepository extends JpaRepository<LearningPath, UUID> {
@@ -24,4 +24,7 @@ public interface LearningPathRepository extends JpaRepository<LearningPath, UUID
                                      @Param("targetLevel") TargetLevel targetLevel,
                                      @Param("kw")          String kw,
                                      Pageable pageable);
+
+    @Query("SELECT lp FROM LearningPath lp WHERE lp.createdBy.id = :userId")
+    List<LearningPath> findByCreatedById(@Param("userId") UUID userId);
 }

@@ -4,7 +4,7 @@ const { authenticate, requireRole } = require('../middleware/auth');
 const store = require('../data/store');
 
 const router = express.Router();
-const MANAGER_ROLES = ['ADMIN', 'TEACHER'];
+const MANAGER_ROLES = ['ADMIN'];
 
 // GET /lessons (filter by courseId)
 router.get('/', (req, res) => {

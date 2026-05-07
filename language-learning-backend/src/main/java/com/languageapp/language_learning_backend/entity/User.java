@@ -69,7 +69,7 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Subscription subscription;
 
-    public enum Role         { STUDENT, TEACHER, ADMIN }
+    public enum Role         { STUDENT, ADMIN }
     public enum AuthProvider { LOCAL, GOOGLE}
 
     public String  getFullName() { return firstName + (lastName != null ? " " + lastName : ""); }

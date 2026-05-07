@@ -1,8 +1,14 @@
 function StatsSummary({ data } = {}) {
+  const fmtNum = (n) => {
+    if (n == null) return '—';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+    return String(n);
+  };
+
   const stats = [
     {
       label: 'Users',
-      value: data?.totalUsers ? `${data.totalUsers >= 1000 ? (data.totalUsers / 1000).toFixed(1) + 'k' : data.totalUsers}` : '—',
+      value: fmtNum(data?.totalUsers),
       subtitle: 'Total registered users',
     },
     {

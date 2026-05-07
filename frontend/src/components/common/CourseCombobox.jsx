@@ -23,7 +23,7 @@ function CourseCombobox({ value, onChange, disabled }) {
         if (found) { setSelectedLabel(found.title); }
       } catch {}
     })();
-  }, [value, options]);
+  }, [value]);
 
   useEffect(() => {
     if (!open) return;

@@ -51,7 +51,7 @@ router.put('/:id/role', authenticate, requireRole('ADMIN'), (req, res) => {
   const idx = store.users.findIndex((u) => u.id === req.params.id);
   if (idx === -1) return res.status(404).json({ message: 'User not found' });
   const { role } = req.body;
-  if (!['USER', 'TEACHER', 'ADMIN'].includes(role)) return res.status(400).json({ message: 'Invalid role' });
+  if (!['STUDENT', 'ADMIN'].includes(role)) return res.status(400).json({ message: 'Invalid role' });
   store.users[idx].role = role;
   store.users[idx].updatedAt = new Date().toISOString();
   const { password: _, ...userData } = store.users[idx];
