@@ -1,5 +1,7 @@
 package com.languageapp.language_learning_backend.controller;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.languageapp.language_learning_backend.dto.user.*;
 import com.languageapp.language_learning_backend.security.UserPrincipal;
 import com.languageapp.language_learning_backend.service.UserService;
@@ -12,6 +14,7 @@ import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 
 @Tag(name = "01 · Users & Auth")
@@ -20,6 +23,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final Cloudinary  cloudinary;
 
     // ── AUTH (public) ─────────────────────────────────────────
 
@@ -62,6 +66,29 @@ public class UserController {
             @Valid @RequestBody UpdateProfileRequest req,
             @AuthenticationPrincipal UserPrincipal p) {
         return ResponseEntity.ok(userService.updateProfile(req, p));
+    }
+
+    @Operation(summary = "Upload avatar")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping(value = "/api/v1/users/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> uploadAvatar(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal UserPrincipal p) {
+        try {
+            @SuppressWarnings("rawtypes")
+            Map result = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap("folder", "avatars", "resource_type", "image")
+            );
+            String url = (String) result.get("secure_url");
+            userService.updateProfile(
+                    UpdateProfileRequest.builder().avatarUrl(url).build(), p);
+            return ResponseEntity.ok(Map.of("avatarUrl", url));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @Operation(summary = "Đổi mật khẩu")

@@ -197,7 +197,7 @@ class _ProfileTabState extends State<ProfileTab> {
               Positioned(
                 right: -4, bottom: -4,
                 child: TappableScale(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditProfileScreen(user: _user ?? {}))).then((_) => _load()),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditProfileScreen(user: _user ?? {}))).then((updated) { if (updated == true) _load(); }),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
@@ -219,6 +219,16 @@ class _ProfileTabState extends State<ProfileTab> {
           if (email.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(email, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          ],
+          if ((_user?['bio'] as String?)?.isNotEmpty == true) ...[
+            const SizedBox(height: 8),
+            Text(
+              _user!['bio'] as String,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
+            ),
           ],
           const SizedBox(height: 10),
           // Badges row
@@ -307,7 +317,7 @@ class _ProfileTabState extends State<ProfileTab> {
         children: [
           _menuItem(Icons.person_rounded, const Color(0xFF7C5CBF),
               'Chỉnh sửa hồ sơ', null,
-              () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditProfileScreen(user: _user ?? {}))).then((_) => _load())),
+              () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditProfileScreen(user: _user ?? {}))).then((updated) { if (updated == true) _load(); })),
           _menuDivider(),
           _menuItem(Icons.route_rounded, AppColors.primary,
               'Lộ trình & ngôn ngữ', null,
