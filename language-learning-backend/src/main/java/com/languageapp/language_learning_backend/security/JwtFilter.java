@@ -33,14 +33,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
             if (jwt.validate(token)) {
 
-                var principal = new UserPrincipal(
-                        jwt.getUserId(token),
-                        jwt.getEmail(token),
-                        jwt.getRole(token)
-                );
-
-                // ✅ FIX ROLE FORMAT CHO SPRING SECURITY
                 String role = jwt.getRole(token);
+
+                var principal = new UserPrincipal(jwt.getUserId(token), jwt.getEmail(token), role);
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
@@ -52,17 +47,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
-
-                // ================== DEBUG LOG ==================
-                System.out.println("========== JWT FILTER DEBUG ==========");
-                System.out.println("URI: " + req.getRequestURI());
-                System.out.println("USER ID: " + principal.getUserId());
-                System.out.println("EMAIL: " + principal.getEmail());
-                System.out.println("ROLE FROM TOKEN: " + role);
-                System.out.println("AUTHORITIES: " + auth.getAuthorities());
-                System.out.println("AUTH SET SUCCESS: " +
-                        SecurityContextHolder.getContext().getAuthentication());
-                System.out.println("======================================");
             }
         }
 

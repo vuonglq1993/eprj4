@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, UUID> {
     Page<PaymentTransaction> findByUserIdOrderByCreatedAtDesc(UUID userId, Pageable p);
     Optional<PaymentTransaction> findByGatewayRef(String gatewayRef);
+    void deleteByUserId(UUID userId);
 }

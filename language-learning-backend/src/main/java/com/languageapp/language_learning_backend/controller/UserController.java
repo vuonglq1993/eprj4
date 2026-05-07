@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Tag(name = "01 · Users & Auth")
 @RestController
@@ -85,5 +87,47 @@ public class UserController {
     public ResponseEntity<List<UserService.UserSearchResult>> searchUsers(
             @RequestParam String q) {
         return ResponseEntity.ok(userService.searchUsers(q));
+    }
+
+    // ── ADMIN: GET ALL USERS (paginated) ────────────────────
+    @Operation(summary = "Lấy danh sách tất cả users (Admin) — phân trang")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/api/v1/users")
+    public ResponseEntity<Page<UserService.UserResponse>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(userService.getAllUsers(page, size));
+    }
+
+    // ── ADMIN: COUNT ALL USERS ───────────────────────────────
+    @Operation(summary = "Đếm tổng số users đã đăng ký (Admin)")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/api/v1/users/count")
+    public ResponseEntity<Map<String, Long>> countUsers() {
+        return ResponseEntity.ok(Map.of("total", userService.getUsersCount()));
+    }
+
+    // ── ADMIN: UPDATE USER ROLE ──────────────────────────────
+    @Operation(summary = "Cập nhật role của user (Admin)")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/api/v1/users/{id}/role")
+    public ResponseEntity<Map<String, String>> updateUserRole(
+            @PathVariable UUID id,
+            @RequestBody Map<String, String> body) {
+        String roleStr = body.get("role");
+        return ResponseEntity.ok(Map.of("role", userService.updateUserRole(id, roleStr)));
+    }
+
+    // ── ADMIN: DELETE USER ──────────────────────────────────
+    @Operation(summary = "Xóa user (Admin)")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/api/v1/users/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -11,7 +11,7 @@ import {
 } from '../services/learningPathService';
 import { getLanguages } from '../services/languageService';
 import { getCourses } from '../services/courseService';
-import { isAdmin, hasRole } from '../utils/roleUtils';
+import { isAdmin } from '../utils/roleUtils';
 import { DEMO_LEARNING_PATHS, DEMO_LANGUAGES_FOR_PATH } from '../data/learningPathDemo';
 
 
@@ -81,7 +81,7 @@ const LearningPathList = () => {
   const [saving, setSaving] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
-  const canManage = isAdmin() || hasRole('TEACHER');
+  const canManage = isAdmin();
 
   const fetchAll = async () => {
     setLoading(true);

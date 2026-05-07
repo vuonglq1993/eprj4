@@ -33,9 +33,9 @@ public class ExerciseController {
         return ResponseEntity.ok(service.list(courseId, lessonId, p));
     }
 
-    @Operation(summary = "Thêm bài tập — Teacher / Admin")
+    @Operation(summary = "Thêm bài tập — Admin")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ExerciseResponse> create(
             @PathVariable UUID courseId, @PathVariable UUID lessonId,
@@ -43,9 +43,9 @@ public class ExerciseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(courseId, lessonId, req, p));
     }
 
-    @Operation(summary = "Cập nhật bài tập — Teacher / Admin")
+    @Operation(summary = "Cập nhật bài tập — Admin")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{exerciseId}")
     public ResponseEntity<ExerciseResponse> update(
             @PathVariable UUID courseId, @PathVariable UUID lessonId, @PathVariable UUID exerciseId,
@@ -53,9 +53,9 @@ public class ExerciseController {
         return ResponseEntity.ok(service.update(courseId, lessonId, exerciseId, req, p));
     }
 
-    @Operation(summary = "Xoá bài tập — Teacher / Admin")
+    @Operation(summary = "Xoá bài tập — Admin")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{exerciseId}")
     public ResponseEntity<Void> delete(
             @PathVariable UUID courseId, @PathVariable UUID lessonId, @PathVariable UUID exerciseId,

@@ -1,6 +1,7 @@
 package com.languageapp.language_learning_backend.repository;
 
 import com.languageapp.language_learning_backend.entity.User;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -16,6 +17,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true")
     long countActiveUsers();
+
+    @Query("SELECT COUNT(u) FROM User u")
+    long countAll();
+
+    Page<User> findAll(Pageable pageable);
 
     List<User> findByEmailContainingIgnoreCase(String email);
 

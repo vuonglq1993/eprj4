@@ -35,7 +35,7 @@ public class ProgressService {
     // ================= PLAN =================
     private Subscription.Plan getPlan(UserPrincipal p) {
         if (p == null) return Subscription.Plan.FREE;
-        if ("ADMIN".equals(p.getRole()) || "TEACHER".equals(p.getRole()))
+        if ("ADMIN".equals(p.getRole()))
             return Subscription.Plan.YEARLY;
 
         return userRepo.findById(p.getUserId())

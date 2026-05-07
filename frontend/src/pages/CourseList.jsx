@@ -4,7 +4,7 @@ import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
 import { FaBook, FaStar } from 'react-icons/fa6';
 import { getCourses, createCourse, updateCourse, publishCourse, deleteCourse } from '../services/courseService';
 import { getLanguages } from '../services/languageService';
-import { isAdmin, hasRole } from '../utils/roleUtils';
+import { isAdmin } from '../utils/roleUtils';
 import { CourseThumbnailPlaceholder } from '../components/courses/CourseThumbnailPlaceholder';
 
 const LEVELS = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
@@ -82,7 +82,7 @@ const CourseList = () => {
   const [thumbnailFieldError, setThumbnailFieldError] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const canManage = isAdmin() || hasRole('TEACHER');
+  const canManage = isAdmin();
 
 
   const fetchCourses = async (page = 0) => {

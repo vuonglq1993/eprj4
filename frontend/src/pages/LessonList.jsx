@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import '../styles/lessonlist.css';
 import { FiEdit2, FiTrash2, FiPlus, FiBookOpen, FiClock } from 'react-icons/fi';
 import { getLessons, createLesson, updateLesson, deleteLesson } from '../services/lessonService';
-import { isAdmin, hasRole } from '../utils/roleUtils';
+import { isAdmin } from '../utils/roleUtils';
 import CourseCombobox from '../components/common/CourseCombobox';
 
 const LESSON_TYPES = ['VOCABULARY', 'GRAMMAR', 'SPEAKING', 'READING', 'LISTENING', 'WRITING'];
@@ -38,7 +38,7 @@ const LessonList = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [saving, setSaving] = useState(false);
-  const canManage = isAdmin() || hasRole('TEACHER');
+  const canManage = isAdmin();
   const loading = lessonsLoading;
 
   useEffect(() => {

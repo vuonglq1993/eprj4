@@ -4,7 +4,7 @@ import { FiEdit2, FiTrash2, FiPlus, FiX, FiTarget } from 'react-icons/fi';
 import { getExercises, createExercise, updateExercise, deleteExercise } from '../services/exerciseService';
 import { getCourses } from '../services/courseService';
 import { getLessons } from '../services/lessonService';
-import { isAdmin, hasRole } from '../utils/roleUtils';
+import { isAdmin } from '../utils/roleUtils';
 import CourseCombobox from '../components/common/CourseCombobox';
 
 const EXERCISE_TYPES = [
@@ -79,7 +79,7 @@ function LessonCombobox({ courseId, value, onChange, disabled }) {
         if (found) setSelectedLabel(found.title);
       } catch {}
     })();
-  }, [value, options, courseId]);
+  }, [value, courseId]);
 
   useEffect(() => {
     if (!open || !courseId) return;
@@ -204,7 +204,7 @@ const ExerciseList = () => {
   const [selectedLesson, setSelectedLesson] = useState('');
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
-  const canManage = isAdmin() || hasRole('TEACHER');
+  const canManage = isAdmin();
   const loading = lessonsLoading;
 
   useEffect(() => {

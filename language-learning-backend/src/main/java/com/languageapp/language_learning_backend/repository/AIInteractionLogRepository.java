@@ -56,4 +56,6 @@ public interface AIInteractionLogRepository extends JpaRepository<AIInteractionL
             @Param("lessonId") UUID lessonId,
             @Param("type") InteractionType type,
             @Param("status") AIInteractionLog.AIStatus status);
+
+    void deleteByUserId(UUID userId);
 }
