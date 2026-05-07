@@ -137,6 +137,18 @@ public class StudyLogService {
         gameRepo.save(gp);
     }
 
+    @Transactional(readOnly = true)
+    public int getCurrentStreak(String userId) {
+        try {
+            UUID uid = UUID.fromString(userId);
+            return gameRepo.findByUserId(uid)
+                    .map(UserGameProfile::getCurrentStreak)
+                    .orElse(0);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     // ── DAILY REMINDER SCHEDULER ──────────────────────────────
     // Gọi bởi StudyReminderScheduler mỗi tối 20:00
     @Transactional(readOnly = true)

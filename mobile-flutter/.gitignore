@@ -89,3 +89,8 @@ keystore.properties  # nếu dùng signing key
 **/*.mocks.dart
 **/*.inject.summary
 **/*.inject.dart
+# Firebase sensitive files
+lib/firebase_options.dart
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+firebase.json
