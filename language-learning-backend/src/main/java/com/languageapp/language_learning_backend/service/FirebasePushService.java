@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -18,6 +19,7 @@ public class FirebasePushService {
 
     private final FirebaseFcmRepository fcmRepo;
     private final FirebaseNotificationRepository notifRepo;
+    private final BroadcastHistoryRepository historyRepo;
 
     // ══════════════════════════════════════════════
     // SAVE FCM TOKEN
@@ -138,5 +140,76 @@ public class FirebasePushService {
                 "Chúc mừng! Bạn đạt: " + badgeName,
                 data
         );
+    }
+
+    // ══════════════════════════════════════════════
+    // SEND TO USER (with String type)
+    // ══════════════════════════════════════════════
+    public void sendToUser(String userId, String title, String body, String type) {
+        Map<String, String> data = new HashMap<>();
+        data.put("type", type != null ? type : "SYSTEM");
+        sendToUser(userId, title, body, data);
+    }
+
+    // ══════════════════════════════════════════════
+    // BROADCAST — gửi trực tiếp đến TẤT CẢ token
+    // ══════════════════════════════════════════════
+    @Async
+    public CompletableFuture<Integer> sendToTopic(String title, String body, String type) {
+        int sent = 0;
+        try {
+            List<FcmTokenDocument> tokens = fcmRepo.getAllActiveTokens();
+
+            if (tokens.isEmpty()) {
+                log.warn("⚠️ No active FCM tokens found for broadcast");
+                return CompletableFuture.completedFuture(0);
+            }
+
+            Notification notification = Notification.builder()
+                    .setTitle(title)
+                    .setBody(body)
+                    .build();
+
+            Map<String, String> data = new HashMap<>();
+            data.put("type", type != null ? type : "SYSTEM");
+
+            for (FcmTokenDocument tokenDoc : tokens) {
+                Message message = Message.builder()
+                        .setToken(tokenDoc.getToken())
+                        .setNotification(notification)
+                        .putAllData(data)
+                        .build();
+
+                try {
+                    FirebaseMessaging.getInstance().send(message);
+                    sent++;
+                } catch (FirebaseMessagingException e) {
+                    if (e.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED) {
+                        fcmRepo.deleteByToken(tokenDoc.getToken());
+                        log.warn("🧹 Removed invalid token during broadcast: {}", tokenDoc.getToken());
+                    } else {
+                        log.error("❌ Broadcast send failed for token: {}", e.getMessage());
+                    }
+                }
+            }
+
+            log.info("✅ Broadcast sent to {}/{} devices", sent, tokens.size());
+
+        } catch (Exception e) {
+            log.error("❌ Broadcast error: {}", e.getMessage(), e);
+        }
+        return CompletableFuture.completedFuture(sent);
+    }
+
+    // ══════════════════════════════════════════════
+    // DELETE FCM TOKEN
+    // ══════════════════════════════════════════════
+    public void deleteToken(String userId, String deviceType) {
+        try {
+            fcmRepo.deleteByUserIdAndDeviceType(userId, deviceType);
+            log.info("✅ FCM token deleted for user {} (device: {})", userId, deviceType);
+        } catch (Exception e) {
+            log.error("❌ Failed to delete FCM token: {}", e.getMessage());
+        }
     }
 }

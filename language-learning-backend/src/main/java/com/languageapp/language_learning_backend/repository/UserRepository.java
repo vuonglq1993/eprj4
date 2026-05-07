@@ -17,6 +17,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true")
     long countActiveUsers();
 
+    List<User> findByEmailContainingIgnoreCase(String email);
+
     // Lấy user có streak hôm qua nhưng chưa học hôm nay → gửi reminder
     @Query("""
         SELECT u.email, u.firstName, COUNT(DISTINCT s.studyDate)

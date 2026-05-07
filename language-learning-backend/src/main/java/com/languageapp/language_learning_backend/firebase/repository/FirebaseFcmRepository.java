@@ -79,6 +79,17 @@ public class FirebaseFcmRepository {
     }
 
     // ══════════════════════════════════════════════
+    // DELETE BY USER ID + DEVICE TYPE
+    // ══════════════════════════════════════════════
+    public void deleteByUserIdAndDeviceType(String userId, String deviceType)
+            throws ExecutionException, InterruptedException {
+        Firestore db = FirestoreClient.getFirestore();
+        String docId = userId + "_" + deviceType;
+        db.collection(COLLECTION).document(docId).delete().get();
+        log.debug("🗑️ FCM token deleted: {}", docId);
+    }
+
+    // ══════════════════════════════════════════════
     // UPDATE LAST USED
     // ══════════════════════════════════════════════
     public void updateLastUsed(String userId, String deviceType)
@@ -88,6 +99,20 @@ public class FirebaseFcmRepository {
 
         db.collection(COLLECTION).document(docId)
                 .update("lastUsedAt", Instant.now().toString()).get();
+    }
+
+    // ══════════════════════════════════════════════
+    // GET ALL ACTIVE TOKENS
+    // ══════════════════════════════════════════════
+    public List<FcmTokenDocument> getAllActiveTokens()
+            throws ExecutionException, InterruptedException {
+        Firestore db = FirestoreClient.getFirestore();
+        QuerySnapshot qs = db.collection(COLLECTION)
+                .whereEqualTo("active", true)
+                .get().get();
+        return qs.getDocuments().stream()
+                .map(this::toDocument)
+                .collect(Collectors.toList());
     }
 
     // ══════════════════════════════════════════════

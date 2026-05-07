@@ -12,6 +12,8 @@ import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Map;
 
 @Tag(name = "01 · Users & Auth")
@@ -73,5 +75,15 @@ public class UserController {
             @AuthenticationPrincipal UserPrincipal p) {
         userService.changePassword(req, p);
         return ResponseEntity.ok(Map.of("message", "Password changed"));
+    }
+
+    // ── ADMIN: SEARCH USERS ──────────────────────────────────
+    @Operation(summary = "Tìm kiếm user theo email (Admin)")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/api/v1/users/search")
+    public ResponseEntity<List<UserService.UserSearchResult>> searchUsers(
+            @RequestParam String q) {
+        return ResponseEntity.ok(userService.searchUsers(q));
     }
 }
