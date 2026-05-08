@@ -77,7 +77,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       initialTime: TimeOfDay(hour: _reminderHour, minute: _reminderMinute),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.dark(
+          colorScheme: const ColorScheme.light(
             primary: AppColors.primary,
             onSurface: AppColors.textPrimary,
             surface: AppColors.surface,

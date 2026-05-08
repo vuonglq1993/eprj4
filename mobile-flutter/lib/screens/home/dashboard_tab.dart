@@ -656,7 +656,7 @@ class _DashboardTabState extends State<DashboardTab> {
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF1C1845), Color(0xFF141430)],
+            colors: [Color(0xFFEAE4FF), Color(0xFFF3F0FF)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -737,7 +737,7 @@ class _DashboardTabState extends State<DashboardTab> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
+                    color: AppColors.primary.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                         color: AppColors.primary.withValues(alpha: 0.2)),

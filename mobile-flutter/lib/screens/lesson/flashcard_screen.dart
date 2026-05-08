@@ -340,7 +340,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1C1845), Color(0xFF141430)],
+          colors: [Color(0xFFEAE4FF), Color(0xFFF3F0FF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
