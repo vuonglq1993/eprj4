@@ -27,4 +27,18 @@ public interface LearningPathRepository extends JpaRepository<LearningPath, UUID
 
     @Query("SELECT lp FROM LearningPath lp WHERE lp.createdBy.id = :userId")
     List<LearningPath> findByCreatedById(@Param("userId") UUID userId);
+
+    @Query("""
+        SELECT lp FROM LearningPath lp
+        JOIN FETCH lp.language l
+        LEFT JOIN FETCH lp.steps s
+        WHERE (:languageId  IS NULL OR l.id           = :languageId)
+          AND (:targetLevel IS NULL OR lp.targetLevel = :targetLevel)
+          AND (:kw          IS NULL OR LOWER(lp.title) LIKE LOWER(CONCAT('%',:kw,'%')))
+        ORDER BY lp.isOfficial DESC, lp.createdAt DESC
+        """)
+    Page<LearningPath> findAllForAdmin(@Param("languageId")  UUID languageId,
+                                      @Param("targetLevel") TargetLevel targetLevel,
+                                      @Param("kw")          String kw,
+                                      Pageable pageable);
 }

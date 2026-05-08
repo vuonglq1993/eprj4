@@ -29,7 +29,7 @@
               />
             <meta-data
                 android:name="com.google.android.gms.client_id"
-                android:value="579961382537-hfli270fo9pvfhb51d8fe1birvu1s113.apps.googleusercontent.com"/>
+                android:value="579961382537-ro38594hea9bb61hjimtdqd1t6q7jr7j.apps.googleusercontent.com"/>
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

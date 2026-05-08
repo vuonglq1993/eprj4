@@ -20,6 +20,7 @@ public class LearningPathResponse {
     private Boolean     isPublished;
     private Boolean     isOfficial;
     private Integer     totalSteps;
+    private Integer     totalCourses;  // alias cho totalSteps (để tương thích frontend)
     private String      createdByName;
     private Instant     createdAt;
 
