@@ -111,7 +111,8 @@ public class GoogleAuthService {
 
     private AuthResponse buildTokens(User user) {
         String at = jwtTokenProvider.generateAccessToken(
-                user.getId(), user.getEmail(), user.getRole().name());
+                user.getId(), user.getEmail(),
+                user.getRole() != null ? user.getRole().name() : "STUDENT");
 
         String rt = jwtTokenProvider.generateRefreshToken(user.getId());
 
@@ -125,7 +126,7 @@ public class GoogleAuthService {
                         .firstName(user.getFirstName())
                         .lastName(user.getLastName())
                         .avatarUrl(user.getAvatarUrl())
-                        .role(user.getRole().name())
+                        .role(user.getRole() != null ? user.getRole().name() : "STUDENT")
                         .build())
                 .build();
     }

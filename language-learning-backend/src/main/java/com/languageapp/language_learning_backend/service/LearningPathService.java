@@ -69,6 +69,24 @@ public class LearningPathService {
                 .last(result.isLast()).build();
     }
 
+    // ── LIST (Admin — all including unpublished) ────────────────
+    @Transactional(readOnly = true)
+    public PageResponse<LearningPathResponse> getAllForAdmin(UUID languageId, TargetLevel level,
+                                                            String kw, int page, int size) {
+        Page<LearningPath> result = pathRepo.findAllForAdmin(
+                languageId, level, kw, PageRequest.of(page, size));
+
+        List<LearningPathResponse> content = result.getContent().stream()
+                .map(lp -> toSummaryResponse(lp, null))
+                .collect(Collectors.toList());
+
+        return PageResponse.<LearningPathResponse>builder()
+                .content(content).page(page).size(size)
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .last(result.isLast()).build();
+    }
+
     // ── DETAIL ────────────────────────────────────────────────
     @Transactional(readOnly = true)
     public LearningPathResponse getDetail(UUID pathId, UserPrincipal p) {
@@ -103,6 +121,7 @@ public class LearningPathService {
                 .isPublished(lp.getIsPublished())
                 .isOfficial(lp.getIsOfficial())
                 .totalSteps(lp.getSteps().size())
+                .totalCourses(lp.getSteps().size())
                 .createdByName(lp.getCreatedBy() != null ? lp.getCreatedBy().getFullName() : "LinguaNext")
                 .createdAt(lp.getCreatedAt())
                 .progressPercent(p != null ? pct : null)
@@ -368,6 +387,7 @@ public class LearningPathService {
                 .isPublished(lp.getIsPublished())
                 .isOfficial(lp.getIsOfficial())
                 .totalSteps(lp.getSteps().size())
+                .totalCourses(lp.getSteps().size())
                 .createdAt(lp.getCreatedAt())
                 .progressPercent(p != null ? calcPathProgress(cp, lp) : null)
                 .enrollStatus(userPath != null ? userPath.getStatus().name() : null)
@@ -385,6 +405,7 @@ public class LearningPathService {
                 .estimatedHours(lp.getEstimatedHours())
                 .isPublished(lp.getIsPublished()).isOfficial(lp.getIsOfficial())
                 .totalSteps(lp.getSteps().size())
+                .totalCourses(lp.getSteps().size())
                 .createdByName(lp.getCreatedBy() != null ? lp.getCreatedBy().getFullName() : "LinguaNext")
                 .createdAt(lp.getCreatedAt()).steps(steps).build();
     }

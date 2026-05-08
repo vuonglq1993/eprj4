@@ -243,7 +243,7 @@ public class UserService {
                         u.getEmail(),
                         (u.getFirstName() != null ? u.getFirstName() : "")
                                 + " " + (u.getLastName() != null ? u.getLastName() : ""),
-                        u.getRole().name()
+                        u.getRole() != null ? u.getRole().name() : "STUDENT"
                 ))
                 .toList();
     }
@@ -333,8 +333,8 @@ public class UserService {
                 .firstName(u.getFirstName())
                 .lastName(u.getLastName())
                 .avatarUrl(u.getAvatarUrl())
-                .role(u.getRole().name())
-                .provider(u.getProvider().name())
+                .role(u.getRole() != null ? u.getRole().name() : "STUDENT")
+                .provider(u.getProvider() != null ? u.getProvider().name() : "LOCAL")
                 .emailVerified(u.getEmailVerified())
                 .isActive(u.getIsActive())
                 .createdAt(u.getCreatedAt())

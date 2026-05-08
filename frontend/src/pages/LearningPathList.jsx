@@ -81,9 +81,13 @@ const LearningPathList = () => {
   const [saving, setSaving] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const canManage = isAdmin();
 
-  const fetchAll = async () => {
+  const PAGE_SIZE = 12;
+
+  const fetchAll = async (page = 0) => {
     setLoading(true);
     setError('');
     setLoadWarning('');
@@ -92,8 +96,13 @@ const LearningPathList = () => {
     let pathsFromApi = false;
 
     try {
-      const pathsRes = await getLearningPaths();
-      pathList = normalizePathList(pathsRes.data);
+      const pathsRes = await getLearningPaths({ page, size: PAGE_SIZE });
+      const payload = pathsRes.data;
+      pathList = normalizePathList(payload);
+      if (payload && typeof payload.totalPages === 'number') {
+        setTotalPages(payload.totalPages);
+        setCurrentPage(payload.page ?? page);
+      }
       pathsFromApi = true;
     } catch {
       pathList = [...DEMO_LEARNING_PATHS];
@@ -131,7 +140,7 @@ const LearningPathList = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => { fetchAll(currentPage); }, []);
 
   const openCreate = () => {
     setEditId(null);
@@ -342,6 +351,30 @@ const LearningPathList = () => {
           </div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <nav className="d-flex justify-content-center mt-4" aria-label="Learning path pagination">
+          <ul className="pagination mb-0">
+            <li className={currentPage === 0 ? 'page-item disabled' : 'page-item'}>
+              <button className="page-link" type="button" onClick={() => { setCurrentPage(0); fetchAll(0); }} disabled={currentPage === 0}>«</button>
+            </li>
+            <li className={currentPage === 0 ? 'page-item disabled' : 'page-item'}>
+              <button className="page-link" type="button" onClick={() => { const p = currentPage - 1; setCurrentPage(p); fetchAll(p); }} disabled={currentPage === 0}>‹</button>
+            </li>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <li key={i} className={currentPage === i ? 'page-item active' : 'page-item'}>
+                <button className="page-link" type="button" onClick={() => { setCurrentPage(i); fetchAll(i); }}>{i + 1}</button>
+              </li>
+            ))}
+            <li className={currentPage >= totalPages - 1 ? 'page-item disabled' : 'page-item'}>
+              <button className="page-link" type="button" onClick={() => { const n2 = currentPage + 1; setCurrentPage(n2); fetchAll(n2); }} disabled={currentPage >= totalPages - 1}>›</button>
+            </li>
+            <li className={currentPage >= totalPages - 1 ? 'page-item disabled' : 'page-item'}>
+              <button className="page-link" type="button" onClick={() => { const last = totalPages - 1; setCurrentPage(last); fetchAll(last); }} disabled={currentPage >= totalPages - 1}>»</button>
+            </li>
+          </ul>
+        </nav>
+      )}
 
       {showModal && (
         <div className="modal-backdrop fade show d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
