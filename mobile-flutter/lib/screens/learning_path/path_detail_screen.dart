@@ -151,7 +151,7 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFFEAE4FF), Color(0xFFF3F0FF)],
+                            colors: [Color(0x1E64DCFF), Color(0x0A0077B6)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),

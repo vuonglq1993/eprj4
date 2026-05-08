@@ -139,7 +139,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       lastDate: DateTime(now.year - 5),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(
+          colorScheme: const ColorScheme.dark(
             primary: AppColors.primary,
             onSurface: AppColors.textPrimary,
             surface: AppColors.surface,
