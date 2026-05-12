@@ -99,3 +99,184 @@
   background-color: #4f46e5;
   color: white;
 }
+
+/* ── Course Combobox ── */
+.course-combobox {
+  position: relative;
+  min-width: 280px;
+  max-width: 360px;
+  font-family: 'Public Sans', sans-serif;
+}
+
+.course-combobox__control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  min-height: 40px;
+}
+
+.course-combobox__control:hover {
+  border-color: #94a3b8;
+}
+
+.course-combobox__control:focus-within,
+.course-combobox__control--open {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.course-combobox__control.disabled {
+  background: #f8fafc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.course-combobox__selected-text {
+  flex: 1;
+  font-size: 0.875rem;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.course-combobox__selected-text.placeholder {
+  color: #94a3b8;
+}
+
+.course-combobox__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.course-combobox__clear {
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  color: #94a3b8;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.course-combobox__clear:hover {
+  color: #ef4444;
+}
+
+.course-combobox__arrow {
+  display: flex;
+  align-items: center;
+  color: #94a3b8;
+}
+
+.course-combobox__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.course-combobox__search-wrapper {
+  position: relative;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.course-combobox__search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.course-combobox__search {
+  width: 100%;
+  padding: 0.6rem 0.75rem 0.6rem 2.25rem;
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  color: #1e293b;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.course-combobox__search::placeholder {
+  color: #94a3b8;
+}
+
+.course-combobox__options {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.course-combobox__message {
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.course-combobox__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.875rem;
+  cursor: pointer;
+  transition: background 0.1s;
+  gap: 8px;
+}
+
+.course-combobox__option:hover {
+  background: #f8fafc;
+}
+
+.course-combobox__option.selected {
+  background: #eef2ff;
+}
+
+.course-combobox__option-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e293b;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.course-combobox__option-meta {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+/* Scrollbar for dropdown */
+.course-combobox__options::-webkit-scrollbar {
+  width: 5px;
+}
+
+.course-combobox__options::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+.course-combobox__options::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 4px;
+}

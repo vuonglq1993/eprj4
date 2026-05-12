@@ -45,8 +45,8 @@ public class CourseTopicController {
         return ResponseEntity.ok(topics);
     }
 
-    @Operation(summary = "Gán topic cho khoá học — Teacher / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @Operation(summary = "Gán topic cho khoá học — Admin")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{topicId}")
     public ResponseEntity<Void> addTopic(
             @PathVariable UUID courseId, @PathVariable UUID topicId,
@@ -61,8 +61,8 @@ public class CourseTopicController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Bỏ topic khỏi khoá học — Teacher / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @Operation(summary = "Bỏ topic khỏi khoá học — Admin")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{topicId}")
     public ResponseEntity<Void> removeTopic(
             @PathVariable UUID courseId, @PathVariable UUID topicId,

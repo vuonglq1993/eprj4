@@ -34,15 +34,29 @@ public class LearningPathController {
             @RequestParam(required = false) String      kw,
             @RequestParam(defaultValue = "0")  int page,
             @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal UserPrincipal p) {
-        return ResponseEntity.ok(service.getPublished(languageId, level, kw, page, size, p));
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(service.getPublished(languageId, level, kw, page, size, principal));
+    }
+
+    // ── ADMIN ────────────────────────────────────────────────
+
+    @Operation(summary = "Danh sách tất cả lộ trình cho Admin (bao gồm unpublished)")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/all")
+    public ResponseEntity<PageResponse<LearningPathResponse>> getAllForAdmin(
+            @RequestParam(required = false) UUID        languageId,
+            @RequestParam(required = false) TargetLevel level,
+            @RequestParam(required = false) String      kw,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(service.getAllForAdmin(languageId, level, kw, page, size));
     }
 
     @Operation(summary = "Chi tiết lộ trình + các bước khoá học")
     @GetMapping("/{id}")
     public ResponseEntity<LearningPathResponse> getDetail(
-            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal p) {
-        return ResponseEntity.ok(service.getDetail(id, p));
+            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(service.getDetail(id, principal));
     }
 
     // ── AUTHENTICATED ─────────────────────────────────────────
@@ -51,16 +65,16 @@ public class LearningPathController {
     @SecurityRequirement(name = "bearerAuth") @PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/enroll")
     public ResponseEntity<Map<String, Object>> enroll(
-            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal p) {
-        return ResponseEntity.ok(service.enroll(id, p));
+            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(service.enroll(id, principal));
     }
 
     @Operation(summary = "Huỷ đăng ký lộ trình học")
     @SecurityRequirement(name = "bearerAuth") @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}/enroll")
     public ResponseEntity<Void> unenroll(
-            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal p) {
-        service.unenroll(id, p);
+            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal principal) {
+        service.unenroll(id, principal);
         return ResponseEntity.noContent().build();
     }
 
@@ -68,44 +82,44 @@ public class LearningPathController {
     @SecurityRequirement(name = "bearerAuth") @PreAuthorize("isAuthenticated()")
     @GetMapping("/my")
     public ResponseEntity<List<LearningPathResponse>> getMyPaths(
-            @AuthenticationPrincipal UserPrincipal p) {
-        return ResponseEntity.ok(service.getMyPaths(p));
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(service.getMyPaths(principal));
     }
 
-    // ── ADMIN / TEACHER ───────────────────────────────────────
+    // ── ADMIN ───────────────────────────────────────
 
-    @Operation(summary = "Tạo lộ trình mới — Teacher / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @Operation(summary = "Tạo lộ trình mới — Admin")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<LearningPathResponse> create(
             @Valid @RequestBody LearningPathRequest req,
-            @AuthenticationPrincipal UserPrincipal p) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(req, p));
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(req, principal));
     }
 
     @Operation(summary = "Cập nhật lộ trình — chủ sở hữu / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<LearningPathResponse> update(
             @PathVariable UUID id, @Valid @RequestBody LearningPathRequest req,
-            @AuthenticationPrincipal UserPrincipal p) {
-        return ResponseEntity.ok(service.update(id, req, p));
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(service.update(id, req, principal));
     }
 
     @Operation(summary = "Publish / Unpublish lộ trình")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/publish")
     public ResponseEntity<LearningPathResponse> togglePublish(
-            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal p) {
-        return ResponseEntity.ok(service.togglePublish(id, p));
+            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(service.togglePublish(id, principal));
     }
 
     @Operation(summary = "Xoá lộ trình — chủ sở hữu / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal p) {
-        service.delete(id, p);
+            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal principal) {
+        service.delete(id, principal);
         return ResponseEntity.noContent().build();
     }
 }

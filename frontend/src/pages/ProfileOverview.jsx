@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { MdHelpOutline, MdPeople, MdSettings, MdExpandMore } from 'react-icons/md'
 import {
   LineChart,
@@ -12,6 +13,8 @@ import {
   Bar,
   Cell,
 } from 'recharts'
+import { useAuth } from '../contexts/AuthContext'
+import { getProfile } from '../services/userService'
 import '../styles/profile-overview.css'
 
 const interactionData = [
@@ -84,9 +87,20 @@ const hashtagSets = [
 ]
 
 function ProfileOverview() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [profile, setProfile] = useState(null)
+  const [loadingProfile, setLoadingProfile] = useState(true)
   const [bestTimeView, setBestTimeView] = useState('days')
   const [ageRangeFilter, setAgeRangeFilter] = useState('all')
   const [expandedSets, setExpandedSets] = useState(new Set(['sport', 'animals', 'beauty']))
+
+  useEffect(() => {
+    getProfile()
+      .then((res) => setProfile(res.data))
+      .catch(() => {})
+      .finally(() => setLoadingProfile(false))
+  }, [])
 
   const toggleSet = (id) => {
     setExpandedSets((prev) => {
@@ -96,6 +110,18 @@ function ProfileOverview() {
       return next
     })
   }
+
+  // Build display name from real user data
+  const displayName = profile
+    ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.email || 'User'
+    : user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User' : 'User'
+  const initials = displayName
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'U'
+  const avatarSrc = profile?.avatarUrl || user?.avatarUrl || null
 
   return (
     <div className="profile-overview">
@@ -326,8 +352,14 @@ function ProfileOverview() {
               </div>
             </header>
             <div className="profile-sidebar-card__avatar-wrap">
-              <div className="profile-sidebar-card__avatar">A</div>
-              <div className="profile-sidebar-card__name">Alice_turner</div>
+              <div className="profile-sidebar-card__avatar">
+                {avatarSrc ? (
+                  <img src={avatarSrc} alt={displayName} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                  initials
+                )}
+              </div>
+              <div className="profile-sidebar-card__name">{displayName}</div>
             </div>
             <div className="profile-sidebar-card__vip">
               <div className="profile-sidebar-card__vip-label">VIP Training Course</div>

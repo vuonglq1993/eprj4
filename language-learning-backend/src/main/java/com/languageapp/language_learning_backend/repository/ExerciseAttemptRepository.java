@@ -4,11 +4,15 @@ import com.languageapp.language_learning_backend.entity.ExerciseAttempt;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.UUID;
 
+@Repository
 public interface ExerciseAttemptRepository extends JpaRepository<ExerciseAttempt, UUID> {
+
+    void deleteByUserId(UUID userId);
 
     // ✅ Lấy danh sách bài làm sai
     @Query("""

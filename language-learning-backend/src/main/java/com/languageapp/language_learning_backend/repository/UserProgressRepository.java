@@ -19,6 +19,8 @@ public interface UserProgressRepository extends JpaRepository<UserProgress, UUID
 
     List<UserProgress> findByUserId(UUID userId);
 
+    void deleteByUserId(UUID userId);
+
     @Query("SELECT COUNT(p) FROM UserProgress p WHERE p.user.id=:uid AND p.course.id=:cid AND p.status=:s")
     long countCompleted(@Param("uid") UUID userId, @Param("cid") UUID courseId, @Param("s") ProgressStatus s);
 

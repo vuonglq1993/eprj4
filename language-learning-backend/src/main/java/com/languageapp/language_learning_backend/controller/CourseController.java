@@ -31,48 +31,48 @@ public class CourseController {
             @RequestParam(required=false) String kw,
             @RequestParam(defaultValue="0")  int page,
             @RequestParam(defaultValue="12") int size,
-            @AuthenticationPrincipal UserPrincipal p) {
-        return ResponseEntity.ok(service.getPublished(languageId, level, kw, page, size, p));
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(service.getPublished(languageId, level, kw, page, size, principal));
     }
 
     @Operation(summary = "Chi tiết khoá học + outline bài học")
     @GetMapping("/{id}")
     public ResponseEntity<CourseDetailResponse> getDetail(
-            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal p) {
-        return ResponseEntity.ok(service.getDetail(id, p));
+            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(service.getDetail(id, principal));
     }
 
-    @Operation(summary = "Tạo khoá học — Teacher / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @Operation(summary = "Tạo khoá học — Admin")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<CourseResponse> create(
-            @Valid @RequestBody CourseRequest req, @AuthenticationPrincipal UserPrincipal p) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(req, p));
+            @Valid @RequestBody CourseRequest req, @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(req, principal));
     }
 
     @Operation(summary = "Cập nhật khoá học — chủ sở hữu / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<CourseResponse> update(
             @PathVariable UUID id, @Valid @RequestBody CourseRequest req,
-            @AuthenticationPrincipal UserPrincipal p) {
-        return ResponseEntity.ok(service.update(id, req, p));
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(service.update(id, req, principal));
     }
 
     @Operation(summary = "Publish / Unpublish khoá học")
-    @SecurityRequirement(name = "bearerAuth")@PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth")@PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/publish")
     public ResponseEntity<CourseResponse> togglePublish(
-            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal p) {
-        return ResponseEntity.ok(service.togglePublish(id, p));
+            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(service.togglePublish(id, principal));
     }
 
     @Operation(summary = "Xoá khoá học — chủ sở hữu / Admin")
-    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @SecurityRequirement(name = "bearerAuth") @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal p) {
-        service.delete(id, p);
+            @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal principal) {
+        service.delete(id, principal);
         return ResponseEntity.noContent().build();
     }
 }

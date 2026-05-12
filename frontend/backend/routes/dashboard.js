@@ -33,7 +33,7 @@ router.get('/', authenticate, (req, res) => {
     return s;
   })();
 
-  if (role === 'ADMIN' || role === 'TEACHER') {
+  if (role === 'ADMIN') {
     res.json({
       totalUsers: store.users.length,
       totalCourses: store.courses.length,

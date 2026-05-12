@@ -1,6 +1,33 @@
-const stats = [{ label: 'Users', value: '35k', subtitle: 'Page views per minute' }]
+function StatsSummary({ data } = {}) {
+  const fmtNum = (n) => {
+    if (n == null) return '—';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+    return String(n);
+  };
 
-function StatsSummary() {
+  const stats = [
+    {
+      label: 'Users',
+      value: fmtNum(data?.totalUsers),
+      subtitle: 'Total registered users',
+    },
+    {
+      label: 'Courses',
+      value: data?.totalCourses ?? '—',
+      subtitle: 'Available courses',
+    },
+    {
+      label: 'Active Sessions',
+      value: data?.activeSessions ?? '—',
+      subtitle: 'Currently online',
+    },
+    {
+      label: 'Revenue',
+      value: data?.totalRevenue != null ? `$${data.totalRevenue.toFixed(1)}` : '—',
+      subtitle: 'Total earnings',
+    },
+  ]
+
   return (
     <section className="dashboard-section">
       <div className="dashboard-grid dashboard-grid--stats">
@@ -19,4 +46,3 @@ function StatsSummary() {
 }
 
 export default StatsSummary
-

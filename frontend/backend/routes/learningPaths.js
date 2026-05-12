@@ -5,7 +5,7 @@ const store = require('../data/store');
 
 const router = express.Router();
 
-const MANAGER_ROLES = ['ADMIN', 'TEACHER'];
+const MANAGER_ROLES = ['ADMIN'];
 
 // GET /learning-paths - Public
 router.get('/', (req, res) => {

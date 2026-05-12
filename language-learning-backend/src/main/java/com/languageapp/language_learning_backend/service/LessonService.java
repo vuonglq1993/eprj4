@@ -25,7 +25,7 @@ public class LessonService {
 
     private Subscription.Plan getPlan(UserPrincipal p) {
         if (p == null) return Subscription.Plan.FREE;
-        if ("ADMIN".equals(p.getRole()) || "TEACHER".equals(p.getRole())) return Subscription.Plan.YEARLY;
+        if ("ADMIN".equals(p.getRole())) return Subscription.Plan.YEARLY;
         return userRepo.findById(p.getUserId())
                 .map(u -> u.getSubscription() != null ? u.getSubscription().getPlan() : Subscription.Plan.FREE)
                 .orElse(Subscription.Plan.FREE);
