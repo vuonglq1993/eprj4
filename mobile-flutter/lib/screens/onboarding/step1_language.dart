@@ -25,7 +25,7 @@ class Step1Language extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          OnboardingHeader(step: 1, total: 4, onBack: null),
+          OnboardingHeader(step: 1, total: 3, onBack: null),
 
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),

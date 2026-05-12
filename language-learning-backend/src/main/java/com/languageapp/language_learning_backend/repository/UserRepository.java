@@ -13,6 +13,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByEmail(String email);
     boolean        existsByEmail(String email);
+    boolean        existsByPhone(String phone);
     Optional<User> findByProviderAndProviderId(User.AuthProvider provider, String providerId);
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true")

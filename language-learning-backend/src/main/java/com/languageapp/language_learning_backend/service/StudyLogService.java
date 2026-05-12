@@ -107,8 +107,7 @@ public class StudyLogService {
                         UserGameProfile.builder().user(user).build()
                 ));
 
-        // 👉 timezone (fix cứng VN, muốn xịn thì lưu DB)
-        ZoneId zone = ZoneId.of("Asia/Ho_Chi_Minh");
+        ZoneId zone = parseUserZone(user.getTimezone());
 
         Instant now = Instant.now();
 
@@ -187,6 +186,15 @@ public class StudyLogService {
         }
 
         return result;
+    }
+
+    private ZoneId parseUserZone(String timezone) {
+        if (timezone == null || timezone.isBlank()) return ZoneId.of("Asia/Ho_Chi_Minh");
+        try {
+            return ZoneId.of(timezone);
+        } catch (Exception e) {
+            return ZoneId.of("Asia/Ho_Chi_Minh");
+        }
     }
 }
 

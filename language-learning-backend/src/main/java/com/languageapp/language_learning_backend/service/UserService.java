@@ -111,6 +111,14 @@ public class UserService {
         log.warn("Logout handled on client side (no Redis)");
     }
 
+    public boolean existsByEmail(String email) {
+        return userRepo.existsByEmail(email);
+    }
+
+    public boolean existsByPhone(String phone) {
+        return userRepo.existsByPhone(phone);
+    }
+
     // ── VERIFY EMAIL ──────────────────────────────────────────
     @Transactional
     public void verifyEmail(String email, String otp) {

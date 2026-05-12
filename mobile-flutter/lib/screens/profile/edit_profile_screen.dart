@@ -521,7 +521,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            const SizedBox(
+            SizedBox(
               width: 110,
               child: Text(context.l10n.dateOfBirth,
                   style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),

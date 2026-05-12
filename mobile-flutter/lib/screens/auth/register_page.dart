@@ -59,7 +59,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _checkEmail() async {
     final email = _email.text.trim();
-    if (!RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,}$').hasMatch(email)) return;
+    if (!RegExp(r'^[\w\-\.]{2,}@([\w\-]+\.)+[\w\-]{2,}$').hasMatch(email)) {
+      _emailKey.currentState?.validate();
+      return;
+    }
     setState(() => _emailStatus = _CheckStatus.checking);
     final exists = await ApiService.checkEmail(email);
     if (!mounted) return;
@@ -77,7 +80,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _checkPhone() async {
     final phone = _phone.text.trim();
-    if (!RegExp(r'^[0-9]{9,15}$').hasMatch(phone)) return;
+    if (!RegExp(r'^[0-9]{9,15}$').hasMatch(phone)) {
+      _phoneKey.currentState?.validate();
+      return;
+    }
     setState(() => _phoneStatus = _CheckStatus.checking);
     final exists = await ApiService.checkPhone(phone);
     if (!mounted) return;
@@ -291,7 +297,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   onChanged: (_) => setState(() => _emailStatus = _CheckStatus.idle),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return context.l10n.enterEmail;
-                    if (!RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,}$').hasMatch(v.trim())) {
+                    if (!RegExp(r'^[\w\-\.]{2,}@([\w\-]+\.)+[\w\-]{2,}$').hasMatch(v.trim())) {
                       return context.l10n.invalidEmail;
                     }
                     if (_emailStatus == _CheckStatus.taken) return context.l10n.emailAlreadyRegistered;

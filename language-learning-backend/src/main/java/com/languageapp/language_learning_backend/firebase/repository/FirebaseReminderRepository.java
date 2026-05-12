@@ -35,6 +35,47 @@ public class FirebaseReminderRepository {
         return Optional.of(toDocument(doc));
     }
 
+    private static final int BATCH_SIZE = 500;
+
+    /**
+     * Paginated fetch — processes up to BATCH_SIZE docs per call.
+     * Pass null as lastDoc for the first page, then pass the last
+     * DocumentSnapshot returned to get the next page.
+     * Returns empty list when no more results.
+     */
+    public List<ReminderSettingsDocument> findAllEnabledBatch(DocumentSnapshot lastDoc)
+            throws ExecutionException, InterruptedException {
+        Firestore db = FirestoreClient.getFirestore();
+        Query query = db.collection(COLLECTION)
+                .whereEqualTo("enabled", true)
+                .orderBy(FieldPath.documentId())
+                .limit(BATCH_SIZE);
+        if (lastDoc != null) {
+            query = query.startAfter(lastDoc);
+        }
+        return query.get().get().getDocuments().stream()
+                .map(this::toDocument)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns the raw DocumentSnapshot for the last item in a batch,
+     * used as cursor for the next page.
+     */
+    public DocumentSnapshot findAllEnabledBatchCursor(DocumentSnapshot lastDoc)
+            throws ExecutionException, InterruptedException {
+        Firestore db = FirestoreClient.getFirestore();
+        Query query = db.collection(COLLECTION)
+                .whereEqualTo("enabled", true)
+                .orderBy(FieldPath.documentId())
+                .limit(BATCH_SIZE);
+        if (lastDoc != null) {
+            query = query.startAfter(lastDoc);
+        }
+        List<QueryDocumentSnapshot> docs = query.get().get().getDocuments();
+        return docs.isEmpty() ? null : docs.get(docs.size() - 1);
+    }
+
     public List<ReminderSettingsDocument> findAllEnabled()
             throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
