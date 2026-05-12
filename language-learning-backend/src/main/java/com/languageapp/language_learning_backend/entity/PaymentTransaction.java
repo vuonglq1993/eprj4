@@ -8,6 +8,7 @@ import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -53,7 +54,7 @@ public class PaymentTransaction {
     @Column(nullable = false, length = 20)
     private Plan plan;
 
-    private LocalDateTime paidAt;
+    private Instant paidAt;
 
     @Column(columnDefinition = "TEXT")
     private String rawWebhook;      // raw JSON từ webhook — để debug
@@ -61,7 +62,9 @@ public class PaymentTransaction {
     @Column(columnDefinition = "TEXT")
     private String failureReason;
 
-    @CreationTimestamp private LocalDateTime createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
 
     public enum Gateway  { MOMO, ZALOPAY, VNPAY, PAYPAL, STRIPE }
     public enum TxStatus { PENDING, SUCCESS, FAILED, REFUNDED, CANCELLED }

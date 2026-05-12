@@ -40,9 +40,7 @@ public class VNPayController {
     public ResponseEntity<VNPayReturnResponse> handleReturn(HttpServletRequest request) {
         log.info("=== [VNPay] RETURN CALLBACK ===");
         Map<String, String> params = extractParams(request);
-        log.info("[VNPay] Return params: {}", params);
 
-        // Kiểm tra chữ ký
         if (!vnPayService.verifyReturn(params)) {
             return ResponseEntity.ok(VNPayReturnResponse.builder()
                     .code("97")
@@ -51,13 +49,12 @@ public class VNPayController {
                     .build());
         }
 
-        boolean success      = vnPayService.isSuccess(params);
-        String  txnRef       = vnPayService.getTxnRef(params);
-        String  transactionNo = vnPayService.getTransactionNo(params);
-        String  amount       = vnPayService.getAmountDisplay(params);
+        vnPayService.processReturn(params); // thêm dòng này
 
-        log.info("[VNPay] Return - txnRef={}, success={}, transNo={}, amount={}",
-                txnRef, success, transactionNo, amount);
+        boolean success = vnPayService.isSuccess(params);
+        String txnRef = vnPayService.getTxnRef(params);
+        String transactionNo = vnPayService.getTransactionNo(params);
+        String amount = vnPayService.getAmountDisplay(params);
 
         return ResponseEntity.ok(VNPayReturnResponse.builder()
                 .code(success ? "00" : params.get("vnp_ResponseCode"))

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 public class PaymentService {
 
     private final PayPalClient                 paypal;
+    private final VNPayService                 vnPayService;
     private final PaymentTransactionRepository txRepo;
     private final UserRepository               userRepo;
     private final SubscriptionService          subService;
@@ -59,7 +61,17 @@ public class PaymentService {
 
         return switch (req.getGateway()) {
             case PAYPAL -> createPayPalPayment(user, plan, req.getPlan());
-            default     -> throw new BadRequestException("Gateway not supported: " + req.getGateway());
+
+            case VNPAY -> vnPayService.createVNPayPayment(
+                    user,
+                    plan,
+                    req.getPlan(),
+                    getClientIp(httpReq)
+            );
+
+            default -> throw new BadRequestException(
+                    "Gateway not supported: " + req.getGateway()
+            );
         };
     }
 
@@ -114,7 +126,7 @@ public class PaymentService {
         var resp = paypal.captureOrderDetail(orderId);
         if ("COMPLETED".equals(resp.status())) {
             tx.setStatus(TxStatus.SUCCESS);
-            tx.setPaidAt(LocalDateTime.now());
+            tx.setPaidAt(Instant.now());
             txRepo.save(tx);
             SubscriptionPlan plan = planService.getByName(tx.getPlan().name());
             subService.activate(tx.getUser(), plan);
@@ -158,7 +170,7 @@ public class PaymentService {
 
             if ("COMPLETED".equals(resp.status())) {
                 tx.setStatus(TxStatus.SUCCESS);
-                tx.setPaidAt(LocalDateTime.now());
+                tx.setPaidAt(Instant.now());
                 txRepo.save(tx);
 
                 SubscriptionPlan plan = planService.getByName(tx.getPlan().name());
@@ -183,7 +195,7 @@ public class PaymentService {
         if (!tx.getUser().getId().equals(p.getUserId())) {
             throw new BadRequestException("Access denied");
         }
-        
+
 
         // PayPal PENDING → check PayPal API và auto-capture nếu APPROVED
         if (tx.getGateway() == Gateway.PAYPAL && tx.getStatus() == TxStatus.PENDING
@@ -195,7 +207,7 @@ public class PaymentService {
                     var capture = paypal.captureOrderDetail(tx.getGatewayRef());
                     if ("COMPLETED".equals(capture.status())) {
                         tx.setStatus(TxStatus.SUCCESS);
-                        tx.setPaidAt(LocalDateTime.now());
+                        tx.setPaidAt(Instant.now());
                         txRepo.save(tx);
                         SubscriptionPlan plan = planService.getByName(tx.getPlan().name());
                         subService.activate(tx.getUser(), plan);
@@ -207,12 +219,12 @@ public class PaymentService {
             } else if ("COMPLETED".equals(paypalStatus)) {
                 // Đã capture rồi nhưng DB chưa update (edge case)
                 tx.setStatus(TxStatus.SUCCESS);
-                tx.setPaidAt(LocalDateTime.now());
+                tx.setPaidAt(Instant.now());
                 txRepo.save(tx);
                 SubscriptionPlan plan = planService.getByName(tx.getPlan().name());
                 subService.activate(tx.getUser(), plan);
             }
-        
+
 
         return Map.of("status", tx.getStatus().name(), "gateway", tx.getGateway().name());
     }
