@@ -156,8 +156,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         children: [
           Row(
             children: [
-              const Text('Gói hiện tại',
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              Text(context.l10n.currentPlan,
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -166,7 +166,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  isActive ? 'Đang hoạt động' : s.status,
+                  isActive ? context.l10n.activeStatus : s.status,
                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
@@ -176,9 +176,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           Text(planLabel,
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.primary)),
           const SizedBox(height: 16),
-          _infoRow('Bắt đầu', startStr),
-          _infoRow('Gia hạn tiếp', endStr),
-          _infoRow('Phương thức', gwLabel),
+          _infoRow(context.l10n.startDate, startStr),
+          _infoRow(context.l10n.renewalDate, endStr),
+          _infoRow(context.l10n.paymentMethod, gwLabel),
           if (s.autoRenew && s.endDate != null) ...[
             const SizedBox(height: 10),
             Container(
@@ -226,8 +226,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           children: [
             Row(
               children: [
-                const Text('Nâng lên Yearly',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.warning)),
+                Text(context.l10n.upgradeToYearly,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.warning)),
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -280,8 +280,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('LỊCH SỬ THANH TOÁN',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
+        Text(context.l10n.paymentHistory.toUpperCase(),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
                 color: AppColors.textSecondary, letterSpacing: 0.8)),
         const SizedBox(height: 10),
         ...successful.map((tx) => _historyItem(tx)),

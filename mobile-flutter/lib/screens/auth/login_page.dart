@@ -4,6 +4,7 @@ import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../core/ai_button_controller.dart';
 import '../../services/api_service.dart';
+import '../../services/notification_service.dart';
 import '../onboarding/onboarding_flow.dart';
 import '../home/home_placeholder.dart';
 import 'register_page.dart';
@@ -56,6 +57,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = false);
 
     AiButtonController.onLogin();
+    NotificationService.instance.registerToken();
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
@@ -323,6 +325,7 @@ Future<void> _signInWithGoogle() async {
       if (!mounted) return;
 
       AiButtonController.onLogin();
+      NotificationService.instance.registerToken();
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(

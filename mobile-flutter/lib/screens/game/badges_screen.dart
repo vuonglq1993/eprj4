@@ -230,12 +230,12 @@ class _BadgesScreenState extends State<BadgesScreen> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: isEarned ? AppColors.textPrimary : AppColors.textHint,
+                color: isEarned ? AppColors.textPrimary : AppColors.textMuted,
               ),
             ),
             if (!isEarned) ...[
               const SizedBox(height: 4),
-              const Icon(Icons.lock_rounded, size: 12, color: AppColors.textHint),
+              const Icon(Icons.lock_rounded, size: 12, color: AppColors.textMuted),
             ],
           ],
         ),
@@ -278,7 +278,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
                 isEarned ? context.l10n.achievedBadge : context.l10n.lockedBadge,
                 style: TextStyle(
                   fontSize: 13, fontWeight: FontWeight.w600,
-                  color: isEarned ? AppColors.success : AppColors.textHint,
+                  color: isEarned ? AppColors.success : AppColors.textMuted,
                 ),
               ),
             ),

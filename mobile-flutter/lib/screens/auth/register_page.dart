@@ -4,6 +4,7 @@ import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../core/ai_button_controller.dart';
 import '../../services/api_service.dart';
+import '../../services/notification_service.dart';
 import '../home/home_placeholder.dart';
 import '../onboarding/onboarding_flow.dart';
 import 'login_page.dart';
@@ -179,6 +180,7 @@ class _RegisterPageState extends State<RegisterPage> {
     // Tokens are already saved by register (201 response)
     if (!mounted) return;
     AiButtonController.onLogin();
+    NotificationService.instance.registerToken();
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const OnboardingFlow()),
@@ -299,9 +301,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return context.l10n.enterPhone;
                     if (!RegExp(r'^[0-9]{9,15}$').hasMatch(v.trim())) {
-                      return 'Số điện thoại không hợp lệ';
+                      return context.l10n.invalidPhone;
                     }
-                    if (_phoneStatus == _CheckStatus.taken) return 'Số điện thoại đã được dùng';
+                    if (_phoneStatus == _CheckStatus.taken) return context.l10n.phoneAlreadyRegistered;
                     return null;
                   },
                 ),
@@ -323,7 +325,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   validator: (v) {
                     if (v == null || v.isEmpty) return context.l10n.enterPassword;
-                    if (v.length < 8) return 'Ít nhất 8 ký tự';
+                    if (v.length < 8) return context.l10n.minEightChars;
                     if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)').hasMatch(v)) {
                       return context.l10n.passwordNeedsLetterNumber;
                     }
@@ -348,7 +350,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   validator: (v) {
                     if (v == null || v.isEmpty) return context.l10n.confirmPassword;
-                    if (v != _password.text) return 'Mật khẩu không khớp';
+                    if (v != _password.text) return context.l10n.passwordsDoNotMatch;
                     return null;
                   },
                 ),

@@ -206,8 +206,8 @@ class _ProfileTabState extends State<ProfileTab> {
                       border: Border.all(color: AppColors.border),
                       boxShadow: AppShadows.subtle,
                     ),
-                    child: const Text('Sửa hồ sơ',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                    child: Text(context.l10n.editProfile,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary)),
                   ),
                 ),
               ),
@@ -236,7 +236,7 @@ class _ProfileTabState extends State<ProfileTab> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (_isPremium)
-                _badge('Pro Member', AppGradients.primaryIcon, Colors.white),
+                _badge(context.l10n.proMember, AppGradients.primaryIcon, Colors.white),
               if (_isPremium) const SizedBox(width: 8),
               _badgeSolid('Level $level', AppColors.warning.withValues(alpha: 0.2),
                   AppColors.warning),
@@ -278,7 +278,7 @@ class _ProfileTabState extends State<ProfileTab> {
 
     return Row(
       children: [
-        _statBox('$_totalDays', 'Ngày học', null),
+        _statBox('$_totalDays', context.l10n.studyDays, null),
         _divider(),
         _statBox('🔥 $_currentStreak', 'Streak', null),
         _divider(),
@@ -316,20 +316,20 @@ class _ProfileTabState extends State<ProfileTab> {
       child: Column(
         children: [
           _menuItem(Icons.person_rounded, const Color(0xFF7C5CBF),
-              'Chỉnh sửa hồ sơ', null,
+              context.l10n.editProfile, null,
               () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditProfileScreen(user: _user ?? {}))).then((updated) { if (updated == true) _load(); })),
           _menuDivider(),
           _menuItem(Icons.route_rounded, AppColors.primary,
-              'Lộ trình & ngôn ngữ', null,
+              context.l10n.pathAndLanguage, null,
               () => _push(const StreakScreen())),
           _menuDivider(),
           _menuItem(Icons.star_rounded, AppColors.warning,
-              'Huy hiệu & thành tích', '$_badgeCount huy hiệu',
+              context.l10n.badgesAchievements, '${context.l10n.badges}: $_badgeCount',
               () => _push(const BadgesScreen())),
           _menuDivider(),
           _menuItem(Icons.card_membership_rounded, const Color(0xFF2563EB),
-              'Subscription & Billing',
-              _isPremium ? _plan.replaceAll('_', ' ').toLowerCase().capitalize() : 'Free',
+              context.l10n.subscriptionBilling,
+              _isPremium ? _plan.replaceAll('_', ' ').toLowerCase().capitalize() : context.l10n.free,
               () => _push(_isPremium ? const SubscriptionScreen() : const PlanSelectionScreen())),
         ],
       ),

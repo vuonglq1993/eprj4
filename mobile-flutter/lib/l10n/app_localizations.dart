@@ -1660,6 +1660,12 @@ abstract class AppLocalizations {
   /// **'Mật khẩu hiện tại không đúng'**
   String get currentPasswordWrong;
 
+  /// No description provided for @passwordRecentlyUsed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mật khẩu mới không được trùng với 2 mật khẩu gần nhất'**
+  String get passwordRecentlyUsed;
+
   /// No description provided for @saving.
   ///
   /// In vi, this message translates to:
@@ -1875,6 +1881,68 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'{score} / {total} câu đúng'**
   String correctAnswers(int score, int total);
+
+  String get free;
+  String get enabled;
+  String get disabled;
+  String get invalidPhone;
+  String get minEightChars;
+  String get takePhoto;
+  String get selectFromLibrary;
+  String get uploadPhotoFailed;
+  String get basicInfo;
+  String get contactLocation;
+  String get country;
+  String get timezone;
+  String get selectTimezone;
+  String get personalInfo;
+  String get gender;
+  String get selectGender;
+  String get aboutYourself;
+  String get bioHint;
+  String get dateOfBirth;
+  String get selectDateOfBirth;
+  String get phoneHint;
+  String get dailyReminder;
+  String get reminderTime;
+  String get sendTestNotification;
+  String get testNotificationSent;
+  String get twoFactorAuth;
+  String get twoFaComingSoon;
+  String get proMember;
+  String get pathAndLanguage;
+  String get badgesAchievements;
+  String get subscriptionBilling;
+  String get currentPlan;
+  String get activeStatus;
+  String get startDate;
+  String get renewalDate;
+  String get paymentMethod;
+  String get upgradeToYearly;
+  String get paymentHistory;
+  String get securePaymentNotice;
+  String get waitingPaymentResult;
+  String get cancelWaiting;
+  String get orderSummary;
+  String get totalPayment;
+  String get monthly;
+  String get yearly;
+  String get mostPopular;
+  String get perMonth;
+  String get perYear;
+  String get cancelAnytime;
+  String get seeResults;
+  String get nextQuestion;
+  String get dailyXpGoal;
+  String get learningStyle;
+  String get selectXpGoal;
+  String get selectLearningStyle;
+  String get secureLabel;
+  String get paymentLabel;
+  String get completePaymentInstruction;
+  String autoRenewal(String period);
+  String subscribePlan(String plan);
+  String get currentPlanCheck;
 }
 
 class _AppLocalizationsDelegate

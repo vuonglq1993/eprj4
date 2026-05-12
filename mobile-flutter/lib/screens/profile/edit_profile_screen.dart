@@ -89,12 +89,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(height: 12),
             ListTile(
               leading: const Icon(Icons.camera_alt_rounded, color: AppColors.primary),
-              title: const Text('Chụp ảnh', style: TextStyle(color: AppColors.textPrimary)),
+              title: Text(context.l10n.takePhoto, style: const TextStyle(color: AppColors.textPrimary)),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_rounded, color: AppColors.primary),
-              title: const Text('Chọn từ thư viện', style: TextStyle(color: AppColors.textPrimary)),
+              title: Text(context.l10n.selectFromLibrary, style: const TextStyle(color: AppColors.textPrimary)),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
             const SizedBox(height: 8),
@@ -126,7 +126,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       });
     } else {
       setState(() => _uploadingAvatar = false);
-      _snack('Upload ảnh thất bại, thử lại nhé');
+      _snack(context.l10n.uploadPhotoFailed);
     }
   }
 
@@ -154,7 +154,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _save() async {
     final first = _firstName.text.trim();
     if (first.isEmpty) {
-      _snack('Họ không được để trống');
+      _snack(context.l10n.lastNameRequired);
       return;
     }
     setState(() => _saving = true);
@@ -257,12 +257,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         const SizedBox(height: 28),
 
                         // ── Thông tin cơ bản ────────────────────────
-                        _sectionLabel('THÔNG TIN CƠ BẢN'),
+                        _sectionLabel(context.l10n.basicInfo.toUpperCase()),
                         const SizedBox(height: 10),
                         _card([
-                          _fieldTile('Họ *', _firstName, hint: 'Nguyễn'),
+                          _fieldTile('${context.l10n.lastName} *', _firstName, hint: 'Nguyễn'),
                           _divider(),
-                          _fieldTile('Tên', _lastName, hint: 'Văn A'),
+                          _fieldTile(context.l10n.firstName, _lastName, hint: 'Văn A'),
                           _divider(),
                           _readonlyTile(context.l10n.email, email, Icons.lock_outline_rounded),
                         ]),
@@ -270,19 +270,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         const SizedBox(height: 20),
 
                         // ── Liên hệ ─────────────────────────────────
-                        _sectionLabel('LIÊN HỆ & VỊ TRÍ'),
+                        _sectionLabel(context.l10n.contactLocation.toUpperCase()),
                         const SizedBox(height: 10),
                         _card([
-                          _fieldTile('Số điện thoại', _phone,
-                              hint: '+84 xxx xxx xxx',
+                          _fieldTile(context.l10n.phone, _phone,
+                              hint: context.l10n.phoneHint,
                               keyboardType: TextInputType.phone),
                           _divider(),
-                          _fieldTile('Quốc gia', _country, hint: 'Việt Nam'),
+                          _fieldTile(context.l10n.country, _country, hint: 'Việt Nam'),
                           _divider(),
                           _dropdownTile(
-                            label: 'Múi giờ',
+                            label: context.l10n.timezone,
                             value: _timezone,
-                            hint: 'Chọn múi giờ',
+                            hint: context.l10n.selectTimezone,
                             items: _timezones.map((t) => DropdownMenuItem(
                               value: t.$1,
                               child: Text(t.$2,
@@ -295,13 +295,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         const SizedBox(height: 20),
 
                         // ── Cá nhân ─────────────────────────────────
-                        _sectionLabel('THÔNG TIN CÁ NHÂN'),
+                        _sectionLabel(context.l10n.personalInfo.toUpperCase()),
                         const SizedBox(height: 10),
                         _card([
                           _dropdownTile(
-                            label: 'Giới tính',
+                            label: context.l10n.gender,
                             value: _gender,
-                            hint: 'Chọn giới tính',
+                            hint: context.l10n.selectGender,
                             items: _genders.map((g) => DropdownMenuItem(
                               value: g.$1,
                               child: Text(g.$2,
@@ -316,7 +316,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         const SizedBox(height: 20),
 
                         // ── Bio ─────────────────────────────────────
-                        _sectionLabel('GIỚI THIỆU BẢN THÂN'),
+                        _sectionLabel(context.l10n.aboutYourself.toUpperCase()),
                         const SizedBox(height: 10),
                         Container(
                           decoration: BoxDecoration(
@@ -330,7 +330,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             maxLength: 300,
                             style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
                             decoration: InputDecoration(
-                              hintText: 'Viết vài dòng về bản thân...',
+                              hintText: context.l10n.bioHint,
                               hintStyle: const TextStyle(color: AppColors.textHint, fontSize: 14),
                               contentPadding: const EdgeInsets.all(16),
                               border: InputBorder.none,
@@ -523,12 +523,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           children: [
             const SizedBox(
               width: 110,
-              child: Text('Ngày sinh',
-                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              child: Text(context.l10n.dateOfBirth,
+                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
             ),
             Expanded(
               child: Text(
-                dobStr ?? 'Chọn ngày sinh',
+                dobStr ?? context.l10n.selectDateOfBirth,
                 textAlign: TextAlign.right,
                 style: TextStyle(
                     fontSize: 14,
