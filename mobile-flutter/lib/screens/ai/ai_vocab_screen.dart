@@ -511,7 +511,7 @@ class _AiVocabScreenState extends State<AiVocabScreen>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1A2550), Color(0xFF141430)],
+          colors: [Color(0x1A00B4D8), Color(0x0C0077B6)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

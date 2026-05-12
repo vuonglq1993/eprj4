@@ -1196,7 +1196,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
   // ── Pairs (Matching) ───────────────────────────────────────────────────────
 
   static const _pairColors = [
-    Color(0xFF6B3EEA),
+    Color(0xFF00B4D8),
     Color(0xFF00C896),
     Color(0xFFFF9F43),
     Color(0xFF5E81F4),

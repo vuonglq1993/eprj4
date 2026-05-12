@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import 'token_service.dart';
@@ -207,6 +208,12 @@ class ApiService {
     String? firstName,
     String? lastName,
     String? avatarUrl,
+    String? phone,
+    String? gender,
+    String? dateOfBirth,
+    String? country,
+    String? timezone,
+    String? bio,
     String? uiLanguage,
   }) async {
     try {
@@ -214,10 +221,16 @@ class ApiService {
         Uri.parse('$_base/users/me'),
         headers: await _authHeaders(),
         body: jsonEncode({
-          if (firstName != null) 'firstName': firstName,
-          if (lastName != null) 'lastName': lastName,
-          if (avatarUrl != null) 'avatarUrl': avatarUrl,
-          if (uiLanguage != null) 'uiLanguage': uiLanguage,
+          if (firstName    != null) 'firstName':   firstName,
+          if (lastName     != null) 'lastName':    lastName,
+          if (avatarUrl    != null) 'avatarUrl':   avatarUrl,
+          if (uiLanguage   != null) 'uiLanguage':  uiLanguage,
+          if (phone        != null) 'phone':        phone,
+          if (gender       != null) 'gender':       gender,
+          if (dateOfBirth  != null) 'dateOfBirth':  dateOfBirth,
+          if (country      != null) 'country':      country,
+          if (timezone     != null) 'timezone':     timezone,
+          if (bio          != null) 'bio':           bio,
         }),
       );
       if (res.statusCode == 200) return jsonDecode(res.body) as Map<String, dynamic>;
@@ -277,6 +290,27 @@ class ApiService {
       );
       if (res.statusCode == 200 || res.statusCode == 201) {
         return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<String?> uploadAvatar(File file) async {
+    try {
+      final token = await TokenService.getAccessToken();
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$_base/users/me/avatar'),
+      );
+      if (token != null) request.headers['Authorization'] = 'Bearer $token';
+      request.files.add(await http.MultipartFile.fromPath('file', file.path));
+      final streamed = await request.send();
+      final res = await http.Response.fromStream(streamed);
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
+        return body['avatarUrl'] as String?;
       }
       return null;
     } catch (_) {

@@ -190,10 +190,16 @@ public class UserService {
     public UserProfileResponse updateProfile(UpdateProfileRequest req, UserPrincipal principal) {
         User user = findUser(principal.getUserId());
 
-        if (req.getFirstName() != null)  user.setFirstName(req.getFirstName());
-        if (req.getLastName() != null)   user.setLastName(req.getLastName());
-        if (req.getAvatarUrl() != null)  user.setAvatarUrl(req.getAvatarUrl());
-        if (req.getUiLanguage() != null) user.setUiLanguage(req.getUiLanguage());
+        if (req.getFirstName()   != null) user.setFirstName(req.getFirstName());
+        if (req.getLastName()    != null) user.setLastName(req.getLastName());
+        if (req.getAvatarUrl()   != null) user.setAvatarUrl(req.getAvatarUrl());
+        if (req.getUiLanguage()  != null) user.setUiLanguage(req.getUiLanguage());
+        if (req.getPhone()       != null) user.setPhone(req.getPhone());
+        if (req.getGender()      != null) user.setGender(req.getGender());
+        if (req.getDateOfBirth() != null) user.setDateOfBirth(req.getDateOfBirth());
+        if (req.getCountry()     != null) user.setCountry(req.getCountry());
+        if (req.getTimezone()    != null) user.setTimezone(req.getTimezone());
+        if (req.getBio()         != null) user.setBio(req.getBio());
 
         return toProfileResponse(userRepo.save(user));
     }
@@ -343,6 +349,12 @@ public class UserService {
                         : "FREE")
                 .isPremium(u.isPremium())
                 .uiLanguage(u.getUiLanguage())
+                .phone(u.getPhone())
+                .gender(u.getGender())
+                .dateOfBirth(u.getDateOfBirth())
+                .country(u.getCountry())
+                .timezone(u.getTimezone())
+                .bio(u.getBio())
                 .build();
     }
 
