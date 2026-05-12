@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -145,7 +146,7 @@ public class VNPayService {
 
         // Bước 6: Thanh toán thành công — cập nhật DB + kích hoạt subscription
         tx.setStatus(TxStatus.SUCCESS);
-        tx.setPaidAt(LocalDateTime.now());
+        tx.setPaidAt(Instant.now());
         tx.setRawWebhook("vnpTransactionNo=" + vnPayClient.getVnpTransactionNo(params)
                 + " | " + params);
         txRepo.save(tx);
@@ -158,7 +159,35 @@ public class VNPayService {
 
         return VNPayIpnResponse.ok();
     }
+    @Transactional
+    public void processReturn(Map<String, String> params) {
+        String txnRef = vnPayClient.getTxnRef(params);
 
+        PaymentTransaction tx = txRepo.findByGatewayRef(txnRef)
+                .orElseThrow(() -> new NotFoundException("Transaction not found: " + txnRef));
+
+        // tránh update 2 lần nếu IPN đã chạy
+        if (tx.getStatus() == TxStatus.SUCCESS) {
+            return;
+        }
+
+        if (!vnPayClient.isSuccess(params)) {
+            tx.setStatus(TxStatus.FAILED);
+            tx.setFailureReason("vnp_ResponseCode=" + params.get("vnp_ResponseCode"));
+            txRepo.save(tx);
+            return;
+        }
+
+        tx.setStatus(TxStatus.SUCCESS);
+        tx.setPaidAt(Instant.now());
+        tx.setRawWebhook("RETURN | " + params);
+        txRepo.save(tx);
+
+        SubscriptionPlan plan = planService.getByName(tx.getPlan().name());
+        subService.activate(tx.getUser(), plan);
+
+        log.info("[VNPay] RETURN SUCCESS - txnRef={}", txnRef);
+    }
     // ═══════════════════════════════════════════════════════════════
     // DELEGATE HELPERS — dùng trong VNPayController
     // ═══════════════════════════════════════════════════════════════
