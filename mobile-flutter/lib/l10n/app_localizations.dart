@@ -994,6 +994,12 @@ abstract class AppLocalizations {
   /// **'Ngày học'**
   String get studyDays;
 
+  /// No description provided for @bestStreak.
+  ///
+  /// In vi, this message translates to:
+  /// **'Streak cao nhất'**
+  String get bestStreak;
+
   /// No description provided for @xpEarned.
   ///
   /// In vi, this message translates to:

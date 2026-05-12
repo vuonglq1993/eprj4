@@ -478,6 +478,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get studyDays => 'Study days';
 
   @override
+  String get bestStreak => 'Best streak';
+
+  @override
   String get xpEarned => 'XP earned';
 
   @override

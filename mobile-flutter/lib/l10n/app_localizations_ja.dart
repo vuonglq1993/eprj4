@@ -474,6 +474,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get studyDays => '学習日数';
 
   @override
+  String get bestStreak => '最長ストリーク';
+
+  @override
   String get xpEarned => '獲得XP';
 
   @override

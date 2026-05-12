@@ -21,6 +21,13 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+  final _firstNameKey = GlobalKey<FormFieldState>();
+  final _lastNameKey = GlobalKey<FormFieldState>();
+  final _emailKey = GlobalKey<FormFieldState>();
+  final _phoneKey = GlobalKey<FormFieldState>();
+  final _passwordKey = GlobalKey<FormFieldState>();
+  final _confirmPasswordKey = GlobalKey<FormFieldState>();
+
   final _firstName = TextEditingController();
   final _lastName = TextEditingController();
   final _email = TextEditingController();
@@ -63,7 +70,7 @@ class _RegisterPageState extends State<RegisterPage> {
         _emailStatus = exists ? _CheckStatus.taken : _CheckStatus.available;
       }
     });
-    _formKey.currentState?.validate();
+    _emailKey.currentState?.validate();
   }
 
   // ─── Check phone ─────────────────────────────────────────────────────────
@@ -81,6 +88,7 @@ class _RegisterPageState extends State<RegisterPage> {
         _phoneStatus = exists ? _CheckStatus.taken : _CheckStatus.available;
       }
     });
+    _phoneKey.currentState?.validate();
   }
 
   // ─── Google Sign-In ───────────────────────────────────────────────────────
@@ -163,7 +171,7 @@ class _RegisterPageState extends State<RegisterPage> {
         _isLoading = false;
         _emailStatus = _CheckStatus.taken;
       });
-      _formKey.currentState!.validate();
+      _emailKey.currentState?.validate();
       return;
     }
 
@@ -242,6 +250,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   children: [
                     Expanded(
                       child: _input(
+                        formFieldKey: _firstNameKey,
                         controller: _firstName,
                         hint: context.l10n.lastName,
                         icon: Icons.person_outline_rounded,
@@ -255,6 +264,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _input(
+                        formFieldKey: _lastNameKey,
                         controller: _lastName,
                         hint: context.l10n.firstName,
                         icon: Icons.person_outline_rounded,
@@ -271,6 +281,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 // Email + check button
                 _inputWithCheck(
+                  formFieldKey: _emailKey,
                   controller: _email,
                   hint: context.l10n.email,
                   icon: Icons.email_outlined,
@@ -291,6 +302,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 // Phone + check button
                 _inputWithCheck(
+                  formFieldKey: _phoneKey,
                   controller: _phone,
                   hint: context.l10n.phone,
                   icon: Icons.phone_outlined,
@@ -311,6 +323,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 // Password
                 _input(
+                  formFieldKey: _passwordKey,
                   controller: _password,
                   hint: context.l10n.password,
                   icon: Icons.lock_outline_rounded,
@@ -336,6 +349,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 // Confirm password
                 _input(
+                  formFieldKey: _confirmPasswordKey,
                   controller: _confirmPassword,
                   hint: context.l10n.confirmPassword,
                   icon: Icons.lock_outline_rounded,
@@ -489,6 +503,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   /// Input field cơ bản (không có check button)
   Widget _input({
+    Key? formFieldKey,
     required TextEditingController controller,
     required String hint,
     required IconData icon,
@@ -498,6 +513,7 @@ class _RegisterPageState extends State<RegisterPage> {
     String? Function(String?)? validator,
   }) {
     return TextFormField(
+      key: formFieldKey,
       controller: controller,
       obscureText: obscure,
       keyboardType: keyboardType,
@@ -509,6 +525,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   /// Input field có nút check ở suffix
   Widget _inputWithCheck({
+    Key? formFieldKey,
     required TextEditingController controller,
     required String hint,
     required IconData icon,
@@ -568,6 +585,7 @@ class _RegisterPageState extends State<RegisterPage> {
     }
 
     return TextFormField(
+      key: formFieldKey,
       controller: controller,
       keyboardType: keyboardType,
       style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),

@@ -83,7 +83,7 @@ class _ProfileTabState extends State<ProfileTab> {
   bool get _isPremium => _user?['isPremium'] == true;
   String get _plan => _user?['subscriptionPlan'] as String? ?? 'FREE';
 
-  int get _currentStreak => _streak?['currentStreak'] as int? ?? 0;
+  int get _longestStreak => _streak?['longestStreak'] as int? ?? 0;
   int get _totalDays => (_streak?['studyDates'] as List?)?.length ?? 0;
   int get _badgeCount => (_gameProfile?['badges'] as List?)?.length ?? 0;
 
@@ -199,15 +199,14 @@ class _ProfileTabState extends State<ProfileTab> {
                 child: TappableScale(
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditProfileScreen(user: _user ?? {}))).then((updated) { if (updated == true) _load(); }),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.border),
-                      boxShadow: AppShadows.subtle,
+                      boxShadow: AppShadows.primaryGlowSoft,
                     ),
                     child: Text(context.l10n.editProfile,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
                   ),
                 ),
               ),
@@ -232,19 +231,18 @@ class _ProfileTabState extends State<ProfileTab> {
           ],
           const SizedBox(height: 10),
           // Badges row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
             children: [
               if (_isPremium)
                 _badge(context.l10n.proMember, AppGradients.primaryIcon, Colors.white),
-              if (_isPremium) const SizedBox(width: 8),
               _badgeSolid('Level $level', AppColors.warning.withValues(alpha: 0.2),
                   AppColors.warning),
-              if (_langDisplay.isNotEmpty) ...[
-                const SizedBox(width: 8),
+              if (_langDisplay.isNotEmpty)
                 _badgeSolid(_langDisplay, AppColors.surface, AppColors.textSecondary,
                     border: AppColors.border),
-              ],
             ],
           ),
         ],
@@ -280,7 +278,7 @@ class _ProfileTabState extends State<ProfileTab> {
       children: [
         _statBox('$_totalDays', context.l10n.studyDays, null),
         _divider(),
-        _statBox('🔥 $_currentStreak', 'Streak', null),
+        _statBox('🏆 $_longestStreak', context.l10n.bestStreak, null),
         _divider(),
         _statBox(_fmtXp(totalXp), 'Tổng XP', AppColors.primary),
       ],

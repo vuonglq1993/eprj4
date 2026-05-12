@@ -478,6 +478,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get studyDays => 'Ngày học';
 
   @override
+  String get bestStreak => 'Streak cao nhất';
+
+  @override
   String get xpEarned => 'XP kiếm được';
 
   @override
