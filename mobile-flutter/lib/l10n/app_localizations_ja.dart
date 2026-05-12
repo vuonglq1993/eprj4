@@ -474,6 +474,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get studyDays => '学習日数';
 
   @override
+  String get bestStreak => '最長ストリーク';
+
+  @override
   String get xpEarned => '獲得XP';
 
   @override
@@ -820,6 +823,8 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get currentPasswordWrong => '現在のパスワードが正しくありません';
+  @override
+  String get passwordRecentlyUsed => '新しいパスワードは直近2つのパスワードと異なる必要があります';
 
   @override
   String get saving => '保存中...';
@@ -932,4 +937,127 @@ class AppLocalizationsJa extends AppLocalizations {
   String correctAnswers(int score, int total) {
     return '$score / $total 正解';
   }
+
+  @override
+  String get free => '無料';
+  @override
+  String get enabled => '有効';
+  @override
+  String get disabled => '無効';
+  @override
+  String get invalidPhone => '電話番号が無効です';
+  @override
+  String get minEightChars => '最低8文字';
+  @override
+  String get takePhoto => '写真を撮る';
+  @override
+  String get selectFromLibrary => 'ライブラリから選択';
+  @override
+  String get uploadPhotoFailed => '写真のアップロードに失敗しました';
+  @override
+  String get basicInfo => '基本情報';
+  @override
+  String get contactLocation => '連絡先・場所';
+  @override
+  String get country => '国';
+  @override
+  String get timezone => 'タイムゾーン';
+  @override
+  String get selectTimezone => 'タイムゾーンを選択';
+  @override
+  String get personalInfo => '個人情報';
+  @override
+  String get gender => '性別';
+  @override
+  String get selectGender => '性別を選択';
+  @override
+  String get aboutYourself => '自己紹介';
+  @override
+  String get bioHint => '自己紹介を書いてください...';
+  @override
+  String get dateOfBirth => '生年月日';
+  @override
+  String get selectDateOfBirth => '生年月日を選択';
+  @override
+  String get phoneHint => '+81 xxx xxx xxx';
+  @override
+  String get dailyReminder => '毎日の学習リマインダー';
+  @override
+  String get reminderTime => 'リマインダー時間';
+  @override
+  String get sendTestNotification => 'テスト通知を送信';
+  @override
+  String get testNotificationSent => 'テスト通知を送信しました！';
+  @override
+  String get twoFactorAuth => '2段階認証（2FA）';
+  @override
+  String get twoFaComingSoon => '2FA機能は次のアップデートで公開予定';
+  @override
+  String get proMember => 'Proメンバー';
+  @override
+  String get pathAndLanguage => '学習パス・言語';
+  @override
+  String get badgesAchievements => 'バッジ・実績';
+  @override
+  String get subscriptionBilling => 'サブスクリプション・請求';
+  @override
+  String get currentPlan => '現在のプラン';
+  @override
+  String get activeStatus => 'アクティブ';
+  @override
+  String get startDate => '開始日';
+  @override
+  String get renewalDate => '次回更新日';
+  @override
+  String get paymentMethod => '支払い方法';
+  @override
+  String get upgradeToYearly => '年間プランにアップグレード';
+  @override
+  String get paymentHistory => '支払い履歴';
+  @override
+  String get securePaymentNotice => '安全な決済 • いつでもキャンセル可能';
+  @override
+  String get waitingPaymentResult => 'お支払い結果を待っています';
+  @override
+  String get cancelWaiting => '待機をキャンセル';
+  @override
+  String get orderSummary => '注文概要';
+  @override
+  String get totalPayment => '合計支払額';
+  @override
+  String get monthly => '月額';
+  @override
+  String get yearly => '年額';
+  @override
+  String get mostPopular => '最も人気';
+  @override
+  String get perMonth => '/月';
+  @override
+  String get perYear => '/年';
+  @override
+  String get cancelAnytime => 'Settingsからいつでもキャンセル可能';
+  @override
+  String get seeResults => '結果を見る';
+  @override
+  String get nextQuestion => '次の問題';
+  @override
+  String get dailyXpGoal => '1日のXP目標';
+  @override
+  String get learningStyle => '学習スタイル';
+  @override
+  String get selectXpGoal => 'XP目標を選択';
+  @override
+  String get selectLearningStyle => '学習スタイルを選択';
+  @override
+  String get secureLabel => 'セキュリティ';
+  @override
+  String get paymentLabel => 'お支払い';
+  @override
+  String get completePaymentInstruction => '開いたウィンドウでお支払いを完了し、アプリに戻ってください。';
+  @override
+  String autoRenewal(String period) => '$periodごとに自動更新。いつでもキャンセル可能。';
+  @override
+  String subscribePlan(String plan) => '$planに登録';
+  @override
+  String get currentPlanCheck => '✓ 現在のプラン';
 }

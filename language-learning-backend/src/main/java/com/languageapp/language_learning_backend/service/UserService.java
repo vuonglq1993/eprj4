@@ -1,6 +1,7 @@
 package com.languageapp.language_learning_backend.service;
 
 import com.languageapp.language_learning_backend.dto.user.*;
+import com.languageapp.language_learning_backend.entity.PasswordHistory;
 import com.languageapp.language_learning_backend.entity.User;
 import com.languageapp.language_learning_backend.entity.User.Role;
 import com.languageapp.language_learning_backend.entity.User.AuthProvider;
@@ -39,10 +40,13 @@ public class UserService {
     private final UserLearningPathRepository ulpRepo;
     private final UserBadgeRepository badgeRepo;
     private final UserGameProfileRepository gameProfileRepo;
+    private final PasswordHistoryRepository passwordHistoryRepo;
     private final PasswordEncoder encoder;
     private final EmailService emailService;
     private final FirebaseOtpRepository otpRepository;
     private final JwtTokenProvider jwt;
+
+    private static final int PASSWORD_HISTORY_LIMIT = 2;
 
     // ── REGISTER ───────────────────────────────────────────────
     @Transactional
@@ -170,6 +174,8 @@ public class UserService {
 
             User user = userRepo.findByEmail(email)
                     .orElseThrow(() -> new NotFoundException("User not found"));
+            checkPasswordHistory(user.getId(), newPassword);
+            savePasswordHistory(user.getId(), user.getPassword());
             user.setPassword(encoder.encode(newPassword));
             userRepo.save(user);
             otpRepository.markAsUsed(email, "RESET_PASSWORD");
@@ -209,12 +215,20 @@ public class UserService {
     public void changePassword(ChangePasswordRequest req, UserPrincipal principal) {
         User user = findUser(principal.getUserId());
 
-        if (!encoder.matches(req.getCurrentPassword(), user.getPassword()))
-            throw new BadRequestException("Current password is incorrect");
+        if (user.getPassword() == null) {
+            // Google-only user setting password for the first time — skip current password check
+            if (req.getCurrentPassword() != null)
+                throw new BadRequestException("Account has no password set");
+        } else {
+            if (req.getCurrentPassword() == null)
+                throw new BadRequestException("Current password is required");
+            if (!encoder.matches(req.getCurrentPassword(), user.getPassword()))
+                throw new BadRequestException("Current password is incorrect");
+        }
 
-        if (encoder.matches(req.getNewPassword(), user.getPassword()))
-            throw new BadRequestException("New password must be different from current password");
+        checkPasswordHistory(user.getId(), req.getNewPassword());
 
+        savePasswordHistory(user.getId(), user.getPassword());
         user.setPassword(encoder.encode(req.getNewPassword()));
         userRepo.save(user);
     }
@@ -301,6 +315,7 @@ public class UserService {
         badgeRepo.deleteByUserId(userId);
         gameProfileRepo.findByUserId(userId)
                 .ifPresent(gameProfileRepo::delete);
+        passwordHistoryRepo.deleteByUserId(userId);
 
         userRepo.deleteById(userId);
     }
@@ -356,6 +371,31 @@ public class UserService {
                 .timezone(u.getTimezone())
                 .bio(u.getBio())
                 .build();
+    }
+
+    private void checkPasswordHistory(UUID userId, String newRawPassword) {
+        List<PasswordHistory> recent = passwordHistoryRepo.findRecentByUserId(
+                userId, PageRequest.of(0, PASSWORD_HISTORY_LIMIT));
+        for (PasswordHistory h : recent) {
+            if (encoder.matches(newRawPassword, h.getPasswordHash()))
+                throw new BadRequestException(
+                        "New password must not match the last " + PASSWORD_HISTORY_LIMIT + " passwords");
+        }
+    }
+
+    private void savePasswordHistory(UUID userId, String currentHashedPassword) {
+        if (currentHashedPassword == null) return;
+        passwordHistoryRepo.save(PasswordHistory.builder()
+                .userId(userId)
+                .passwordHash(currentHashedPassword)
+                .build());
+        // Giữ tối đa PASSWORD_HISTORY_LIMIT bản ghi, xóa bản cũ hơn
+        List<PasswordHistory> all = passwordHistoryRepo.findRecentByUserId(
+                userId, PageRequest.of(0, Integer.MAX_VALUE));
+        if (all.size() > PASSWORD_HISTORY_LIMIT) {
+            List<PasswordHistory> toDelete = all.subList(PASSWORD_HISTORY_LIMIT, all.size());
+            passwordHistoryRepo.deleteAll(toDelete);
+        }
     }
 
     // ── RECORDS ───────────────────────────────────────────────

@@ -91,7 +91,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     } else {
       _snack(error.contains('incorrect') || error.contains('wrong')
           ? context.l10n.currentPasswordWrong
-          : error);
+          : error.contains('last')
+              ? context.l10n.passwordRecentlyUsed
+              : error);
     }
   }
 
