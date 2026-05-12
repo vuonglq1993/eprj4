@@ -48,22 +48,16 @@ public class VNPayController {
         Map<String, String> params = extractParams(request);
 
         if (!vnPayService.verifyReturn(params)) {
-            return ResponseEntity.ok(VNPayReturnResponse.builder()
-                    .code("97")
-                    .message("Sai chữ ký")
-                    .success(false)
-                    .build());
+            log.warn("[VNPay] Invalid signature — redirecting to failed");
+            HttpHeaders errHeaders = new HttpHeaders();
+            errHeaders.set(HttpHeaders.LOCATION, androidUrl + "/payment/vnpay/failed?reason=invalid_signature");
+            return new ResponseEntity<>(errHeaders, HttpStatus.FOUND);
         }
 
-        vnPayService.processReturn(params); // thêm dòng này
+        vnPayService.processReturn(params);
 
         boolean success = vnPayService.isSuccess(params);
-        String txnRef = vnPayService.getTxnRef(params);
-        String transactionNo = vnPayService.getTransactionNo(params);
-        String amount = vnPayService.getAmountDisplay(params);
-        boolean success = vnPayService.verifyReturn(params) && vnPayService.isSuccess(params);
         String  txnRef  = vnPayService.getTxnRef(params);
-
         log.info("[VNPay] Return - txnRef={}, success={}", txnRef, success);
 
         String deepLink = androidUrl + "/payment/vnpay/" + (success ? "success" : "failed")
