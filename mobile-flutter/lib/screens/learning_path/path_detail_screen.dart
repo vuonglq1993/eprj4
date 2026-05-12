@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../services/learning_service.dart';
+import '../../l10n/l10n_ext.dart';
 import '../course/course_lessons_screen.dart';
 
 class PathDetailScreen extends StatefulWidget {
@@ -47,11 +48,11 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
     if (ok) {
       await _load();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã đăng ký lộ trình!')),
+        SnackBar(content: Text(context.l10n.enrolledPath)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không thể đăng ký. Thử lại.')),
+        SnackBar(content: Text(context.l10n.enrollFailed)),
       );
     }
   }
@@ -74,11 +75,11 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
       child: Column(
         children: [
           _backButton(),
-          const Expanded(
+          Expanded(
             child: Center(
               child: Text(
-                'Không tải được lộ trình',
-                style: TextStyle(color: AppColors.textSecondary),
+                context.l10n.cannotLoadPath,
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
             ),
           ),
@@ -150,7 +151,7 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF1C1845), Color(0xFF141430)],
+                            colors: [Color(0x1E64DCFF), Color(0x0A0077B6)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -236,10 +237,10 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
                             Row(
                               children: [
                                 _meta(Icons.layers_rounded,
-                                    '$totalSteps bước'),
+                                    context.l10n.steps(totalSteps)),
                                 const SizedBox(width: 16),
                                 _meta(Icons.access_time_rounded,
-                                    '${estimatedHours}h'),
+                                    context.l10n.estimatedHours(estimatedHours.toString())),
                               ],
                             ),
                           ],
@@ -249,18 +250,43 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
                       const SizedBox(height: 20),
 
                       // Steps timeline
-                      const Text(
-                        'Các bước',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            context.l10n.pathSteps,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          if (!isEnrolled) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppColors.textHint.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.lock_rounded, size: 11, color: AppColors.textHint),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    context.l10n.enrollToUnlock,
+                                    style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 12),
 
                       ...List.generate(steps.length, (i) {
-                        return _stepItem(steps[i], i, steps.length);
+                        return _stepItem(steps[i], i, steps.length, isEnrolled);
                       }),
 
                       const SizedBox(height: 24),
@@ -268,7 +294,7 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
                       // Enroll button
                       if (!isEnrolled)
                         GradientButton(
-                          label: 'Đăng ký lộ trình',
+                          label: context.l10n.enrollPath,
                           isLoading: _enrolling,
                           onTap: _enroll,
                         ),
@@ -286,7 +312,7 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
   }
 
   Widget _stepItem(
-      Map<String, dynamic> step, int index, int total) {
+      Map<String, dynamic> step, int index, int total, bool isEnrolled) {
     final courseId = step['courseId'] as String? ?? '';
     final courseTitle = step['courseTitle'] as String? ?? '';
     final courseLevel = step['courseLevel'] as String? ?? '';
@@ -294,11 +320,11 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
     final totalLessons = step['totalLessons'] as int? ?? 0;
     final courseProgress =
         step['courseProgressPercent'] as int? ?? 0;
-    final isUnlocked = step['isUnlocked'] as bool? ?? false;
+    final isUnlocked = isEnrolled && (step['isUnlocked'] as bool? ?? false);
     final isRequired = step['isRequired'] as bool? ?? true;
     final note = step['note'] as String? ?? '';
 
-    final isCompleted = courseProgress == 100;
+    final isCompleted = isEnrolled && courseProgress == 100;
     final isLast = index == total - 1;
 
     Color statusColor;
@@ -362,7 +388,7 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
           // Step card
           Expanded(
             child: TappableScale(
-              onTap: isUnlocked || isCompleted
+              onTap: isEnrolled && (isUnlocked || isCompleted)
                   ? () => Navigator.push(
                         context,
                         _route(CourseLessonsScreen(
@@ -396,7 +422,7 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
                     Row(
                       children: [
                         Text(
-                          'Bước $stepOrder',
+                          context.l10n.stepTitle(stepOrder),
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
@@ -413,9 +439,9 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
                                   .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: const Text(
-                              'TÙY CHỌN',
-                              style: TextStyle(
+                            child: Text(
+                              context.l10n.optional,
+                              style: const TextStyle(
                                 fontSize: 8,
                                 color: AppColors.textHint,
                                 fontWeight: FontWeight.w600,
@@ -452,7 +478,7 @@ class _PathDetailScreenState extends State<PathDetailScreen> {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          '$totalLessons bài',
+                          context.l10n.lessons(totalLessons),
                           style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.textSecondary,

@@ -4,12 +4,11 @@ import { FiEdit2, FiTrash2, FiUser, FiMail, FiShield, FiCheckCircle, FiXCircle }
 import { getUsers, updateUserRole, deleteUser } from '../services/userService';
 import { isAdmin } from '../utils/roleUtils';
 
-const ROLES = ['USER', 'TEACHER', 'ADMIN'];
+const ROLES = ['STUDENT', 'ADMIN'];
 
 const ROLE_CONFIG = {
   ADMIN: { label: 'Admin', className: 'au-role--admin', icon: FiShield },
-  TEACHER: { label: 'Teacher', className: 'au-role--teacher', icon: null },
-  USER: { label: 'User', className: 'au-role--user', icon: null },
+  STUDENT: { label: 'Student', className: 'au-role--user', icon: null },
 };
 
 function RoleBadge({ role }) {
@@ -87,9 +86,9 @@ const AdminUserManagementPage = () => {
     setError('');
     try {
       const res = await getUsers();
-      const data = Array.isArray(res.data) ? res.data
-        : res.data?.content ?? res.data?.data ?? [];
-      setUsers(Array.isArray(data) ? data : []);
+      // Backend trả về Spring Page<UserResponse>: { content: [...], totalElements, totalPages, ... }
+      const content = res.data?.content ?? res.data ?? [];
+      setUsers(Array.isArray(content) ? content : []);
     } catch (err) {
       setError('Không tải được danh sách người dùng.');
     } finally {
@@ -114,7 +113,7 @@ const AdminUserManagementPage = () => {
 
   const openEditRole = (user) => {
     setEditingId(user.id);
-    setEditRole(user.role || 'USER');
+    setEditRole(user.role || 'STUDENT');
   };
 
   const cancelEditRole = () => {

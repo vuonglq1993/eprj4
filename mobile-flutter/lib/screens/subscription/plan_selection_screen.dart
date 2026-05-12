@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../services/payment_service.dart';
+import '../../l10n/l10n_ext.dart';
 import 'payment_screen.dart';
 
 class PlanSelectionScreen extends StatefulWidget {
@@ -91,7 +92,7 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
-          const Text('Chọn gói', style: TextStyle(
+          Text(context.l10n.choosePlan, style: const TextStyle(
               fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
         ],
       ),
@@ -299,7 +300,7 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
                   MaterialPageRoute(builder: (_) => PaymentScreen(plan: plan)),
                 ),
                 child: Text(
-                  'Dùng thử 7 ngày miễn phí',
+                  isYearly ? 'Đăng ký Pro Yearly' : 'Đăng ký Pro Monthly',
                   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -347,9 +348,9 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
   }
 
   Widget _disclaimer() {
-    return Text(
-      'Không trừ tiền trong thời gian dùng thử',
-      style: const TextStyle(fontSize: 12, color: AppColors.textHint),
+    return const Text(
+      'Hủy bất kỳ lúc nào trong Settings',
+      style: TextStyle(fontSize: 12, color: AppColors.textHint),
       textAlign: TextAlign.center,
     );
   }

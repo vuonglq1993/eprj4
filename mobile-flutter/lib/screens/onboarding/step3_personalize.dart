@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../l10n/l10n_ext.dart';
 import '_onboarding_widgets.dart';
 
 class Step3Personalize extends StatelessWidget {
@@ -37,6 +38,17 @@ class Step3Personalize extends StatelessWidget {
     '45+',
   ];
 
+  String _ageLabel(BuildContext context, String age) {
+    switch (age) {
+      case 'Dưới 18': return context.l10n.ageUnder18;
+      case '18 – 24': return context.l10n.age1824;
+      case '25 – 34': return context.l10n.age2534;
+      case '35 – 44': return context.l10n.age3544;
+      case '45+': return context.l10n.age45plus;
+      default: return age;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -53,8 +65,8 @@ class Step3Personalize extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 8),
-                  const Text(
-                    'Cá nhân hóa lộ trình',
+                  Text(
+                    context.l10n.onboardingPersonalizeTitle,
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -64,8 +76,8 @@ class Step3Personalize extends StatelessWidget {
                   const SizedBox(height: 28),
 
                   // ── Daily time ───────────────────────────────────────────
-                  const Text(
-                    'Học bao nhiêu phút mỗi ngày?',
+                  Text(
+                    context.l10n.dailyMinutes,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -113,7 +125,7 @@ class Step3Personalize extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  'phút',
+                                  context.l10n.minutes,
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: isSelected
@@ -132,8 +144,8 @@ class Step3Personalize extends StatelessWidget {
                   const SizedBox(height: 28),
 
                   // ── Age group ────────────────────────────────────────────
-                  const Text(
-                    'Khoảng tuổi của bạn?',
+                  Text(
+                    context.l10n.ageRange,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -167,7 +179,7 @@ class Step3Personalize extends StatelessWidget {
                             boxShadow: isSelected ? AppShadows.subtle : null,
                           ),
                           child: Text(
-                            age,
+                            _ageLabel(context, age),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,

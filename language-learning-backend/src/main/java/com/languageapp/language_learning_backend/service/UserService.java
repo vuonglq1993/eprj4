@@ -2,17 +2,22 @@ package com.languageapp.language_learning_backend.service;
 
 import com.languageapp.language_learning_backend.dto.user.*;
 import com.languageapp.language_learning_backend.entity.User;
-import com.languageapp.language_learning_backend.repository.UserRepository;
+import com.languageapp.language_learning_backend.entity.User.Role;
+import com.languageapp.language_learning_backend.entity.User.AuthProvider;
+import com.languageapp.language_learning_backend.firebase.document.OtpDocument;
+import com.languageapp.language_learning_backend.firebase.repository.FirebaseOtpRepository;
+import com.languageapp.language_learning_backend.repository.*;
 import com.languageapp.language_learning_backend.security.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.languageapp.language_learning_backend.exception.GlobalExceptionHandler.*;
-import com.languageapp.language_learning_backend.entity.User.Role;
-import com.languageapp.language_learning_backend.entity.User.AuthProvider;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -21,18 +26,27 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepo;
+    private final SubscriptionRepository subRepo;
+    private final CourseRepository courseRepo;
+    private final LearningPathRepository lpRepo;
+    private final ExerciseAttemptRepository attemptRepo;
+    private final UserProgressRepository progressRepo;
+    private final StudyLogRepository studyLogRepo;
+    private final AIInteractionLogRepository aiLogRepo;
+    private final PaymentTransactionRepository paymentRepo;
+    private final DeviceTokenRepository deviceTokenRepo;
+    private final UserOnboardingRepository onboardingRepo;
+    private final UserLearningPathRepository ulpRepo;
+    private final UserBadgeRepository badgeRepo;
+    private final UserGameProfileRepository gameProfileRepo;
     private final PasswordEncoder encoder;
-
-
+    private final EmailService emailService;
+    private final FirebaseOtpRepository otpRepository;
     private final JwtTokenProvider jwt;
 
-    // TODO enable email OTP verification later
-    // private final EmailService emailService;
-
-    // ── REGISTER ──────────────────────────────────────────────
+    // ── REGISTER ───────────────────────────────────────────────
     @Transactional
     public AuthResponse register(RegisterRequest req) {
-
         if (userRepo.existsByEmail(req.getEmail()))
             throw new ConflictException("Email already registered");
 
@@ -46,32 +60,36 @@ public class UserService {
                 .provider(AuthProvider.LOCAL)
                 .build());
 
-        /*
-        // Generate OTP for email verification
-        String otp = otp6();
-
-        // Store OTP in Redis (5 minutes)
-        redis.opsForValue().set(OTP_VER + user.getEmail(), otp, Duration.ofMinutes(5));
-
-        // Send verification email
-        emailService.sendVerification(user.getEmail(), otp);
-        */
+        try {
+            String otp = String.format("%06d", (int) (Math.random() * 1_000_000));
+            otpRepository.save(OtpDocument.builder()
+                    .email(user.getEmail())
+                    .otp(otp)
+                    .type("VERIFY_EMAIL")
+                    .createdAt(Instant.now())
+                    .expiresAt(Instant.now().plusSeconds(300))
+                    .used(false)
+                    .attempts(0)
+                    .build());
+            emailService.sendVerificationOtp(user.getEmail(), otp);
+        } catch (Exception e) {
+            log.error("Failed to send OTP", e);
+        }
 
         return buildTokens(user);
     }
 
-    // ── LOGIN ──────────────────────────────────────────────────
+    // ── LOGIN ─────────────────────────────────────────────────
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest req) {
-
         User user = userRepo.findByEmail(req.getEmail())
                 .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
         if (!user.getIsActive())
             throw new UnauthorizedException("Account is disabled");
 
-        if (user.getProvider() != AuthProvider.LOCAL)
-            throw new BadRequestException("Please login with " + user.getProvider().name().toLowerCase());
+        if (user.getPassword() == null)
+            throw new BadRequestException("no_password_set");
 
         if (!encoder.matches(req.getPassword(), user.getPassword()))
             throw new UnauthorizedException("Invalid credentials");
@@ -81,102 +99,84 @@ public class UserService {
 
     // ── REFRESH TOKEN (DISABLED) ──────────────────────────────
     public AuthResponse refresh(String refreshToken) {
-
-        /*
-        if (!jwt.validate(refreshToken) || !jwt.isRefreshToken(refreshToken))
-            throw new UnauthorizedException("Invalid refresh token");
-
-        UUID userId = jwt.getUserId(refreshToken);
-
-        if (!refreshToken.equals(redis.opsForValue().get(REFRESH + userId)))
-            throw new UnauthorizedException("Token revoked or reused");
-
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
-
-        redis.delete(REFRESH + userId);
-
-        return buildTokens(user);
-        */
-
         throw new UnsupportedOperationException("Refresh token feature is disabled");
     }
 
-    // ── LOGOUT (CLIENT SIDE ONLY) ─────────────────────────────
+    // ── LOGOUT ────────────────────────────────────────────────
     public void logout(UUID userId) {
         log.warn("Logout handled on client side (no Redis)");
     }
 
-    // ── VERIFY EMAIL (DISABLED) ───────────────────────────────
+    // ── VERIFY EMAIL ──────────────────────────────────────────
     @Transactional
     public void verifyEmail(String email, String otp) {
+        try {
+            OtpDocument doc = otpRepository.findByEmailAndType(email, "VERIFY_EMAIL")
+                    .orElseThrow(() -> new BadRequestException("OTP not found"));
 
-        /*
-        String stored = redis.opsForValue().get(OTP_VER + email);
+            if (doc.isUsed())
+                throw new BadRequestException("OTP already used");
+            if (!doc.getOtp().equals(otp))
+                throw new BadRequestException("Invalid OTP");
+            if (doc.getExpiresAt().isBefore(Instant.now()))
+                throw new BadRequestException("OTP expired");
 
-        if (stored == null || !stored.equals(otp))
-            throw new BadRequestException("Invalid or expired OTP");
-
-        userRepo.findByEmail(email).ifPresent(u -> {
-            u.setEmailVerified(true);
-            userRepo.save(u);
-        });
-
-        redis.delete(OTP_VER + email);
-        */
-
-        throw new UnsupportedOperationException("Email verification is currently disabled");
+            User user = userRepo.findByEmail(email)
+                    .orElseThrow(() -> new NotFoundException("User not found"));
+            user.setEmailVerified(true);
+            userRepo.save(user);
+            otpRepository.markAsUsed(email, "VERIFY_EMAIL");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    // ── FORGOT PASSWORD (DISABLED) ────────────────────────────
+    // ── FORGOT PASSWORD ──────────────────────────────────────
     public void forgotPassword(String email) {
-
-        /*
         userRepo.findByEmail(email)
-                .filter(u -> u.getProvider() == AuthProvider.LOCAL)
-                .ifPresent(u -> {
-
-                    String otp = otp6();
-
-                    redis.opsForValue().set(OTP_RST + email, otp, Duration.ofMinutes(5));
-
-                    emailService.sendPasswordReset(email, otp);
-                });
-        */
-
-        log.warn("Forgot password requested but OTP is disabled");
-    }
-
-    // ── RESET PASSWORD (DISABLED) ─────────────────────────────
-    @Transactional
-    public void resetPassword(String token, String newPassword) {
-
-        /*
-        String decoded = new String(java.util.Base64.getDecoder().decode(token));
-        String[] parts = decoded.split(":", 2);
-
-        if (parts.length != 2)
-            throw new BadRequestException("Invalid token format");
-
-        String email = parts[0];
-        String otp = parts[1];
-
-        String stored = redis.opsForValue().get(OTP_RST + email);
-
-        if (stored == null || !stored.equals(otp))
-            throw new BadRequestException("Invalid or expired OTP");
-
-        User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        user.setPassword(encoder.encode(newPassword));
-        userRepo.save(user);
+        try {
+            String otp = String.format("%06d", (int) (Math.random() * 1_000_000));
+            otpRepository.save(OtpDocument.builder()
+                    .email(email)
+                    .otp(otp)
+                    .type("RESET_PASSWORD")
+                    .createdAt(Instant.now())
+                    .expiresAt(Instant.now().plusSeconds(300))
+                    .used(false)
+                    .attempts(0)
+                    .build());
+            emailService.sendPasswordResetOtp(email, otp);
+            log.info("OTP reset password sent to {}", email);
+        } catch (Exception e) {
+            log.error("Failed to send reset OTP", e);
+        }
+    }
 
-        redis.delete(OTP_RST + email);
-        redis.delete(REFRESH + user.getId());
-        */
+    // ── RESET PASSWORD ────────────────────────────────────────
+    @Transactional
+    public void resetPassword(String email, String otp, String newPassword) {
+        try {
+            OtpDocument doc = otpRepository.findByEmailAndType(email, "RESET_PASSWORD")
+                    .orElseThrow(() -> new BadRequestException("OTP not found"));
 
-        throw new UnsupportedOperationException("Reset password feature is disabled");
+            if (doc.isUsed())
+                throw new BadRequestException("OTP already used");
+            if (!doc.getOtp().equals(otp))
+                throw new BadRequestException("Invalid OTP");
+            if (doc.getExpiresAt().isBefore(Instant.now()))
+                throw new BadRequestException("OTP expired");
+
+            User user = userRepo.findByEmail(email)
+                    .orElseThrow(() -> new NotFoundException("User not found"));
+            user.setPassword(encoder.encode(newPassword));
+            userRepo.save(user);
+            otpRepository.markAsUsed(email, "RESET_PASSWORD");
+            log.info("Password reset success for {}", email);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // ── GET PROFILE ───────────────────────────────────────────
@@ -188,52 +188,131 @@ public class UserService {
     // ── UPDATE PROFILE ────────────────────────────────────────
     @Transactional
     public UserProfileResponse updateProfile(UpdateProfileRequest req, UserPrincipal principal) {
-
         User user = findUser(principal.getUserId());
 
-        if (req.getFirstName() != null)
-            user.setFirstName(req.getFirstName());
-
-        if (req.getLastName() != null)
-            user.setLastName(req.getLastName());
-
-        if (req.getAvatarUrl() != null)
-            user.setAvatarUrl(req.getAvatarUrl());
-
-        if (req.getUiLanguage() != null)
-            user.setUiLanguage(req.getUiLanguage());
+        if (req.getFirstName()   != null) user.setFirstName(req.getFirstName());
+        if (req.getLastName()    != null) user.setLastName(req.getLastName());
+        if (req.getAvatarUrl()   != null) user.setAvatarUrl(req.getAvatarUrl());
+        if (req.getUiLanguage()  != null) user.setUiLanguage(req.getUiLanguage());
+        if (req.getPhone()       != null) user.setPhone(req.getPhone());
+        if (req.getGender()      != null) user.setGender(req.getGender());
+        if (req.getDateOfBirth() != null) user.setDateOfBirth(req.getDateOfBirth());
+        if (req.getCountry()     != null) user.setCountry(req.getCountry());
+        if (req.getTimezone()    != null) user.setTimezone(req.getTimezone());
+        if (req.getBio()         != null) user.setBio(req.getBio());
 
         return toProfileResponse(userRepo.save(user));
     }
 
-    // ── CHANGE PASSWORD ───────────────────────────────────────
+    // ── CHANGE PASSWORD ──────────────────────────────────────
     @Transactional
     public void changePassword(ChangePasswordRequest req, UserPrincipal principal) {
-
         User user = findUser(principal.getUserId());
 
         if (!encoder.matches(req.getCurrentPassword(), user.getPassword()))
             throw new BadRequestException("Current password is incorrect");
 
+        if (encoder.matches(req.getNewPassword(), user.getPassword()))
+            throw new BadRequestException("New password must be different from current password");
+
         user.setPassword(encoder.encode(req.getNewPassword()));
         userRepo.save(user);
     }
 
-    // ── HELPERS ───────────────────────────────────────────────
+    // ── ADMIN: GET ALL USERS ──────────────────────────────────
+    @Transactional(readOnly = true)
+    public Page<UserResponse> getAllUsers(int page, int size) {
+        Page<User> users = userRepo.findAll(PageRequest.of(page, size, Sort.by("createdAt").descending()));
+        return users.map(u -> new UserResponse(
+                u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(),
+                u.getAvatarUrl(),
+                u.getRole() != null ? u.getRole().name() : "STUDENT",
+                u.getIsActive(), u.getEmailVerified(), u.getCreatedAt()
+        ));
+    }
+
+    // ── ADMIN: COUNT USERS ───────────────────────────────────
+    @Transactional(readOnly = true)
+    public long getUsersCount() {
+        return userRepo.countAll();
+    }
+
+    // ── ADMIN: SEARCH USERS ───────────────────────────────────
+    @Transactional(readOnly = true)
+    public List<UserSearchResult> searchUsers(String query) {
+        if (query == null || query.trim().isEmpty()) return List.of();
+
+        return userRepo.findByEmailContainingIgnoreCase(query.trim()).stream()
+                .limit(10)
+                .map(u -> new UserSearchResult(
+                        u.getId().toString(),
+                        u.getEmail(),
+                        (u.getFirstName() != null ? u.getFirstName() : "")
+                                + " " + (u.getLastName() != null ? u.getLastName() : ""),
+                        u.getRole() != null ? u.getRole().name() : "STUDENT"
+                ))
+                .toList();
+    }
+
+    // ── ADMIN: UPDATE ROLE ───────────────────────────────────
+    @Transactional
+    public String updateUserRole(UUID userId, String roleStr) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        Role role;
+        try {
+            role = Role.valueOf(roleStr.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid role: " + roleStr);
+        }
+
+        user.setRole(role);
+        userRepo.save(user);
+        return role.name();
+    }
+
+    // ── ADMIN: DELETE USER ───────────────────────────────────
+    @Transactional
+    public void deleteUser(UUID userId) {
+        userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        // Null-ify createdBy so FK constraint is satisfied
+        courseRepo.findByCreatedById(userId).forEach(c -> {
+            c.setCreatedBy(null);
+            courseRepo.save(c);
+        });
+        lpRepo.findByCreatedById(userId).forEach(lp -> {
+            lp.setCreatedBy(null);
+            lpRepo.save(lp);
+        });
+
+        // Cascade delete all user-related records
+        subRepo.findByUserId(userId).ifPresent(sub -> subRepo.delete(sub));
+        attemptRepo.deleteByUserId(userId);
+        progressRepo.deleteByUserId(userId);
+        studyLogRepo.deleteByUserId(userId);
+        aiLogRepo.deleteByUserId(userId);
+        paymentRepo.deleteByUserId(userId);
+        deviceTokenRepo.deleteByUserId(userId);
+        onboardingRepo.deleteByUserId(userId);
+        ulpRepo.deleteByUserId(userId);
+        badgeRepo.deleteByUserId(userId);
+        gameProfileRepo.findByUserId(userId)
+                .ifPresent(gameProfileRepo::delete);
+
+        userRepo.deleteById(userId);
+    }
+
+    // ── PRIVATE HELPERS ───────────────────────────────────────
     private User findUser(UUID id) {
         return userRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
-    // ✅ JWT WORKING
     private AuthResponse buildTokens(User user) {
-
-        String at = jwt.generateAccessToken(
-                user.getId(),
-                user.getEmail(),
-                user.getRole().name()
-        );
-
+        String at = jwt.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name());
         String rt = jwt.generateRefreshToken(user.getId());
 
         return AuthResponse.builder()
@@ -254,15 +333,14 @@ public class UserService {
     }
 
     private UserProfileResponse toProfileResponse(User u) {
-
         return UserProfileResponse.builder()
                 .id(u.getId())
                 .email(u.getEmail())
                 .firstName(u.getFirstName())
                 .lastName(u.getLastName())
                 .avatarUrl(u.getAvatarUrl())
-                .role(u.getRole().name())
-                .provider(u.getProvider().name())
+                .role(u.getRole() != null ? u.getRole().name() : "STUDENT")
+                .provider(u.getProvider() != null ? u.getProvider().name() : "LOCAL")
                 .emailVerified(u.getEmailVerified())
                 .isActive(u.getIsActive())
                 .createdAt(u.getCreatedAt())
@@ -271,10 +349,27 @@ public class UserService {
                         : "FREE")
                 .isPremium(u.isPremium())
                 .uiLanguage(u.getUiLanguage())
+                .phone(u.getPhone())
+                .gender(u.getGender())
+                .dateOfBirth(u.getDateOfBirth())
+                .country(u.getCountry())
+                .timezone(u.getTimezone())
+                .bio(u.getBio())
                 .build();
     }
 
-    private String otp6() {
-        return String.format("%06d", (int) (Math.random() * 1_000_000));
-    }
+    // ── RECORDS ───────────────────────────────────────────────
+    public record UserSearchResult(String id, String email, String name, String role) {}
+
+    public record UserResponse(
+            UUID id,
+            String email,
+            String firstName,
+            String lastName,
+            String avatarUrl,
+            String role,
+            Boolean isActive,
+            Boolean emailVerified,
+            Instant createdAt
+    ) {}
 }

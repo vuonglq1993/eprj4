@@ -41,9 +41,9 @@ public class LessonController {
         return ResponseEntity.ok(service.getDetail(courseId, lessonId, p));
     }
 
-    @Operation(summary = "Tạo bài học mới — Teacher / Admin")
+    @Operation(summary = "Tạo bài học mới — Admin")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<LessonDetailResponse> create(
             @PathVariable UUID courseId, @Valid @RequestBody LessonRequest req,
@@ -53,7 +53,7 @@ public class LessonController {
 
     @Operation(summary = "Cập nhật bài học — chủ sở hữu / Admin")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{lessonId}")
     public ResponseEntity<LessonDetailResponse> update(
             @PathVariable UUID courseId, @PathVariable UUID lessonId,
@@ -63,7 +63,7 @@ public class LessonController {
 
     @Operation(summary = "Xoá bài học — chủ sở hữu / Admin")
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{lessonId}")
     public ResponseEntity<Void> delete(
             @PathVariable UUID courseId, @PathVariable UUID lessonId,

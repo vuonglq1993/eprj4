@@ -8,13 +8,11 @@ import {
   updateLearningPath,
   togglePublishLearningPath,
   deleteLearningPath,
-  enrollInPath,
-  unenrollFromPath,
-  getMyPaths,
 } from '../services/learningPathService';
 import { getLanguages } from '../services/languageService';
 import { getCourses } from '../services/courseService';
-import { isAdmin, hasRole } from '../utils/roleUtils';
+import { isAdmin } from '../utils/roleUtils';
+import { DEMO_LEARNING_PATHS, DEMO_LANGUAGES_FOR_PATH } from '../data/learningPathDemo';
 
 
 const EMPTY_FORM = {
@@ -49,16 +47,6 @@ function normalizePathList(payload) {
   return [];
 }
 
-function hasUsableAccessToken() {
-  try {
-    const raw = localStorage.getItem('auth_tokens');
-    const t = raw ? JSON.parse(raw).accessToken : null;
-    return typeof t === 'string' && t.trim().length > 0;
-  } catch {
-    return false;
-  }
-}
-
 function normalizeLanguageList(payload) {
   if (payload == null) return [];
   if (Array.isArray(payload)) return payload;
@@ -82,7 +70,6 @@ function isDemoLearningPathId(id) {
 
 const LearningPathList = () => {
   const [paths, setPaths] = useState([]);
-  const [myPaths, setMyPaths] = useState([]);
   const [languages, setLanguages] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -94,10 +81,13 @@ const LearningPathList = () => {
   const [saving, setSaving] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
-  const [enrollingId, setEnrollingId] = useState(null);
-  const canManage = isAdmin() || hasRole('TEACHER');
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const canManage = isAdmin();
 
-  const fetchAll = async () => {
+  const PAGE_SIZE = 12;
+
+  const fetchAll = async (page = 0) => {
     setLoading(true);
     setError('');
     setLoadWarning('');
@@ -106,8 +96,13 @@ const LearningPathList = () => {
     let pathsFromApi = false;
 
     try {
-      const pathsRes = await getLearningPaths();
-      pathList = normalizePathList(pathsRes.data);
+      const pathsRes = await getLearningPaths({ page, size: PAGE_SIZE });
+      const payload = pathsRes.data;
+      pathList = normalizePathList(payload);
+      if (payload && typeof payload.totalPages === 'number') {
+        setTotalPages(payload.totalPages);
+        setCurrentPage(payload.page ?? page);
+      }
       pathsFromApi = true;
     } catch {
       pathList = [...DEMO_LEARNING_PATHS];
@@ -117,18 +112,6 @@ const LearningPathList = () => {
     }
 
     setPaths(pathList);
-
-    let myList = [];
-    if (hasUsableAccessToken()) {
-      try {
-        const myRes = await getMyPaths();
-        myList = normalizePathList(myRes.data);
-      } catch {
-        /* GET /learning-paths/my lỗi không làm hỏng cả trang */
-        myList = [];
-      }
-    }
-    setMyPaths(myList);
 
     if (canManage) {
       try {
@@ -157,7 +140,7 @@ const LearningPathList = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => { fetchAll(currentPage); }, []);
 
   const openCreate = () => {
     setEditId(null);
@@ -203,7 +186,6 @@ const LearningPathList = () => {
     if (!window.confirm('Xóa lộ trình này?')) return;
     if (isDemoLearningPathId(id)) {
       setPaths((prev) => prev.filter((p) => p.id !== id));
-      setMyPaths((prev) => prev.filter((p) => p.id !== id));
       return;
     }
     setDeletingId(id);
@@ -217,41 +199,14 @@ const LearningPathList = () => {
     }
   };
 
-  const handleEnroll = async (id) => {
-    const row = paths.find((p) => p.id === id);
-    if (isDemoLearningPathId(id) && row) {
-      setMyPaths((prev) => (prev.some((p) => p.id === id) ? prev : [...prev, row]));
-      return;
-    }
-    setEnrollingId(id);
-    try {
-      await enrollInPath(id);
-      await fetchAll();
-    } catch {
-      alert('Đăng ký thất bại.');
-    } finally {
-      setEnrollingId(null);
-    }
-  };
-
-  const handleUnenroll = async (id) => {
-    if (!window.confirm('Huỷ đăng ký lộ trình này?')) return;
-    if (isDemoLearningPathId(id)) {
-      setMyPaths((prev) => prev.filter((p) => p.id !== id));
-      return;
-    }
-    try {
-      await unenrollFromPath(id);
-      await fetchAll();
-    } catch {
-      alert('Huỷ thất bại.');
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.languageId) {
       alert('Vui lòng điền Title và chọn Language.');
+      return;
+    }
+    if (form.courseIds.length === 0) {
+      alert('Vui lòng chọn ít nhất một khóa học.');
       return;
     }
     if (editId && isDemoLearningPathId(editId)) {
@@ -296,13 +251,11 @@ const LearningPathList = () => {
       }
       setShowModal(false);
     } catch (err) {
-      alert(err.response?.data?.message || 'Lưu thất bại.');
+      alert(err.response?.status === 409 ? 'Đã tồn tại.' : (err.response?.data?.message || 'Lưu thất bại.'));
     } finally {
       setSaving(false);
     }
   };
-
-  const myPathIds = new Set(myPaths.map((p) => p.id));
 
   return (
     <div className="lp-page py-4 px-3">
@@ -330,9 +283,7 @@ const LearningPathList = () => {
           <div className="text-center py-5 text-muted">Đang tải…</div>
         ) : (
           <div className="lp-grid">
-            {paths.map((p) => {
-              const isEnrolled = myPathIds.has(p.id);
-              return (
+            {paths.map((p) => (
                 <div key={p.id} className="lp-card shadow-sm">
                   <div className="lp-card-img">
                     {p.thumbnailUrl ? (
@@ -360,30 +311,8 @@ const LearningPathList = () => {
                     <div className="d-flex align-items-center justify-content-between">
                       <span className="lp-meta">
                         {p.totalCourses ?? p.courses?.length ?? 0} courses
-                        {isEnrolled && <span className="lp-enrolled-tag">Enrolled</span>}
                       </span>
                       <div className="lp-actions">
-                        {!isEnrolled && (
-                          <button
-                            type="button"
-                            className="lp-action-btn lp-action-btn--join"
-                            title="Enroll"
-                            onClick={() => handleEnroll(p.id)}
-                            disabled={enrollingId === p.id}
-                          >
-                            {enrollingId === p.id ? '…' : 'Join'}
-                          </button>
-                        )}
-                        {isEnrolled && (
-                          <button
-                            type="button"
-                            className="lp-action-btn lp-action-btn--unsub"
-                            title="Unenroll"
-                            onClick={() => handleUnenroll(p.id)}
-                          >
-                            Leave
-                          </button>
-                        )}
                         {canManage && (
                           <>
                             <button type="button" className="lp-action-btn" title="Edit" onClick={() => openEdit(p)}>
@@ -415,14 +344,37 @@ const LearningPathList = () => {
                     </div>
                   </div>
                 </div>
-              );
-            })}
+            ))}
             {paths.length === 0 && (
               <div className="text-center text-muted py-5 w-100">Chưa có lộ trình nào.</div>
             )}
           </div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <nav className="d-flex justify-content-center mt-4" aria-label="Learning path pagination">
+          <ul className="pagination mb-0">
+            <li className={currentPage === 0 ? 'page-item disabled' : 'page-item'}>
+              <button className="page-link" type="button" onClick={() => { setCurrentPage(0); fetchAll(0); }} disabled={currentPage === 0}>«</button>
+            </li>
+            <li className={currentPage === 0 ? 'page-item disabled' : 'page-item'}>
+              <button className="page-link" type="button" onClick={() => { const p = currentPage - 1; setCurrentPage(p); fetchAll(p); }} disabled={currentPage === 0}>‹</button>
+            </li>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <li key={i} className={currentPage === i ? 'page-item active' : 'page-item'}>
+                <button className="page-link" type="button" onClick={() => { setCurrentPage(i); fetchAll(i); }}>{i + 1}</button>
+              </li>
+            ))}
+            <li className={currentPage >= totalPages - 1 ? 'page-item disabled' : 'page-item'}>
+              <button className="page-link" type="button" onClick={() => { const n2 = currentPage + 1; setCurrentPage(n2); fetchAll(n2); }} disabled={currentPage >= totalPages - 1}>›</button>
+            </li>
+            <li className={currentPage >= totalPages - 1 ? 'page-item disabled' : 'page-item'}>
+              <button className="page-link" type="button" onClick={() => { const last = totalPages - 1; setCurrentPage(last); fetchAll(last); }} disabled={currentPage >= totalPages - 1}>»</button>
+            </li>
+          </ul>
+        </nav>
+      )}
 
       {showModal && (
         <div className="modal-backdrop fade show d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
+import '../../l10n/l10n_ext.dart';
 import '_onboarding_widgets.dart';
 
 class Step1Language extends StatelessWidget {
@@ -26,24 +27,24 @@ class Step1Language extends StatelessWidget {
         children: [
           OnboardingHeader(step: 1, total: 4, onBack: null),
 
-          const Padding(
-            padding: EdgeInsets.fromLTRB(24, 8, 24, 20),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Bạn muốn học ngôn ngữ\nnào?',
-                  style: TextStyle(
+                  context.l10n.onboardingLanguageTitle,
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                     height: 1.3,
                   ),
                 ),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Text(
-                  'Có thể chọn nhiều ngôn ngữ',
-                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  context.l10n.onboardingLanguageSubtitle,
+                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                 ),
               ],
             ),
@@ -132,7 +133,7 @@ class Step1Language extends StatelessWidget {
           ),
 
           OnboardingNextButton(
-            label: 'Tiếp theo',
+            label: context.l10n.next,
             enabled: selectedIds.isNotEmpty,
             onTap: onNext,
           ),

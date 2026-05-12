@@ -11,9 +11,3 @@ export const updateExercise = (courseId, lessonId, exerciseId, data) =>
 
 export const deleteExercise = (courseId, lessonId, exerciseId) =>
   api.delete(`/courses/${courseId}/lessons/${lessonId}/exercises/${exerciseId}`);
-
-export const submitExercise = (data) =>
-  api.post(`/courses/${data.courseId}/lessons/${data.lessonId}/exercises/submit`, {
-    exerciseId: data.exerciseId,
-    answer: data.answer,
-  });

@@ -109,7 +109,7 @@ const Setting = () => {
       });
       setSaveMsg('Lưu thành công!');
     } catch (err) {
-      setError(getApiErrorMessage(err) || 'Lưu thất bại. Vui lòng thử lại.');
+      setError((err.response?.status === 409 ? 'Đã tồn tại.' : getApiErrorMessage(err)) || 'Lưu thất bại. Vui lòng thử lại.');
     } finally {
       setSaving(false);
     }

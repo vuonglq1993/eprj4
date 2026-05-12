@@ -32,6 +32,7 @@ import LanguageList from "./pages/LanguageList"
 import CourseList from "./pages/CourseList"
 import LessonList from "./pages/LessonList"
 import ExerciseList from "./pages/ExerciseList"
+import NotificationList from "./pages/NotificationList"
 import ProgressPage from "./pages/ProgressPage"
 import PaymentTransactionsPage from "./pages/data/PaymentTransactionsPage"
 import StudyLogsPage from "./pages/data/StudyLogsPage"
@@ -70,6 +71,7 @@ import './styles/languagelist.css'
 import './styles/courselist.css'
 import './styles/lessonlist.css'
 import './styles/exerciselist.css'
+import './styles/notificationlist.css'
 import './styles/progresspage.css'
 import './styles/dataTablesPages.css'
 import './styles/learningpathlist.css'
@@ -317,6 +319,15 @@ function ExerciseListRoute() {
     </ProtectedRoute>
   )
 }
+function NotificationListRoute() {
+  return (
+    <ProtectedRoute allowedRoles={['admin']}>
+      <AppLayout>
+        <NotificationList />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
 function ProgressPageRoute() {
   return (
     <ProtectedRoute>
@@ -369,7 +380,7 @@ function TopicListRoute() {
 
 function SubscriptionPlansAdminRoute() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute allowedRoles={['admin']}>
       <AppLayout>
         <SubscriptionPlansAdminPage />
       </AppLayout>
@@ -419,7 +430,7 @@ function LeaderboardRoute() {
 
 function AdminUserManagementRoute() {
   return (
-    <ProtectedRoute allowedRoles={['ADMIN']}>
+    <ProtectedRoute allowedRoles={['admin']}>
       <AppLayout>
         <AdminUserManagementPage />
       </AppLayout>
@@ -473,6 +484,7 @@ function App() {
           <Route path="/courses" element={<CourseListRoute />} />
           <Route path="/lessons" element={<LessonListRoute />} />
           <Route path="/exercises" element={<ExerciseListRoute />} />
+          <Route path="/admin/notifications" element={<NotificationListRoute />} />
           <Route path="/progress" element={<ProgressPageRoute />} />
           <Route path="/learning-paths" element={<LearningPathListRoute />} />
           <Route path="/topics" element={<TopicListRoute />} />

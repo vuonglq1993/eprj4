@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../services/ai_service.dart';
+import '../../l10n/l10n_ext.dart';
 
 class AiVocabScreen extends StatefulWidget {
   const AiVocabScreen({super.key});
@@ -133,17 +134,17 @@ class _AiVocabScreenState extends State<AiVocabScreen>
                 color: Color(0xFF3E8EEA), size: 18),
           ),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('AI Vocabulary',
-                    style: TextStyle(
+                Text(context.l10n.aiVocabulary,
+                    style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary)),
-                Text('Tra từ điển thông minh',
-                    style: TextStyle(
+                Text(context.l10n.smartDictionary,
+                    style: const TextStyle(
                         fontSize: 11, color: AppColors.textSecondary)),
               ],
             ),
@@ -166,8 +167,8 @@ class _AiVocabScreenState extends State<AiVocabScreen>
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: AppColors.border),
                 ),
-                child: const Text('Xóa',
-                    style: TextStyle(
+                child: Text(context.l10n.delete,
+                    style: const TextStyle(
                         fontSize: 11, color: AppColors.textSecondary)),
               ),
             ),
@@ -201,8 +202,8 @@ class _AiVocabScreenState extends State<AiVocabScreen>
                     fontSize: 15, color: AppColors.textPrimary),
                 textInputAction: TextInputAction.search,
                 onSubmitted: (_) => _search(),
-                decoration: const InputDecoration(
-                  hintText: 'Nhập từ tiếng Anh...',
+                decoration: InputDecoration(
+                  hintText: context.l10n.enterEnglishWord,
                   hintStyle: TextStyle(
                       color: AppColors.textHint, fontSize: 14),
                   border: InputBorder.none,
@@ -227,8 +228,8 @@ class _AiVocabScreenState extends State<AiVocabScreen>
                         child: CircularProgressIndicator(
                             strokeWidth: 2,
                             color: AppColors.primaryLight))
-                    : const Text('Tra',
-                        style: TextStyle(
+                    : Text(context.l10n.lookup,
+                        style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                             color: Colors.white)),
@@ -305,10 +306,10 @@ class _AiVocabScreenState extends State<AiVocabScreen>
 
   Widget _buildFeatureHints() {
     final hints = [
-      (Icons.record_voice_over_rounded, 'Phiên âm IPA', '3E8EEA'),
-      (Icons.lightbulb_outline_rounded, 'Mẹo ghi nhớ', 'FFB300'),
-      (Icons.compare_arrows_rounded, 'Từ đồng/trái nghĩa', '4CAF50'),
-      (Icons.format_list_bulleted_rounded, 'Ví dụ thực tế', '8B60FF'),
+      (Icons.record_voice_over_rounded, context.l10n.ipaTranscription, '3E8EEA'),
+      (Icons.lightbulb_outline_rounded, context.l10n.memorizationTip, 'FFB300'),
+      (Icons.compare_arrows_rounded, context.l10n.synonymsAntonyms, '4CAF50'),
+      (Icons.format_list_bulleted_rounded, context.l10n.realExamples, '8B60FF'),
     ];
     return GridView.count(
       crossAxisCount: 2,
@@ -367,14 +368,14 @@ class _AiVocabScreenState extends State<AiVocabScreen>
             ),
           ),
           const SizedBox(height: 16),
-          const Text('Đang tra từ điển...',
-              style: TextStyle(
+          Text(context.l10n.lookingUpWord,
+              style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
-          const Text('AI đang tổng hợp thông tin từ vựng',
-              style: TextStyle(
+          Text(context.l10n.aiSynthesizing,
+              style: const TextStyle(
                   fontSize: 12, color: AppColors.textSecondary)),
         ],
       ),
@@ -416,8 +417,8 @@ class _AiVocabScreenState extends State<AiVocabScreen>
                   gradient: AppGradients.primaryButton,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text('Thử lại',
-                    style: TextStyle(
+                child: Text(context.l10n.retry,
+                    style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -467,10 +468,10 @@ class _AiVocabScreenState extends State<AiVocabScreen>
             ),
             child: TabBar(
               controller: _tabCtrl,
-              tabs: const [
-                Tab(text: 'Tổng quan'),
-                Tab(text: 'Ví dụ'),
-                Tab(text: 'Liên quan'),
+              tabs: [
+                Tab(text: context.l10n.overview),
+                Tab(text: context.l10n.examples),
+                Tab(text: context.l10n.related),
               ],
               labelStyle: const TextStyle(
                   fontSize: 12, fontWeight: FontWeight.w600),
@@ -510,7 +511,7 @@ class _AiVocabScreenState extends State<AiVocabScreen>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1A2550), Color(0xFF141430)],
+          colors: [Color(0x1A00B4D8), Color(0x0C0077B6)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -559,8 +560,8 @@ class _AiVocabScreenState extends State<AiVocabScreen>
                             color: AppColors.textSecondary,
                           ),
                           const SizedBox(width: 6),
-                          const Text('chậm',
-                              style: TextStyle(
+                          Text(context.l10n.slow,
+                              style: const TextStyle(
                                   fontSize: 9,
                                   color: AppColors.textHint)),
                         ],
@@ -583,8 +584,8 @@ class _AiVocabScreenState extends State<AiVocabScreen>
                             color: AppColors.textSecondary,
                           ),
                           const SizedBox(width: 6),
-                          const Text('chậm',
-                              style: TextStyle(
+                          Text(context.l10n.slow,
+                              style: const TextStyle(
                                   fontSize: 9,
                                   color: AppColors.textHint)),
                         ],
@@ -658,7 +659,7 @@ class _AiVocabScreenState extends State<AiVocabScreen>
         if (collocations.isNotEmpty) ...[
           _SectionLabel(
               icon: Icons.link_rounded,
-              label: 'Cụm từ thường gặp',
+              label: context.l10n.commonPhrases,
               color: const Color(0xFF3E8EEA)),
           const SizedBox(height: 8),
           Wrap(
@@ -687,7 +688,7 @@ class _AiVocabScreenState extends State<AiVocabScreen>
         if (tip.isNotEmpty) ...[
           _SectionLabel(
               icon: Icons.lightbulb_rounded,
-              label: 'Mẹo ghi nhớ',
+              label: context.l10n.memorizationTip,
               color: AppColors.warning),
           const SizedBox(height: 8),
           Container(
@@ -721,9 +722,9 @@ class _AiVocabScreenState extends State<AiVocabScreen>
 
   Widget _buildExamplesTab(List<Map<String, dynamic>> examples) {
     if (examples.isEmpty) {
-      return const Center(
-        child: Text('Không có ví dụ',
-            style: TextStyle(color: AppColors.textSecondary)),
+      return Center(
+        child: Text(context.l10n.noExamples,
+            style: const TextStyle(color: AppColors.textSecondary)),
       );
     }
     return ListView.separated(
@@ -806,7 +807,7 @@ class _AiVocabScreenState extends State<AiVocabScreen>
         if (synonyms.isNotEmpty) ...[
           _SectionLabel(
               icon: Icons.compare_arrows_rounded,
-              label: 'Từ đồng nghĩa',
+              label: context.l10n.synonyms,
               color: AppColors.success),
           const SizedBox(height: 8),
           _WordChips(
@@ -818,7 +819,7 @@ class _AiVocabScreenState extends State<AiVocabScreen>
         if (antonyms.isNotEmpty) ...[
           _SectionLabel(
               icon: Icons.swap_horiz_rounded,
-              label: 'Từ trái nghĩa',
+              label: context.l10n.antonyms,
               color: AppColors.error),
           const SizedBox(height: 8),
           _WordChips(
@@ -827,11 +828,11 @@ class _AiVocabScreenState extends State<AiVocabScreen>
               onTap: _search),
         ],
         if (synonyms.isEmpty && antonyms.isEmpty)
-          const Center(
+          Center(
             child: Padding(
-              padding: EdgeInsets.only(top: 40),
-              child: Text('Không có dữ liệu liên quan',
-                  style: TextStyle(color: AppColors.textSecondary)),
+              padding: const EdgeInsets.only(top: 40),
+              child: Text(context.l10n.noRelatedData,
+                  style: const TextStyle(color: AppColors.textSecondary)),
             ),
           ),
       ],

@@ -10,4 +10,5 @@ public interface DeviceTokenRepository extends JpaRepository<DeviceToken, Long> 
     List<DeviceToken> findByUserId(UUID userId);
 
     Optional<DeviceToken> findByToken(String token);
+    void deleteByUserId(UUID userId);
 }

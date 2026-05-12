@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../core/theme.dart';
 import '../../services/ai_service.dart';
 import '../../services/learning_service.dart';
+import '../../l10n/l10n_ext.dart';
 
 class AiRecommendScreen extends StatefulWidget {
   const AiRecommendScreen({super.key});
@@ -46,7 +47,7 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
       if (res != null) {
         _result = res;
       } else {
-        _error = 'Không thể tạo gợi ý. Vui lòng thử lại.';
+        _error = context.l10n.cannotCreateSuggestion;
       }
     });
   }
@@ -109,17 +110,17 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
                 color: AppColors.warning, size: 18),
           ),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('AI Recommendation',
-                    style: TextStyle(
+                Text(context.l10n.aiRecommendation,
+                    style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary)),
-                Text('Gợi ý bài học phù hợp với bạn',
-                    style: TextStyle(
+                Text(context.l10n.lessonSuggestions,
+                    style: const TextStyle(
                         fontSize: 11, color: AppColors.textSecondary)),
               ],
             ),
@@ -165,14 +166,14 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text('AI đang phân tích...',
-              style: TextStyle(
+          Text(context.l10n.aiAnalyzingPath,
+              style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
-          const Text('Đang xem xét lộ trình học của bạn',
-              style: TextStyle(
+          Text(context.l10n.reviewingPath,
+              style: const TextStyle(
                   fontSize: 12, color: AppColors.textSecondary)),
         ],
       ),
@@ -205,8 +206,8 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
                   gradient: AppGradients.primaryButton,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text('Thử lại',
-                    style: TextStyle(
+                child: Text(context.l10n.retry,
+                    style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: Colors.white)),
@@ -250,7 +251,7 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
                   size: 14, color: AppColors.warning),
               const SizedBox(width: 6),
               Text(
-                'Bài học được gợi ý (${r.lessons.length})',
+                '${context.l10n.suggestedLessons} (${r.lessons.length})',
                 style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -281,7 +282,7 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1A1A40), Color(0xFF141430)],
+          colors: [Color(0x1E64DCFF), Color(0x0A0077B6)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -292,8 +293,8 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Tổng quan học tập của bạn',
-              style: TextStyle(
+          Text(context.l10n.learningOverview,
+              style: const TextStyle(
                   fontSize: 11,
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500)),
@@ -303,19 +304,19 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
               _StatItem(
                   icon: Icons.star_rounded,
                   value: '${avgScore.toStringAsFixed(0)}%',
-                  label: 'TB điểm',
+                  label: context.l10n.avgScoreLabel,
                   color: AppColors.warning),
               const SizedBox(width: 12),
               _StatItem(
                   icon: Icons.local_fire_department_rounded,
                   value: '$streak',
-                  label: 'Ngày streak',
+                  label: context.l10n.streakDaysLabel,
                   color: AppColors.error),
               const SizedBox(width: 12),
               _StatItem(
                   icon: Icons.check_circle_rounded,
                   value: '$completed',
-                  label: 'Bài hoàn thành',
+                  label: context.l10n.completedLessons,
                   color: AppColors.success),
             ],
           ),
@@ -350,8 +351,8 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Lời khuyên từ AI',
-                    style: TextStyle(
+                Text(context.l10n.aiAdvice,
+                    style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: AppColors.warning)),
@@ -389,13 +390,13 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.track_changes_rounded,
+              const Icon(Icons.track_changes_rounded,
                   size: 13, color: AppColors.error),
-              SizedBox(width: 6),
-              Text('Kỹ năng cần tập trung',
-                  style: TextStyle(
+              const SizedBox(width: 6),
+              Text(context.l10n.skillsToFocus,
+                  style: const TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
                       color: AppColors.error)),
@@ -500,7 +501,7 @@ class _RecommendCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.title.isNotEmpty ? item.title : 'Bài học gợi ý',
+                  item.title.isNotEmpty ? item.title : context.l10n.lessonSuggestion,
                   style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -544,8 +545,8 @@ class _RecommendCard extends StatelessWidget {
                 color: AppColors.warning.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Text('Hot',
-                  style: TextStyle(
+              child: Text(context.l10n.hot,
+                  style: const TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
                       color: AppColors.warning)),

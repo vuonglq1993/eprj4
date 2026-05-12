@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../services/game_service.dart';
+import '../../l10n/l10n_ext.dart';
 
 class WeeklyReportScreen extends StatefulWidget {
   const WeeklyReportScreen({super.key});
@@ -122,8 +123,8 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen>
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Báo cáo tuần',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+              Text(context.l10n.weeklyReport,
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
               Text(weekLabel,
                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
             ],
@@ -143,19 +144,19 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen>
       ),
       child: Column(
         children: [
-          const Text('Tuần này bạn đã',
-              style: TextStyle(fontSize: 13, color: Colors.white70)),
+          Text(context.l10n.thisWeekYouHave,
+              style: const TextStyle(fontSize: 13, color: Colors.white70)),
           const SizedBox(height: 14),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _summaryItem('$daysStudied/7', 'Ngày học', Colors.white),
+              _summaryItem('$daysStudied/7', context.l10n.studyDays, Colors.white),
               _vDivider(),
-              _summaryItem('$totalXp', 'XP kiếm được', const Color(0xFFFFD580)),
+              _summaryItem('$totalXp', context.l10n.xpEarned, const Color(0xFFFFD580)),
               _vDivider(),
-              _summaryItem('$totalLessons', 'Bài học xong', Colors.white),
+              _summaryItem('$totalLessons', context.l10n.lessonsDone, Colors.white),
               _vDivider(),
-              _summaryItem('${totalDurMin}p', 'TB / ngày', Colors.white),
+              _summaryItem('${totalDurMin}p', context.l10n.avgPerDay, Colors.white),
             ],
           ),
         ],
@@ -189,8 +190,8 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('BÀI HỌC THEO NGÀY',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
+          Text(context.l10n.lessonsByDay,
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
                   color: AppColors.textSecondary, letterSpacing: 0.8)),
           const SizedBox(height: 16),
           SizedBox(
@@ -252,16 +253,16 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen>
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
         ),
-        child: const Text('Chưa có phiên học nào trong tuần này',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+        child: Text(context.l10n.noSessionsThisWeek,
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
       );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('CHI TIẾT TỪNG NGÀY',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
+        Text(context.l10n.detailEachDay,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
                 color: AppColors.textSecondary, letterSpacing: 0.8)),
         const SizedBox(height: 12),
         ...daysWithLogs.map((d) => _dayCard(d)),
@@ -270,7 +271,7 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen>
   }
 
   Widget _dayCard(_DayData d) {
-    final dow = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'][d.date.weekday - 1];
+    final dow = [context.l10n.mon, context.l10n.tue, context.l10n.wed, context.l10n.thu, context.l10n.fri, context.l10n.sat, context.l10n.sun][d.date.weekday - 1];
     final dateStr = '$dow, ${d.date.day}/${d.date.month}';
     final durMin = d.durationSeconds ~/ 60;
 
@@ -298,7 +299,7 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen>
                     color: AppColors.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text('${d.logs.length} bài',
+                  child: Text(context.l10n.lessonCount(d.logs.length),
                       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
                 ),
               if (durMin > 0) ...[

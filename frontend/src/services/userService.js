@@ -94,8 +94,13 @@ export async function changePassword(data) {
   }
 }
 
-// GET /users — Admin only — lấy danh sách tất cả user
-export const getUsers = () => api.get('/users');
+// GET /users — Admin only — paginated, lấy danh sách tất cả user
+export const getUsers = (page = 0, size = 100) =>
+  api.get('/users', { params: { page, size } });
+
+// GET /users/count — Admin only — đếm tổng số user đã đăng ký
+export const getUsersCount = () =>
+  api.get('/users/count').then((r) => r.data?.total ?? 0).catch(() => 0);
 
 // PUT /users/:id/role — Admin only — cập nhật role của user
 export const updateUserRole = (id, role) =>

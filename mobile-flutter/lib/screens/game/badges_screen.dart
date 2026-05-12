@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../services/game_service.dart';
+import '../../l10n/l10n_ext.dart';
 
 class BadgesScreen extends StatefulWidget {
   const BadgesScreen({super.key});
@@ -77,12 +78,12 @@ class _BadgesScreenState extends State<BadgesScreen> {
                           _topBar(context, earned.length, pct),
                           const SizedBox(height: 20),
                           if (earnedBadges.isNotEmpty) ...[
-                            _sectionHeader('ĐÃ ĐẠT ĐƯỢC', '${earnedBadges.length}'),
+                            _sectionHeader(context.l10n.achieved, '${earnedBadges.length}'),
                             const SizedBox(height: 12),
                             _badgeGrid(earnedBadges, earned, true),
                             const SizedBox(height: 24),
                           ],
-                          _sectionHeader('CHƯA MỞ KHÓA', '${lockedBadges.length}'),
+                          _sectionHeader(context.l10n.locked, '${lockedBadges.length}'),
                           const SizedBox(height: 12),
                           _badgeGrid(lockedBadges, earned, false),
                         ],
@@ -106,8 +107,8 @@ class _BadgesScreenState extends State<BadgesScreen> {
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
                 onPressed: () => Navigator.pop(context),
               ),
-              const Text('Huy hiệu',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+              Text(context.l10n.badges,
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
               const Spacer(),
               Text('$earnedCount / ${_allBadges.length}',
                   style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
@@ -132,8 +133,8 @@ class _BadgesScreenState extends State<BadgesScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Bộ sưu tập',
-                            style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                        Text(context.l10n.collection,
+                            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                         Text('$pct%',
                             style: const TextStyle(
                                 fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary)),
@@ -274,7 +275,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                isEarned ? '✓ Đã đạt được' : '🔒 Chưa mở khóa',
+                isEarned ? context.l10n.achievedBadge : context.l10n.lockedBadge,
                 style: TextStyle(
                   fontSize: 13, fontWeight: FontWeight.w600,
                   color: isEarned ? AppColors.success : AppColors.textHint,

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/courselist.css';
-import { FiEdit2, FiTrash2, FiPlus, FiEye } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
 import { FaBook, FaStar } from 'react-icons/fa6';
 import { getCourses, createCourse, updateCourse, publishCourse, deleteCourse } from '../services/courseService';
 import { getLanguages } from '../services/languageService';
-import { isAdmin, hasRole } from '../utils/roleUtils';
+import { isAdmin } from '../utils/roleUtils';
 import { CourseThumbnailPlaceholder } from '../components/courses/CourseThumbnailPlaceholder';
 
 const LEVELS = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
@@ -57,12 +57,17 @@ function formatSaveError(err) {
   if (!msg && status === 413) {
     msg = 'Dữ liệu gửi lên quá lớn (413). Thường do dán ảnh base64 vào URL — hãy dùng link https ngắn.';
   }
+  if (!msg && status === 409) {
+    msg = 'Đã tồn tại.';
+  }
   if (!msg && !err.response) {
     msg = err.message || 'Không kết nối được server hoặc request bị chặn.';
   }
   return msg || 'Lưu thất bại.';
 }
 
+
+const PAGE_SIZE = 12;
 
 const CourseList = () => {
   const [courses, setCourses] = useState([]);
@@ -75,15 +80,20 @@ const CourseList = () => {
   const [saving, setSaving] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
   const [thumbnailFieldError, setThumbnailFieldError] = useState('');
-  const canManage = isAdmin() || hasRole('TEACHER');
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const canManage = isAdmin();
 
 
-  const fetchCourses = async () => {
+  const fetchCourses = async (page = 0) => {
     setLoading(true);
     setError('');
     try {
-      const res = await getCourses();
-      setCourses(res.data?.content || res.data || []);
+      const res = await getCourses({ page, size: PAGE_SIZE });
+      const payload = res.data;
+      setCourses(payload.content || []);
+      setCurrentPage(payload.page ?? page);
+      setTotalPages(payload.totalPages ?? 0);
     } catch {
       setError('Không tải được danh sách khóa học.');
     } finally {
@@ -100,7 +110,7 @@ const CourseList = () => {
   };
 
   useEffect(() => {
-    fetchCourses();
+    fetchCourses(currentPage);
     if (canManage) fetchLanguages();
   }, []);
 
@@ -205,80 +215,101 @@ const CourseList = () => {
         {loading ? (
           <div className="text-center py-5 text-muted">Đang tải…</div>
         ) : (
-          <div className="cl-grid">
-            {courses.map((course) => (
-              <div key={course.id} className="cl-card shadow-sm">
-                <div className="cl-card-img">
-                  {course.thumbnailUrl ? (
-                    <img src={course.thumbnailUrl} alt={course.title} />
-                  ) : (
-                    <CourseThumbnailPlaceholder />
-                  )}
-                </div>
-                <div className="cl-card-body">
-                  <div className="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                      <h6 className="fw-bold mb-1" style={{ color: '#1e293b', fontSize: '0.9rem' }}>{course.title}</h6>
-                      <span className="text-muted small">{course.languageName}</span>
-                    </div>
-                    <span className={`cl-status ${course.isPublished ? 'cl-status--pub' : 'cl-status--draft'}`}>
-                      {course.isPublished ? 'Published' : 'Draft'}
-                    </span>
-                  </div>
-                  <div className="d-flex align-items-center justify-content-between mb-3">
-                    <span className={`cl-badge cl-badge--${(course.level || 'BEGINNER').toLowerCase()}`}>
-                      {levelLabel(course.level)}
-                    </span>
-                    {course.rating != null && (
-                      <div className="d-flex align-items-center gap-1">
-                        <FaStar size={12} style={{ color: '#f59e0b' }} />
-                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569' }}>{course.rating}</span>
-                      </div>
+          <>
+            <div className="cl-grid">
+              {courses.map((course) => (
+                <div key={course.id} className="cl-card shadow-sm">
+                  <div className="cl-card-img">
+                    {course.thumbnailUrl ? (
+                      <img src={course.thumbnailUrl} alt={course.title} />
+                    ) : (
+                      <CourseThumbnailPlaceholder />
                     )}
                   </div>
-                  <div className="d-flex align-items-center justify-content-between mb-2">
-                    <span className="cl-meta">
-                      <FaBook size={13} className="me-1" style={{ color: '#6366f1' }} />
-                      {course.totalLessons ?? 0} lessons
-                    </span>
-                    <div className="cl-actions">
-                      <button type="button" className="cl-action-btn" title="View">
-                        <FiEye size={14} aria-hidden />
-                        <span>View</span>
-                      </button>
-                      {canManage && (
-                        <>
-                          <button type="button" className="cl-action-btn" title="Edit" onClick={() => openEdit(course)}>
-                            <FiEdit2 size={14} aria-hidden />
-                            <span>Edit</span>
-                          </button>
-                          {!course.isPublished && (
-                            <button
-                              type="button"
-                              className="cl-action-btn"
-                              title="Publish"
-                              onClick={() => handlePublish(course.id)}
-                              disabled={publishingId === course.id}
-                            >
-                              <span className="cl-action-btn__emoji" aria-hidden>{publishingId === course.id ? '…' : '📢'}</span>
-                              <span>Publish</span>
+                  <div className="cl-card-body">
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <h6 className="fw-bold mb-1" style={{ color: '#1e293b', fontSize: '0.9rem' }}>{course.title}</h6>
+                        <span className="text-muted small">{course.languageName}</span>
+                      </div>
+                      <span className={`cl-status ${course.isPublished ? 'cl-status--pub' : 'cl-status--draft'}`}>
+                        {course.isPublished ? 'Published' : 'Draft'}
+                      </span>
+                    </div>
+                    <div className="d-flex align-items-center justify-content-between mb-2">
+                      <span className={`cl-badge cl-badge--${(course.level || 'BEGINNER').toLowerCase()}`}>
+                        {levelLabel(course.level)}
+                      </span>
+                      <div className="cl-actions">
+                        {canManage && (
+                          <>
+                            <button type="button" className="cl-action-btn" title="Edit" onClick={() => openEdit(course)}>
+                              <FiEdit2 size={14} aria-hidden />
+                              <span>Edit</span>
                             </button>
-                          )}
-                          <button type="button" className="cl-action-btn cl-action-btn--del" title="Delete" onClick={() => handleDelete(course.id)}>
-                            <FiTrash2 size={14} aria-hidden />
-                            <span>Delete</span>
-                          </button>
-                        </>
+                            {!course.isPublished && (
+                              <button
+                                type="button"
+                                className="cl-action-btn"
+                                title="Publish"
+                                onClick={() => handlePublish(course.id)}
+                                disabled={publishingId === course.id}
+                              >
+                                <span className="cl-action-btn__emoji" aria-hidden>{publishingId === course.id ? '…' : '📢'}</span>
+                                <span>Publish</span>
+                              </button>
+                            )}
+                            <button type="button" className="cl-action-btn cl-action-btn--del" title="Delete" onClick={() => handleDelete(course.id)}>
+                              <FiTrash2 size={14} aria-hidden />
+                              <span>Delete</span>
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="d-flex align-items-center justify-content-between">
+                      <span className="cl-meta">
+                        <FaBook size={13} className="me-1" style={{ color: '#6366f1' }} />
+                        {course.totalLessons ?? 0} lessons
+                      </span>
+                      {course.rating != null && (
+                        <div className="d-flex align-items-center gap-1">
+                          <FaStar size={12} style={{ color: '#f59e0b' }} />
+                          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569' }}>{course.rating}</span>
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            {courses.length === 0 && (
-              <div className="text-center text-muted py-5 w-100">Chưa có khóa học nào.</div>
+              ))}
+              {courses.length === 0 && (
+                <div className="text-center text-muted py-5 w-100">Chưa có khóa học nào.</div>
+              )}
+            </div>
+            {totalPages > 1 && (
+              <nav className="d-flex justify-content-center mt-4" aria-label="Course pagination">
+                <ul className="pagination mb-0">
+                  <li className={currentPage === 0 ? 'page-item disabled' : 'page-item'}>
+                    <button className="page-link" type="button" onClick={() => { setCurrentPage(0); fetchCourses(0); }} disabled={currentPage === 0}>«</button>
+                  </li>
+                  <li className={currentPage === 0 ? 'page-item disabled' : 'page-item'}>
+                    <button className="page-link" type="button" onClick={() => { const p = currentPage - 1; setCurrentPage(p); fetchCourses(p); }} disabled={currentPage === 0}>‹</button>
+                  </li>
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <li key={i} className={currentPage === i ? 'page-item active' : 'page-item'}>
+                      <button className="page-link" type="button" onClick={() => { setCurrentPage(i); fetchCourses(i); }}>{i + 1}</button>
+                    </li>
+                  ))}
+                  <li className={currentPage >= totalPages - 1 ? 'page-item disabled' : 'page-item'}>
+                    <button className="page-link" type="button" onClick={() => { const n2 = currentPage + 1; setCurrentPage(n2); fetchCourses(n2); }} disabled={currentPage >= totalPages - 1}>›</button>
+                  </li>
+                  <li className={currentPage >= totalPages - 1 ? 'page-item disabled' : 'page-item'}>
+                    <button className="page-link" type="button" onClick={() => { const last = totalPages - 1; setCurrentPage(last); fetchCourses(last); }} disabled={currentPage >= totalPages - 1}>»</button>
+                  </li>
+                </ul>
+              </nav>
             )}
-          </div>
+          </>
         )}
       </div>
 

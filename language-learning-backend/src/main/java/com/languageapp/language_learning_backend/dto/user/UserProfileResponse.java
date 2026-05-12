@@ -3,7 +3,7 @@ package com.languageapp.language_learning_backend.dto.user;
 import lombok.*;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -20,5 +20,12 @@ public class UserProfileResponse {
     private Instant createdAt;
     private String        subscriptionPlan;
     private Boolean       isPremium;
-    private String uiLanguage;
+    private String    uiLanguage;
+    private Boolean   hasPassword;
+    private String    phone;
+    private String    gender;
+    private LocalDate dateOfBirth;
+    private String    country;
+    private String    timezone;
+    private String    bio;
 }

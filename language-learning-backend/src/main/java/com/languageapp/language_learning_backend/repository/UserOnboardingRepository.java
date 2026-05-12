@@ -10,4 +10,5 @@ import java.util.UUID;
 public interface UserOnboardingRepository extends JpaRepository<UserOnboarding, UUID> {
     Optional<UserOnboarding> findByUserId(UUID userId);
     boolean existsByUserId(UUID userId);
+    void deleteByUserId(UUID userId);
 }

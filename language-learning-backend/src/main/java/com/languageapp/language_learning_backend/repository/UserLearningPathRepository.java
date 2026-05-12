@@ -13,4 +13,5 @@ public interface UserLearningPathRepository extends JpaRepository<UserLearningPa
     List<UserLearningPath> findByUserIdOrderByUpdatedAtDesc(UUID userId);
 
     boolean existsByUserIdAndLearningPathId(UUID userId, UUID learningPathId);
+    void deleteByUserId(UUID userId);
 }

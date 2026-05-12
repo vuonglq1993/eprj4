@@ -23,21 +23,11 @@ const defaultUsers = [
     onboardingCompleted: true,
   }),
   m('u2', {
-    email: 'teacher@eprj4.com',
-    password: hashPassword('teacher123'),
-    firstName: 'Teacher',
-    lastName: 'User',
-    role: 'TEACHER',
-    avatarUrl: null,
-    nativeLanguage: 'English',
-    onboardingCompleted: true,
-  }),
-  m('u3', {
-    email: 'user@eprj4.com',
+    email: 'student@eprj4.com',
     password: hashPassword('user123'),
     firstName: 'Student',
     lastName: 'User',
-    role: 'USER',
+    role: 'STUDENT',
     avatarUrl: null,
     nativeLanguage: 'Vietnamese',
     onboardingCompleted: false,
@@ -171,32 +161,32 @@ const subscriptionPlans = [
 // SUBSCRIPTIONS (user subscriptions)
 // ======================
 const subscriptions = [
-  m('sub1', { userId: 'u3', planId: 'sp2', status: 'ACTIVE', startDate: new Date().toISOString(), endDate: new Date(Date.now() + 30 * 86400000).toISOString() }),
+  m('sub1', { userId: 'u2', planId: 'sp2', status: 'ACTIVE', startDate: new Date().toISOString(), endDate: new Date(Date.now() + 30 * 86400000).toISOString() }),
 ];
 
 // ======================
 // PAYMENTS
 // ======================
 const payments = [
-  m('pay1', { userId: 'u3', planId: 'sp2', amount: 199000, currency: 'VND', status: 'COMPLETED', paymentMethod: 'VNPAY', transactionId: 'VNPAY_TXN_001', createdAt: new Date().toISOString() }),
-  m('pay2', { userId: 'u3', planId: 'sp3', amount: 499000, currency: 'VND', status: 'COMPLETED', paymentMethod: 'MOMO', transactionId: 'MOMO_TXN_002', createdAt: new Date().toISOString() }),
+  m('pay1', { userId: 'u2', planId: 'sp2', amount: 199000, currency: 'VND', status: 'COMPLETED', paymentMethod: 'VNPAY', transactionId: 'VNPAY_TXN_001', createdAt: new Date().toISOString() }),
+  m('pay2', { userId: 'u2', planId: 'sp3', amount: 499000, currency: 'VND', status: 'COMPLETED', paymentMethod: 'MOMO', transactionId: 'MOMO_TXN_002', createdAt: new Date().toISOString() }),
 ];
 
 // ======================
 // STUDY LOGS
 // ======================
 const studyLogs = [
-  m('sl1', { userId: 'u3', date: new Date().toISOString().split('T')[0], minutesSpent: 30, lessonsCompleted: 2 }),
-  m('sl2', { userId: 'u3', date: new Date(Date.now() - 86400000).toISOString().split('T')[0], minutesSpent: 45, lessonsCompleted: 3 }),
-  m('sl3', { userId: 'u3', date: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0], minutesSpent: 20, lessonsCompleted: 1 }),
+  m('sl1', { userId: 'u2', date: new Date().toISOString().split('T')[0], minutesSpent: 30, lessonsCompleted: 2 }),
+  m('sl2', { userId: 'u2', date: new Date(Date.now() - 86400000).toISOString().split('T')[0], minutesSpent: 45, lessonsCompleted: 3 }),
+  m('sl3', { userId: 'u2', date: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0], minutesSpent: 20, lessonsCompleted: 1 }),
 ];
 
 // ======================
 // PROGRESS
 // ======================
 const progress = [
-  m('pr1', { userId: 'u3', courseId: 'c1', completedLessons: 2, totalLessons: 10, percentComplete: 20, lastAccessedAt: new Date().toISOString() }),
-  m('pr2', { userId: 'u3', courseId: 'c2', completedLessons: 5, totalLessons: 15, percentComplete: 33, lastAccessedAt: new Date(Date.now() - 86400000).toISOString() }),
+  m('pr1', { userId: 'u2', courseId: 'c1', completedLessons: 2, totalLessons: 10, percentComplete: 20, lastAccessedAt: new Date().toISOString() }),
+  m('pr2', { userId: 'u2', courseId: 'c2', completedLessons: 5, totalLessons: 15, percentComplete: 33, lastAccessedAt: new Date(Date.now() - 86400000).toISOString() }),
 ];
 
 // ======================
@@ -208,7 +198,7 @@ const onboardingData = {};
 // ENROLLMENTS (learning path enrollments)
 // ======================
 const enrollments = [
-  m('enr1', { userId: 'u3', learningPathId: 'lp1', enrolledAt: new Date().toISOString() }),
+  m('enr1', { userId: 'u2', learningPathId: 'lp1', enrolledAt: new Date().toISOString() }),
 ];
 
 // ======================

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import 'token_service.dart';
@@ -190,6 +191,75 @@ class ApiService {
     }
   }
 
+  static Future<Map<String, dynamic>?> getOnboardingMe() async {
+    try {
+      final res = await http.get(
+        Uri.parse('$_base/onboarding/me'),
+        headers: await _authHeaders(),
+      );
+      if (res.statusCode == 200) return jsonDecode(res.body) as Map<String, dynamic>;
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? avatarUrl,
+    String? phone,
+    String? gender,
+    String? dateOfBirth,
+    String? country,
+    String? timezone,
+    String? bio,
+    String? uiLanguage,
+  }) async {
+    try {
+      final res = await http.put(
+        Uri.parse('$_base/users/me'),
+        headers: await _authHeaders(),
+        body: jsonEncode({
+          if (firstName    != null) 'firstName':   firstName,
+          if (lastName     != null) 'lastName':    lastName,
+          if (avatarUrl    != null) 'avatarUrl':   avatarUrl,
+          if (uiLanguage   != null) 'uiLanguage':  uiLanguage,
+          if (phone        != null) 'phone':        phone,
+          if (gender       != null) 'gender':       gender,
+          if (dateOfBirth  != null) 'dateOfBirth':  dateOfBirth,
+          if (country      != null) 'country':      country,
+          if (timezone     != null) 'timezone':     timezone,
+          if (bio          != null) 'bio':           bio,
+        }),
+      );
+      if (res.statusCode == 200) return jsonDecode(res.body) as Map<String, dynamic>;
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<String?> changePassword({
+    String? currentPassword,   // null khi Google user set password lần đầu
+    required String newPassword,
+  }) async {
+    try {
+      final body = <String, dynamic>{'newPassword': newPassword};
+      if (currentPassword != null) body['currentPassword'] = currentPassword;
+      final res = await http.patch(
+        Uri.parse('$_base/users/me/password'),
+        headers: await _authHeaders(),
+        body: jsonEncode(body),
+      );
+      if (res.statusCode == 200) return null; // success
+      final msg = (jsonDecode(res.body) as Map)['message'] as String? ?? 'Đổi mật khẩu thất bại';
+      return msg;
+    } catch (_) {
+      return 'Lỗi mạng';
+    }
+  }
+
   /// Submit onboarding và trả về full response (recommendedPath, motivationMessage, v.v.).
   /// Trả về null nếu lỗi.
   ///
@@ -225,5 +295,76 @@ class ApiService {
     } catch (_) {
       return null;
     }
+  }
+
+  static Future<String?> uploadAvatar(File file) async {
+    try {
+      final token = await TokenService.getAccessToken();
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$_base/users/me/avatar'),
+      );
+      if (token != null) request.headers['Authorization'] = 'Bearer $token';
+      request.files.add(await http.MultipartFile.fromPath('file', file.path));
+      final streamed = await request.send();
+      final res = await http.Response.fromStream(streamed);
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
+        return body['avatarUrl'] as String?;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<void> registerFcmToken(String token) async {
+    try {
+      await http.post(
+        Uri.parse('$_base/fcm/register'),
+        headers: await _authHeaders(),
+        body: jsonEncode({'token': token}),
+      );
+    } catch (_) {}
+  }
+
+  static Future<Map<String, dynamic>?> getReminderSettings() async {
+    try {
+      final res = await http.get(
+        Uri.parse('$_base/notifications/reminder-settings'),
+        headers: await _authHeaders(),
+      );
+      if (res.statusCode == 200) return jsonDecode(res.body) as Map<String, dynamic>;
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<bool> updateReminderSettings({
+    required bool enabled,
+    required int hour,
+    required int minute,
+    String timezone = 'Asia/Ho_Chi_Minh',
+  }) async {
+    try {
+      final res = await http.put(
+        Uri.parse('$_base/notifications/reminder-settings'),
+        headers: await _authHeaders(),
+        body: jsonEncode({'enabled': enabled, 'hour': hour, 'minute': minute, 'timezone': timezone}),
+      );
+      return res.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<void> sendTestNotification() async {
+    try {
+      await http.post(
+        Uri.parse('$_base/notifications/test'),
+        headers: await _authHeaders(),
+      );
+    } catch (_) {}
   }
 }

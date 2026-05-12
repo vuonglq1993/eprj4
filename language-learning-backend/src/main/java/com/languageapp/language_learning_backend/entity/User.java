@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -62,6 +63,20 @@ public class User {
     @Column(length = 10) @Builder.Default
     private String uiLanguage = "vi";
 
+    @Column(length = 10)
+    private String gender;              // MALE / FEMALE / OTHER
+
+    private LocalDate dateOfBirth;
+
+    @Column(length = 100)
+    private String country;
+
+    @Column(length = 50)
+    private String timezone;
+
+    @Column(length = 300)
+    private String bio;
+
     @CreationTimestamp @Column(updatable = false) private Instant createdAt;
     @UpdateTimestamp private Instant updatedAt;
 
@@ -69,7 +84,7 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Subscription subscription;
 
-    public enum Role         { STUDENT, TEACHER, ADMIN }
+    public enum Role         { STUDENT, ADMIN }
     public enum AuthProvider { LOCAL, GOOGLE}
 
     public String  getFullName() { return firstName + (lastName != null ? " " + lastName : ""); }

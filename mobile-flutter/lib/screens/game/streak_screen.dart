@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../services/game_service.dart';
+import '../../l10n/l10n_ext.dart';
 
 class StreakScreen extends StatefulWidget {
   const StreakScreen({super.key});
@@ -80,8 +81,8 @@ class _StreakScreenState extends State<StreakScreen> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
-          const Text('Tiến trình học',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          Text(context.l10n.streakProgress,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
           const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -137,9 +138,9 @@ class _StreakScreenState extends State<StreakScreen> {
               color: AppColors.warning, height: 1,
             ),
           ),
-          const Text(
-            'ngày liên tiếp',
-            style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+          Text(
+            context.l10n.daysInARow,
+            style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
           ),
           if (studiedToday) ...[
             const SizedBox(height: 12),
@@ -150,8 +151,8 @@ class _StreakScreenState extends State<StreakScreen> {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
               ),
-              child: const Text('✓ Đã học hôm nay',
-                  style: TextStyle(fontSize: 13, color: AppColors.success, fontWeight: FontWeight.w600)),
+              child: Text(context.l10n.studiedToday,
+                  style: const TextStyle(fontSize: 13, color: AppColors.success, fontWeight: FontWeight.w600)),
             ),
           ],
         ],
@@ -166,12 +167,12 @@ class _StreakScreenState extends State<StreakScreen> {
 
     return Row(
       children: [
-        _statCard('🏆', '$longest', 'Dài nhất', AppColors.warning),
+        _statCard('🏆', '$longest', context.l10n.longestStreak, AppColors.warning),
         const SizedBox(width: 12),
-        _statCard('📅', '$totalDays', 'Tổng ngày', AppColors.primary),
+        _statCard('📅', '$totalDays', context.l10n.totalDays, AppColors.primary),
         if (freeze != null) ...[
           const SizedBox(width: 12),
-          _statCard('🛡️', '$freeze', 'Freeze còn', AppColors.primaryLight),
+          _statCard('🛡️', '$freeze', context.l10n.freezeLeft, AppColors.primaryLight),
         ],
       ],
     );
@@ -223,8 +224,8 @@ class _StreakScreenState extends State<StreakScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('HEATMAP THÁNG NÀY',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
+          Text(context.l10n.heatmapThisMonth,
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
                   color: AppColors.textSecondary, letterSpacing: 0.8)),
           const SizedBox(height: 16),
           // Day labels
@@ -288,7 +289,7 @@ class _StreakScreenState extends State<StreakScreen> {
           // Legend
           Row(
             children: [
-              const Text('Ít', style: TextStyle(fontSize: 11, color: AppColors.textHint)),
+              Text(context.l10n.few, style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
               const SizedBox(width: 4),
               for (final alpha in [0.0, 0.25, 0.50, 0.70, 0.90]) ...[
                 Container(width: 14, height: 14,
@@ -297,7 +298,7 @@ class _StreakScreenState extends State<StreakScreen> {
                         borderRadius: BorderRadius.circular(3))),
                 const SizedBox(width: 3),
               ],
-              const Text('Nhiều', style: TextStyle(fontSize: 11, color: AppColors.textHint)),
+              Text(context.l10n.many, style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
               const Spacer(),
               Container(
                 width: 14, height: 14,
@@ -307,7 +308,7 @@ class _StreakScreenState extends State<StreakScreen> {
                 ),
               ),
               const SizedBox(width: 4),
-              const Text('Hôm nay', style: TextStyle(fontSize: 11, color: AppColors.textHint)),
+              Text(context.l10n.today, style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
             ],
           ),
         ],

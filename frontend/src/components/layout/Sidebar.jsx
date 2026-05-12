@@ -14,6 +14,7 @@ import {
   MdConfirmationNumber,
   MdAssessment,
   MdEmojiEvents,
+  MdNotifications,
 } from 'react-icons/md'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -50,7 +51,6 @@ const menuConfig = [
     icon: MdStorage,
     children: [
       { id: 'tbl-payment-transactions', label: 'payment_transactions', path: '/data/payment-transactions' },
-      { id: 'tbl-study-logs', label: 'study_logs', path: '/data/study-logs' },
     ],
   },
   {
@@ -86,6 +86,14 @@ const menuConfig = [
     ],
   },
   {
+    id: 'notifications',
+    label: 'Notifications',
+    icon: MdNotifications,
+    children: [
+      { id: 'notification-list', label: 'Send Notifications', path: '/admin/notifications' },
+    ],
+  },
+  {
     id: 'reports',
     label: 'Reports',
     icon: MdAssessment,
@@ -108,13 +116,7 @@ const menuConfig = [
     label: 'Pages',
     icon: MdPages,
     children: [
-      {
-        id: 'account',
-        label: 'Account',
-        children: [
-          { id: 'setting', label: 'Setting', path: '/setting' },
-        ],
-      },
+      { id: 'setting', label: 'Setting', path: '/setting' },
     ],
   },
 ]
@@ -123,7 +125,7 @@ function Sidebar({ onNavigate }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { logout } = useAuth()
-  const [expandedIds, setExpandedIds] = useState(new Set(['home', 'languages', 'courses', 'db-tables', 'pages', 'account', 'learning-paths', 'topics', 'admin-plans']))
+  const [expandedIds, setExpandedIds] = useState(new Set(['home', 'languages', 'courses', 'db-tables', 'pages', 'learning-paths', 'topics', 'admin-plans', 'gamification', 'reports', 'notifications']))
 
   const handleLogout = () => {
     onNavigate?.()
@@ -168,7 +170,7 @@ function Sidebar({ onNavigate }) {
     return (
       <div key={item.id} className="sidebar__group">
         {hasPath ? (
-          <Link to={item.path} className={baseClass} onClick={() => onNavigate?.()}>
+          <Link to={item.path} className={baseClass} onClick={() => { window.scrollTo(0, 0); onNavigate?.() }}>
             {content}
           </Link>
         ) : (

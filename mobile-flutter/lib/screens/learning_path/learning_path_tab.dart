@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../services/learning_service.dart';
+import '../../l10n/l10n_ext.dart';
 import 'path_detail_screen.dart';
 
 class LearningPathTab extends StatefulWidget {
@@ -66,9 +67,9 @@ class _LearningPathTabState extends State<LearningPathTab> {
                             padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                             child: Row(
                               children: [
-                                const Text(
-                                  'Lộ trình học',
-                                  style: TextStyle(
+                                Text(
+                                  context.l10n.learningPath,
+                                  style: const TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.textPrimary,
@@ -88,7 +89,7 @@ class _LearningPathTabState extends State<LearningPathTab> {
                         // My paths
                         if (_myPaths.isNotEmpty) ...[
                           SliverToBoxAdapter(
-                            child: _sectionHeader('Lộ trình của tôi'),
+                            child: _sectionHeader(context.l10n.myPath),
                           ),
                           SliverPadding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -106,8 +107,8 @@ class _LearningPathTabState extends State<LearningPathTab> {
                         SliverToBoxAdapter(
                           child: _sectionHeader(
                             _myPaths.isEmpty
-                                ? 'Khám phá lộ trình'
-                                : 'Lộ trình khác',
+                                ? context.l10n.explorePaths
+                                : context.l10n.otherPaths,
                           ),
                         ),
 
@@ -162,23 +163,23 @@ class _LearningPathTabState extends State<LearningPathTab> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
         ),
-        child: const Column(
+        child: Column(
           children: [
-            Icon(Icons.explore_outlined,
+            const Icon(Icons.explore_outlined,
                 color: AppColors.textSecondary, size: 36),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
-              'Chưa có lộ trình nào',
-              style: TextStyle(
+              context.l10n.noPathsYet,
+              style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
                 fontSize: 15,
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
-              'Lộ trình sẽ xuất hiện khi được thêm vào hệ thống',
-              style: TextStyle(
+              context.l10n.pathsWillAppear,
+              style: const TextStyle(
                   color: AppColors.textSecondary, fontSize: 13),
               textAlign: TextAlign.center,
             ),
@@ -249,9 +250,9 @@ class _LearningPathTabState extends State<LearningPathTab> {
                       color: AppColors.warning.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text(
-                      'OFFICIAL',
-                      style: TextStyle(
+                    child: Text(
+                      context.l10n.official,
+                      style: const TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
                         color: AppColors.warning,
@@ -312,9 +313,9 @@ class _LearningPathTabState extends State<LearningPathTab> {
             ],
             Row(
               children: [
-                _pathMeta(Icons.layers_rounded, '$totalSteps bước'),
+                _pathMeta(Icons.layers_rounded, context.l10n.steps(totalSteps)),
                 const SizedBox(width: 14),
-                _pathMeta(Icons.access_time_rounded, '${estimatedHours}h'),
+                _pathMeta(Icons.access_time_rounded, context.l10n.estimatedHours(estimatedHours.toString())),
                 const SizedBox(width: 14),
                 _pathMeta(
                     Icons.signal_cellular_alt_rounded, targetLevel),

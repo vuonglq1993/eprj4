@@ -1,9 +1,5 @@
 import api from './api';
-
-const getUsersCount = () => api.get('/users').then((r) => {
-  const arr = r?.data?.content ?? r?.data?.data ?? r?.data ?? [];
-  return arr.length;
-}).catch(() => 0);
+import { getUsersCount } from './userService';
 
 const getCoursesCount = () => api.get('/courses', { params: { size: 1 } }).then((r) => {
   const total = r?.data?.totalElements ?? r?.data?.total ?? 0;
