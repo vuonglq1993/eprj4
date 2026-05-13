@@ -26,6 +26,7 @@ public class GamificationService {
     private final UserRepository            userRepo;
     private final UserProgressRepository    progressRepo;
     private final StudyLogRepository        studyLogRepo;
+    private final LeaderboardService        leaderboardService;
 
     // ── XP TABLE ─────────────────────────────────────────────
     // XP nhận được cho từng hành động
@@ -87,24 +88,60 @@ public class GamificationService {
     // ── LEADERBOARD ───────────────────────────────────────────
     @Transactional(readOnly = true)
     public LeaderboardResponse getLeaderboard(UserPrincipal p) {
-        List<UserGameProfile> topWeekly  = gameRepo.findTopWeekly(PageRequest.of(0, 20));
-        List<UserGameProfile> topAllTime = gameRepo.findTopAllTime(PageRequest.of(0, 20));
+        List<LeaderboardService.Entry> weeklyEntries  = leaderboardService.getTop(LeaderboardService.KEY_WEEKLY,  20);
+        List<LeaderboardService.Entry> allTimeEntries = leaderboardService.getTop(LeaderboardService.KEY_ALLTIME, 20);
 
         UserGameProfile mine = getOrCreate(userRepo.getReferenceById(p.getUserId()));
-        int myWeeklyRank  = gameRepo.rankWeekly(mine.getWeeklyXp());
-        int myAllTimeRank = gameRepo.rankAllTime(mine.getTotalXp());
+
+        // Fallback to DB if Redis is empty
+        if (weeklyEntries.isEmpty() || allTimeEntries.isEmpty()) {
+            List<UserGameProfile> topWeekly  = gameRepo.findTopWeekly(PageRequest.of(0, 20));
+            List<UserGameProfile> topAllTime = gameRepo.findTopAllTime(PageRequest.of(0, 20));
+            int myWeeklyRank = gameRepo.rankWeekly(mine.getWeeklyXp());
+            return LeaderboardResponse.builder()
+                    .weekly(toEntries(topWeekly, true))
+                    .allTime(toEntries(topAllTime, false))
+                    .myRank(LeaderboardResponse.LeaderboardEntry.builder()
+                            .rank(myWeeklyRank)
+                            .userId(p.getUserId())
+                            .xp(mine.getWeeklyXp())
+                            .level(calcLevel(mine.getTotalXp()))
+                            .levelTitle(levelTitle(calcLevel(mine.getTotalXp())))
+                            .build())
+                    .build();
+        }
+
+        long myWeeklyRank = leaderboardService.getRank(LeaderboardService.KEY_WEEKLY, p.getUserId());
+        if (myWeeklyRank == -1) myWeeklyRank = gameRepo.rankWeekly(mine.getWeeklyXp());
 
         return LeaderboardResponse.builder()
-                .weekly(toEntries(topWeekly, true))
-                .allTime(toEntries(topAllTime, false))
+                .weekly(toEntriesFromRedis(weeklyEntries))
+                .allTime(toEntriesFromRedis(allTimeEntries))
                 .myRank(LeaderboardResponse.LeaderboardEntry.builder()
-                        .rank(myWeeklyRank)
+                        .rank((int) myWeeklyRank)
                         .userId(p.getUserId())
                         .xp(mine.getWeeklyXp())
                         .level(calcLevel(mine.getTotalXp()))
                         .levelTitle(levelTitle(calcLevel(mine.getTotalXp())))
                         .build())
                 .build();
+    }
+
+    private List<LeaderboardResponse.LeaderboardEntry> toEntriesFromRedis(List<LeaderboardService.Entry> entries) {
+        List<LeaderboardResponse.LeaderboardEntry> result = new ArrayList<>();
+        for (int i = 0; i < entries.size(); i++) {
+            LeaderboardService.Entry e = entries.get(i);
+            result.add(LeaderboardResponse.LeaderboardEntry.builder()
+                    .rank(i + 1)
+                    .userId(e.userId())
+                    .userName(e.displayName())
+                    .avatarUrl(e.avatarUrl())
+                    .xp((int) e.score())
+                    .level(calcLevel(e.totalXp()))
+                    .levelTitle(levelTitle(calcLevel(e.totalXp())))
+                    .build());
+        }
+        return result;
     }
 
     // ── AWARD XP (gọi từ StudyLogService sau mỗi phiên học) ──
@@ -125,6 +162,10 @@ public class GamificationService {
         if (levelUp) g.setLevel(newLevel);
 
         gameRepo.save(g);
+
+        leaderboardService.updateScore(
+                user.getId(), user.getFullName(), user.getAvatarUrl(),
+                xpEarned, g.getTotalXp());
 
         // Kiểm tra badge mới
         List<UserBadge> newBadges = checkAndAwardBadges(user, g);
