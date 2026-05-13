@@ -18,7 +18,8 @@ public class GlobalExceptionHandler {
     public static class ConflictException     extends RuntimeException { public ConflictException(String m)     { super(m); } }
     public static class UnauthorizedException extends RuntimeException { public UnauthorizedException(String m) { super(m); } }
     public static class ForbiddenException    extends RuntimeException { public ForbiddenException(String m)    { super(m); } }
-    public static class BadRequestException  extends RuntimeException { public BadRequestException(String m)   { super(m); } }
+    public static class BadRequestException        extends RuntimeException { public BadRequestException(String m)        { super(m); } }
+    public static class TooManyRequestsException   extends RuntimeException { public TooManyRequestsException(String m)   { super(m); } }
 
     // ── Specific handlers (most-specific first) ──────────────
 
@@ -36,6 +37,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Err> badRequest(BadRequestException e) { return err(400, "BAD_REQUEST", e.getMessage()); }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<Err> tooManyRequests(TooManyRequestsException e) { return err(429, "TOO_MANY_REQUESTS", e.getMessage()); }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Err> validation(MethodArgumentNotValidException e) {

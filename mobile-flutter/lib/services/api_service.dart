@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -24,18 +25,67 @@ class ApiService {
 
   // ─── 401 / session helpers ────────────────────────────────────────────────
 
-  /// Wrapper cho mọi request có auth. Tự động handle 401 toàn cục.
-  /// Trả về null nếu 401 hoặc network error.
+  static bool _isRefreshing = false;
+  static Completer<bool>? _refreshCompleter;
+
+  /// Thử làm mới access token bằng refresh token.
+  /// Trả về access token mới nếu thành công, null nếu thất bại.
+  static Future<String?> _tryRefresh() async {
+    final refreshToken = await TokenService.getRefreshToken();
+    if (refreshToken == null) return null;
+    try {
+      final res = await _client.post(
+        Uri.parse('$_base/auth/refresh'),
+        headers: _jsonHeaders,
+        body: jsonEncode({'refreshToken': refreshToken}),
+      );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        final newAccess  = data['accessToken']  as String;
+        final newRefresh = data['refreshToken'] as String? ?? refreshToken;
+        await TokenService.saveTokens(
+          accessToken: newAccess,
+          refreshToken: newRefresh,
+        );
+        return newAccess;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  /// Wrapper cho mọi request có auth.
+  /// Khi nhận 401 → tự động thử refresh token → retry 1 lần → nếu vẫn lỗi thì logout.
   static Future<http.Response?> _send(
       Future<http.Response> Function() call) async {
     try {
       final res = await call();
-      if (res.statusCode == 401) {
-        await _onUnauthorized();
-        return null;
+      if (res.statusCode != 401) return res;
+
+      // Nếu đang có refresh khác chạy → đợi kết quả rồi retry
+      if (_isRefreshing) {
+        final success = await _refreshCompleter!.future;
+        if (!success) return null;
+        return await call();
       }
-      return res;
+
+      _isRefreshing = true;
+      _refreshCompleter = Completer<bool>();
+
+      final newToken = await _tryRefresh();
+      final success = newToken != null;
+
+      _refreshCompleter!.complete(success);
+      _isRefreshing = false;
+      _refreshCompleter = null;
+
+      if (success) return await call();
+
+      await _onUnauthorized();
+      return null;
     } catch (_) {
+      _isRefreshing = false;
+      _refreshCompleter?.complete(false);
+      _refreshCompleter = null;
       return null;
     }
   }
@@ -120,10 +170,14 @@ class ApiService {
   }
 
   static Future<void> logout() async {
-    await _send(() async => _client.post(
-      Uri.parse('$_base/auth/logout'),
-      headers: await _authHeaders(),
-    ));
+    final refreshToken = await TokenService.getRefreshToken();
+    try {
+      await _client.post(
+        Uri.parse('$_base/auth/logout'),
+        headers: await _authHeaders(),
+        body: jsonEncode(refreshToken != null ? {'refreshToken': refreshToken} : {}),
+      );
+    } catch (_) {}
     await TokenService.clearTokens();
   }
 

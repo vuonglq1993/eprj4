@@ -29,6 +29,7 @@ public class JwtTokenProvider {
     // ✅ ROLE = ADMIN (KHÔNG có ROLE_)
     public String generateAccessToken(UUID userId, String email, String role) {
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .subject(userId.toString())
                 .claim("email", email)
                 .claim("role", role) // 👈 ADMIN
@@ -41,6 +42,7 @@ public class JwtTokenProvider {
 
     public String generateRefreshToken(UUID userId) {
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .subject(userId.toString())
                 .claim("type", "REFRESH")
                 .issuedAt(new Date())
@@ -75,6 +77,16 @@ public class JwtTokenProvider {
 
     public long getRefreshExp() {
         return refreshExp;
+    }
+
+    public String getJti(String t) {
+        return parse(t).getId();
+    }
+
+    public long getRemainingSeconds(String t) {
+        Date exp = parse(t).getExpiration();
+        long remaining = (exp.getTime() - System.currentTimeMillis()) / 1000;
+        return Math.max(remaining, 0);
     }
 
     public boolean validate(String t) {
