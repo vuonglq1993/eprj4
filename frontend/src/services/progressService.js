@@ -42,6 +42,18 @@ export const getDashboard = async () => {
   };
 };
 
+export const getAdminDailyActive = (days = 7) =>
+  api.get('/admin/stats/daily-active', { params: { days } }).then((r) => r.data).catch(() => null);
+
+export const getAdminSubscriptionBreakdown = () =>
+  api.get('/admin/stats/subscription-breakdown').then((r) => r.data).catch(() => null);
+
+export const getTopLeaderboard = (limit = 5) =>
+  api.get('/game/leaderboard', { params: { type: 'weekly' } }).then((r) => {
+    const arr = r?.data?.content ?? r?.data?.data ?? r?.data ?? [];
+    return arr.slice(0, limit);
+  }).catch(() => []);
+
 export const getCourseProgress = (courseId) =>
   api.get(`/progress/courses/${courseId}`);
 

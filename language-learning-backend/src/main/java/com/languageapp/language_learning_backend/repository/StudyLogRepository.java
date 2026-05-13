@@ -25,6 +25,9 @@ public interface StudyLogRepository extends JpaRepository<StudyLog, UUID> {
     @Query("SELECT COALESCE(SUM(s.durationSeconds),0) FROM StudyLog s WHERE s.user.id=:uid AND s.studyDate BETWEEN :from AND :to")
     long sumSeconds(@Param("uid") UUID uid, @Param("from") LocalDate from, @Param("to") LocalDate to);
 
+    @Query("SELECT s.studyDate, COUNT(DISTINCT s.user.id) FROM StudyLog s WHERE s.studyDate >= :since GROUP BY s.studyDate ORDER BY s.studyDate")
+    List<Object[]> countDailyActiveUsers(@Param("since") LocalDate since);
+
     boolean existsByUserIdAndStudyDate(UUID userId, LocalDate date);
     void deleteByUserId(UUID userId);
     @Query("SELECT s FROM StudyLog s JOIN FETCH s.lesson l WHERE s.user.id=:uid AND s.studyDate BETWEEN :from AND :to ORDER BY s.studyDate DESC")

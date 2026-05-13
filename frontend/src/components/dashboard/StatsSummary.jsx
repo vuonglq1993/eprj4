@@ -7,24 +7,24 @@ function StatsSummary({ data } = {}) {
 
   const stats = [
     {
-      label: 'Users',
+      label: 'Học viên',
       value: fmtNum(data?.totalUsers),
-      subtitle: 'Total registered users',
+      subtitle: 'Tổng số tài khoản',
     },
     {
-      label: 'Courses',
+      label: 'Khoá học',
       value: data?.totalCourses ?? '—',
-      subtitle: 'Available courses',
+      subtitle: 'Khoá học hiện có',
     },
     {
-      label: 'Active Sessions',
-      value: data?.activeSessions ?? '—',
-      subtitle: 'Currently online',
+      label: 'Gói Premium',
+      value: data?.premiumUsers != null ? fmtNum(data.premiumUsers) : '—',
+      subtitle: 'Đang dùng gói trả phí',
     },
     {
-      label: 'Revenue',
-      value: data?.totalRevenue != null ? `$${data.totalRevenue.toFixed(1)}` : '—',
-      subtitle: 'Total earnings',
+      label: 'Doanh thu',
+      value: data?.totalRevenue != null ? `${(data.totalRevenue / 1000).toFixed(0)}K₫` : '—',
+      subtitle: 'Tổng doanh thu',
     },
   ]
 

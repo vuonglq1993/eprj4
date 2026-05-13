@@ -407,3 +407,13 @@ a.sidebar__nav-item:visited {
   color: #64748b !important;
 }
 
+.sidebar__section-label {
+  padding: 16px 20px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  user-select: none;
+}
+
