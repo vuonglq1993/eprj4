@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -27,23 +26,41 @@ public class StudyReminderScheduler {
     @Scheduled(cron = "0 * * * * *")
     public void sendReminders() {
         try {
-            // Dùng timezone VN làm mặc định; mỗi user có thể có timezone riêng trong Firestore
-            ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-            int hour   = now.getHour();
-            int minute = now.getMinute();
+            ZonedDateTime utcNow = ZonedDateTime.now(ZoneId.of("UTC"));
 
-            List<ReminderSettingsDocument> targets = reminderRepo.findEnabledAtTime(hour, minute);
-            log.info("Reminder check {}:{} → {} user(s)", hour, minute, targets.size());
+            List<ReminderSettingsDocument> allEnabled = reminderRepo.findAllEnabled();
+            log.info("Reminder tick UTC {}:{} — checking {} enabled setting(s)",
+                    utcNow.getHour(), utcNow.getMinute(), allEnabled.size());
 
-            for (ReminderSettingsDocument settings : targets) {
+            for (ReminderSettingsDocument settings : allEnabled) {
                 try {
-                    sendReminderToUser(settings.getUserId());
+                    // Convert current UTC time to each user's own timezone
+                    ZoneId userZone = parseZone(settings.getTimezone());
+                    ZonedDateTime userNow = utcNow.withZoneSameInstant(userZone);
+
+                    if (userNow.getHour() == settings.getHour()
+                            && userNow.getMinute() == settings.getMinute()) {
+                        log.info("Sending reminder → userId={} tz={} localTime={}:{}",
+                                settings.getUserId(), userZone,
+                                settings.getHour(), settings.getMinute());
+                        sendReminderToUser(settings.getUserId());
+                    }
                 } catch (Exception e) {
-                    log.warn("Failed to send reminder to user {}: {}", settings.getUserId(), e.getMessage());
+                    log.warn("Failed reminder for user {}: {}", settings.getUserId(), e.getMessage());
                 }
             }
         } catch (Exception e) {
             log.error("Scheduler error: {}", e.getMessage());
+        }
+    }
+
+    private ZoneId parseZone(String timezone) {
+        if (timezone == null || timezone.isBlank()) return ZoneId.of("Asia/Ho_Chi_Minh");
+        try {
+            return ZoneId.of(timezone);
+        } catch (Exception e) {
+            log.warn("Invalid timezone '{}', falling back to Asia/Ho_Chi_Minh", timezone);
+            return ZoneId.of("Asia/Ho_Chi_Minh");
         }
     }
 

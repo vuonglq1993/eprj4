@@ -193,19 +193,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _learningSection() {
     return _card([
       _rowItem(
-        label: 'Ngôn ngữ giao diện',
-        subtitle: _uiLanguage == 'vi' ? 'Tiếng Việt' : _uiLanguage == 'ja' ? '日本語' : 'English',
+        label: context.l10n.interfaceLanguage,
+        subtitle: _uiLanguage == 'vi' ? context.l10n.vietnamese : _uiLanguage == 'ja' ? context.l10n.japanese : context.l10n.english,
         onTap: () => _pickLanguage(),
       ),
       _divider(),
       _rowItem(
-        label: 'Mục tiêu XP mỗi ngày',
+        label: context.l10n.dailyXpGoal,
         subtitle: '$_xpGoal XP',
         onTap: () => _pickXpGoal(),
       ),
       _divider(),
       _rowItem(
-        label: 'Phong cách học',
+        label: context.l10n.learningStyle,
         subtitle: _learningStyle,
         onTap: () => _pickLearningStyle(),
       ),
@@ -217,8 +217,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         '${_reminderHour.toString().padLeft(2, '0')}:${_reminderMinute.toString().padLeft(2, '0')}';
     return _card([
       _toggleItem(
-        label: 'Nhắc nhở học hàng ngày',
-        subtitle: _reminderEnabled ? 'Bật · $timeStr mỗi ngày' : 'Đang tắt',
+        label: context.l10n.dailyReminder,
+        subtitle: _reminderEnabled ? '$timeStr' : context.l10n.disabled,
         value: _reminderEnabled,
         onChanged: (v) {
           setState(() => _reminderEnabled = v);
@@ -228,22 +228,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (_reminderEnabled) ...[
         _divider(),
         _rowItem(
-          label: 'Giờ nhắc nhở',
+          label: context.l10n.reminderTime,
           subtitle: timeStr,
           onTap: _pickReminderTime,
         ),
       ],
       _divider(),
       _rowItem(
-        label: 'Gửi thử notification',
-        subtitle: _reminderSaving ? 'Đang gửi…' : 'Nhận ngay bây giờ',
+        label: context.l10n.sendTestNotification,
+        subtitle: _reminderSaving ? context.l10n.saving : context.l10n.sendTestNotification,
         onTap: _reminderSaving
             ? () {}
             : () async {
                 await ApiService.sendTestNotification();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Đã gửi test notification!')),
+                    SnackBar(content: Text(context.l10n.testNotificationSent)),
                   );
                 }
               },
@@ -254,14 +254,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _securitySection() {
     return _card([
       _toggleItem(
-        label: 'Xác thực 2 lớp (2FA)',
-        subtitle: _twoFA ? 'Đang bật' : 'Đang tắt',
+        label: context.l10n.twoFactorAuth,
+        subtitle: _twoFA ? context.l10n.enabled : context.l10n.disabled,
         value: _twoFA,
         onChanged: (v) {
           setState(() => _twoFA = v);
           if (v) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Tính năng 2FA sẽ ra mắt trong bản cập nhật tới')),
+              SnackBar(content: Text(context.l10n.twoFaComingSoon)),
             );
             setState(() => _twoFA = false);
           }
@@ -269,7 +269,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       _divider(),
       _rowItem(
-        label: 'Đổi mật khẩu',
+        label: context.l10n.changePassword,
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
@@ -370,21 +370,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 12),
-          const Text('Ngôn ngữ giao diện',
-              style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          Text(context.l10n.interfaceLanguage,
+              style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
           const SizedBox(height: 8),
           ListTile(
-            title: const Text('Tiếng Việt', style: TextStyle(color: AppColors.textPrimary)),
+            title: Text(context.l10n.vietnamese, style: const TextStyle(color: AppColors.textPrimary)),
             trailing: const Text('vi'),
             onTap: () => Navigator.pop(context, 'vi'),
           ),
           ListTile(
-            title: const Text('English', style: TextStyle(color: AppColors.textPrimary)),
+            title: Text(context.l10n.english, style: const TextStyle(color: AppColors.textPrimary)),
             trailing: const Text('en'),
             onTap: () => Navigator.pop(context, 'en'),
           ),
           ListTile(
-            title: const Text('日本語', style: TextStyle(color: AppColors.textPrimary)),
+            title: Text(context.l10n.japanese, style: const TextStyle(color: AppColors.textPrimary)),
             trailing: const Text('ja'),
             onTap: () => Navigator.pop(context, 'ja'),
           ),
@@ -411,11 +411,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 12),
-          const Text('Mục tiêu XP mỗi ngày',
-              style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          Text(context.l10n.dailyXpGoal,
+              style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
           const SizedBox(height: 8),
           ...options.map((xp) => ListTile(
-            title: Text('$xp XP / ngày', style: const TextStyle(color: AppColors.textPrimary)),
+            title: Text('$xp XP', style: const TextStyle(color: AppColors.textPrimary)),
             trailing: xp == _xpGoal
                 ? const Icon(Icons.check_rounded, color: AppColors.primary)
                 : null,
@@ -443,8 +443,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 12),
-          const Text('Phong cách học',
-              style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          Text(context.l10n.learningStyle,
+              style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
           const SizedBox(height: 8),
           ...styles.map((s) => ListTile(
             title: Text(s, style: const TextStyle(color: AppColors.textPrimary)),

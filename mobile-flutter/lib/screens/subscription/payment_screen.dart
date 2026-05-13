@@ -49,7 +49,7 @@ class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserv
       } else if (path.contains('/payment/paypal/cancel')) {
         _handlePayPalCancel();
       } else if (path.contains('/payment/vnpay')) {
-        _handleVNPayReturn(uri.queryParameters['status'] == 'success');
+        _handleVNPayReturn(path.contains('/success'));
       }
     });
   }

@@ -1,10 +1,13 @@
 package com.languageapp.language_learning_backend.controller;
 
-import com.languageapp.language_learning_backend.dto.payment.*;
+import com.languageapp.language_learning_backend.dto.payment.VNPayIpnResponse;
 import com.languageapp.language_learning_backend.service.VNPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +32,9 @@ public class VNPayController {
 
     private final VNPayService vnPayService;
 
+    @Value("${android.url:linguanext://app}")
+    private String androidUrl;
+
     // ═══════════════════════════════════════════════════════════════
     // RETURN URL — VNPay redirect user về sau khi thanh toán
     // Tương đương: vnpay_return.jsp
@@ -37,12 +43,10 @@ public class VNPayController {
     //       VNPayClient.verifySignature() sẽ encode lại trước khi hash.
     // ═══════════════════════════════════════════════════════════════
     @GetMapping("/return")
-    public ResponseEntity<VNPayReturnResponse> handleReturn(HttpServletRequest request) {
+    public ResponseEntity<Void> handleReturn(HttpServletRequest request) {
         log.info("=== [VNPay] RETURN CALLBACK ===");
         Map<String, String> params = extractParams(request);
-        log.info("[VNPay] Return params: {}", params);
 
-        // Kiểm tra chữ ký
         if (!vnPayService.verifyReturn(params)) {
             return ResponseEntity.ok(VNPayReturnResponse.builder()
                     .code("97")
@@ -51,24 +55,22 @@ public class VNPayController {
                     .build());
         }
 
-        boolean success      = vnPayService.isSuccess(params);
-        String  txnRef       = vnPayService.getTxnRef(params);
-        String  transactionNo = vnPayService.getTransactionNo(params);
-        String  amount       = vnPayService.getAmountDisplay(params);
+        vnPayService.processReturn(params); // thêm dòng này
 
-        log.info("[VNPay] Return - txnRef={}, success={}, transNo={}, amount={}",
-                txnRef, success, transactionNo, amount);
+        boolean success = vnPayService.isSuccess(params);
+        String txnRef = vnPayService.getTxnRef(params);
+        String transactionNo = vnPayService.getTransactionNo(params);
+        String amount = vnPayService.getAmountDisplay(params);
+        boolean success = vnPayService.verifyReturn(params) && vnPayService.isSuccess(params);
+        String  txnRef  = vnPayService.getTxnRef(params);
 
-        return ResponseEntity.ok(VNPayReturnResponse.builder()
-                .code(success ? "00" : params.get("vnp_ResponseCode"))
-                .message(success ? "Thanh toán thành công" : "Thanh toán không thành công")
-                .success(success)
-                .txnRef(txnRef)
-                .transactionNo(transactionNo)
-                .amount(amount)
-                .bankCode(params.get("vnp_BankCode"))
-                .payDate(params.get("vnp_PayDate"))
-                .build());
+        log.info("[VNPay] Return - txnRef={}, success={}", txnRef, success);
+
+        String deepLink = androidUrl + "/payment/vnpay/" + (success ? "success" : "failed")
+                + "?txnRef=" + txnRef;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.LOCATION, deepLink);
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
     // ═══════════════════════════════════════════════════════════════

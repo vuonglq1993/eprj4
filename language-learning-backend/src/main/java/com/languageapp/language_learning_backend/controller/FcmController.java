@@ -38,13 +38,22 @@ public class FcmController {
             @Valid @RequestBody FcmTokenRequest req,
             @AuthenticationPrincipal UserPrincipal principal) {
         String userId = principal.getUserId().toString();
-        pushService.saveToken(userId, req.getToken(), req.getDeviceType());
-        return ResponseEntity.ok(FcmTokenResponse.builder()
-                .success(true)
-                .message("FCM token đã được đăng ký thành công")
-                .userId(userId)
-                .deviceType(req.getDeviceType())
-                .build());
+        try {
+            pushService.saveToken(userId, req.getToken(), req.getDeviceType());
+            return ResponseEntity.ok(FcmTokenResponse.builder()
+                    .success(true)
+                    .message("FCM token đã được đăng ký thành công")
+                    .userId(userId)
+                    .deviceType(req.getDeviceType())
+                    .build());
+        } catch (Exception e) {
+            log.error("FCM register failed for user {}: {}", userId, e.getMessage());
+            return ResponseEntity.internalServerError().body(FcmTokenResponse.builder()
+                    .success(false)
+                    .message("Đăng ký FCM token thất bại")
+                    .userId(userId)
+                    .build());
+        }
     }
 
     // ─── BROADCAST ───────────────────────────────────────────

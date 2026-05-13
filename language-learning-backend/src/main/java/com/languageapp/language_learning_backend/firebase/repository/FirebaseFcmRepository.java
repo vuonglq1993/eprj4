@@ -18,11 +18,14 @@ public class FirebaseFcmRepository {
     private static final String COLLECTION = "fcm_tokens";
 
     // ══════════════════════════════════════════════
-    // SAVE
+    // SAVE (upsert — cleans stale token from other users first)
     // ══════════════════════════════════════════════
     public void save(FcmTokenDocument doc) throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
         String docId = doc.getUserId() + "_" + doc.getDeviceType();
+
+        // Remove this token from any other user's record to prevent cross-user notification leakage
+        removeStaleTokenOwners(db, doc.getToken(), docId);
 
         Map<String, Object> data = new HashMap<>();
         data.put("userId", doc.getUserId());
@@ -33,7 +36,20 @@ public class FirebaseFcmRepository {
         data.put("active", doc.isActive());
 
         db.collection(COLLECTION).document(docId).set(data).get();
-        log.debug("✅ FCM token saved: {}", docId);
+        log.debug("✅ FCM token upserted: {}", docId);
+    }
+
+    private void removeStaleTokenOwners(Firestore db, String token, String currentDocId)
+            throws ExecutionException, InterruptedException {
+        List<QueryDocumentSnapshot> stale = db.collection(COLLECTION)
+                .whereEqualTo("token", token)
+                .get().get().getDocuments();
+        for (QueryDocumentSnapshot staleDoc : stale) {
+            if (!staleDoc.getId().equals(currentDocId)) {
+                staleDoc.getReference().delete().get();
+                log.info("🧹 Removed stale token ownership: doc={}", staleDoc.getId());
+            }
+        }
     }
 
     // ══════════════════════════════════════════════
