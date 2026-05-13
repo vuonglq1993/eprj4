@@ -64,7 +64,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       _snack(context.l10n.fillAllFields);
       return;
     }
-    if (newPw.length < 6) {
+    if (newPw.length < 8) {
       _snack(context.l10n.newPasswordMinLength);
       return;
     }

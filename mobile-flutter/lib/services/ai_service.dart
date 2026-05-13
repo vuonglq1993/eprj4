@@ -278,31 +278,29 @@ class AiService {
   /// Gợi ý bài học dựa trên dữ liệu học của user.
   static Future<AiRecommendResult?> getRecommendations({
     Map<String, dynamic>? dashboard,
+    List<Map<String, dynamic>>? learningPaths,
   }) async {
     try {
-      // Build payload from dashboard data
-      final avgScore =
-          (dashboard?['averageScore'] as num?)?.toDouble() ?? 0.0;
+      final avgScore = (dashboard?['averageScore'] as num?)?.toDouble() ?? 0.0;
 
-      final skills = dashboard?['skills'] as Map<String, dynamic>?;
+      // All 6 skills with scores
+      final skillsRaw = dashboard?['skills'] as Map<String, dynamic>?;
+      final allSkills = <String, dynamic>{};
       final weakSkills = <String>[];
-      if (skills != null) {
-        skills.forEach((skill, val) {
-          final avg =
-              (val as Map<String, dynamic>?)?['averageScore'] as num?;
-          if (avg != null && avg < 60) {
-            weakSkills.add(_capitalizeSkill(skill));
-          }
+      if (skillsRaw != null) {
+        skillsRaw.forEach((skill, val) {
+          final avg = (val as Map<String, dynamic>?)?['averageScore'] as num?;
+          final score = avg?.toDouble() ?? 0.0;
+          allSkills[_capitalizeSkill(skill)] = score;
+          if (score < 60) weakSkills.add(_capitalizeSkill(skill));
         });
       }
 
-      final activeCourses =
-          (dashboard?['activeCourses'] as List?) ?? [];
-      final completedIds = <String>[];
-      final availableLessons = <Map<String, dynamic>>[];
-      // Build id → title map so we can display names after AI returns IDs
       final titleMap = <String, String>{};
+      final availableLessons = <Map<String, dynamic>>[];
 
+      // Lessons from active courses (dashboard)
+      final activeCourses = (dashboard?['activeCourses'] as List?) ?? [];
       for (final c in activeCourses.cast<Map<String, dynamic>>()) {
         final nextId = c['nextLessonId'] as String?;
         final nextTitle = c['nextLessonTitle'] as String? ?? '';
@@ -310,19 +308,46 @@ class AiService {
           availableLessons.add({
             'id': nextId,
             'title': nextTitle,
-            'skill': '',
-            'cefrLevel': '',
-            'estimatedMinutes': 0,
+            'source': 'course',
+            'courseName': c['courseTitle'] as String? ?? '',
           });
           titleMap[nextId] = nextTitle;
         }
       }
 
+      // Lessons from enrolled learning paths
+      if (learningPaths != null) {
+        for (final path in learningPaths) {
+          final pathName = path['name'] as String? ?? path['title'] as String? ?? '';
+          final courses = (path['courses'] as List?) ?? [];
+          for (final course in courses.cast<Map<String, dynamic>>()) {
+            final lessons = (course['lessons'] as List?) ?? [];
+            for (final lesson in lessons.cast<Map<String, dynamic>>()) {
+              final id = lesson['id'] as String?;
+              final title = lesson['title'] as String? ?? '';
+              final completed = lesson['completed'] as bool? ?? false;
+              if (id != null && !completed) {
+                availableLessons.add({
+                  'id': id,
+                  'title': title,
+                  'source': 'learningPath',
+                  'pathName': pathName,
+                  'skill': lesson['skill'] as String? ?? '',
+                  'cefrLevel': lesson['cefrLevel'] as String? ?? '',
+                });
+                titleMap[id] = title;
+              }
+            }
+          }
+        }
+      }
+
       final body = <String, dynamic>{
         'avgScore': avgScore,
+        'allSkills': allSkills,
         'weakSkills': weakSkills,
         'learningPace': 'NORMAL',
-        'completedLessonIds': completedIds,
+        'completedLessonIds': <String>[],
         'availableLessons': availableLessons,
       };
 

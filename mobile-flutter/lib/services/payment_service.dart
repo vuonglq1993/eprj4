@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
+import '../core/secure_client.dart';
+import '../core/session_manager.dart';
 import 'token_service.dart';
 
 
@@ -123,6 +125,7 @@ class PaymentHistoryItem {
 }
 
 class PaymentService {
+  static final http.Client _client = SecureClient.create();
   static String get _base => AppConfig.baseUrl;
 
   static Future<Map<String, String>> _authHeaders() async {
@@ -131,6 +134,20 @@ class PaymentService {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     };
+  }
+
+  static Future<http.Response?> _send(Future<http.Response> Function() call) async {
+    try {
+      final res = await call();
+      if (res.statusCode == 401) {
+        await TokenService.clearTokens();
+        SessionManager.instance.notifyExpired();
+        return null;
+      }
+      return res;
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<bool> waitForPaymentSuccess(String transactionId) async {
@@ -154,7 +171,7 @@ class PaymentService {
   }
 
   static Future<List<SubscriptionPlan>> getPlans() async {
-    final res = await http.get(Uri.parse('$_base/subscription-plans'));
+    final res = await _client.get(Uri.parse('$_base/subscription-plans'));
     if (res.statusCode == 200) {
       final list = jsonDecode(res.body) as List;
       return list.map((e) => SubscriptionPlan.fromJson(e)).toList();
@@ -163,76 +180,72 @@ class PaymentService {
   }
 
   static Future<SubscriptionStatus> getStatus() async {
-    final headers = await _authHeaders();
-    final res = await http.get(
+    final res = await _send(() async => _client.get(
       Uri.parse('$_base/subscriptions/status'),
-      headers: headers,
-    );
-    if (res.statusCode == 200) {
+      headers: await _authHeaders(),
+    ));
+    if (res != null && res.statusCode == 200) {
       return SubscriptionStatus.fromJson(jsonDecode(res.body));
     }
     throw Exception('Failed to load subscription status');
   }
 
   static Future<CreatePaymentResult> createPayment({
-    required String plan,   // MONTHLY | THREE_MONTHS | YEARLY
-    required String gateway, // VNPAY | PAYPAL
+    required String plan,
+    required String gateway,
   }) async {
-    final headers = await _authHeaders();
-    final res = await http.post(
+    final res = await _send(() async => _client.post(
       Uri.parse('$_base/payments/create'),
-      headers: headers,
+      headers: await _authHeaders(),
       body: jsonEncode({'plan': plan, 'gateway': gateway}),
-    );
-    if (res.statusCode == 200) {
+    ));
+    if (res != null && res.statusCode == 200) {
       return CreatePaymentResult.fromJson(jsonDecode(res.body));
     }
-    final msg = jsonDecode(res.body)['message'] ?? 'Payment creation failed';
+    final msg = res != null
+        ? (jsonDecode(res.body)['message'] ?? 'Payment creation failed')
+        : 'Session expired';
     throw Exception(msg);
   }
 
   static Future<void> capturePayPal(String orderId) async {
-    final headers = await _authHeaders();
-    final res = await http.post(
+    final res = await _send(() async => _client.post(
       Uri.parse('$_base/payments/capture?orderId=$orderId'),
-      headers: headers,
-    );
-    if (res.statusCode != 200) {
-      final msg = jsonDecode(res.body)['message'] ?? 'PayPal capture failed';
+      headers: await _authHeaders(),
+    ));
+    if (res == null || res.statusCode != 200) {
+      final msg = res != null
+          ? (jsonDecode(res.body)['message'] ?? 'PayPal capture failed')
+          : 'Session expired';
       throw Exception(msg);
     }
   }
 
   static Future<String> pollStatus(String transactionId) async {
-    final headers = await _authHeaders();
-    final res = await http.get(
+    final res = await _send(() async => _client.get(
       Uri.parse('$_base/payments/status/$transactionId'),
-      headers: headers,
-    );
-    if (res.statusCode == 200) {
+      headers: await _authHeaders(),
+    ));
+    if (res != null && res.statusCode == 200) {
       return jsonDecode(res.body)['status'] as String;
     }
     throw Exception('Failed to get status');
   }
 
   static Future<List<PaymentHistoryItem>> getHistory() async {
-    final headers = await _authHeaders();
-    final res = await http.get(
+    final res = await _send(() async => _client.get(
       Uri.parse('$_base/payments/history'),
-      headers: headers,
-    );
-    if (res.statusCode == 200) {
-      final list = jsonDecode(res.body) as List;
-      return list.map((e) => PaymentHistoryItem.fromJson(e)).toList();
-    }
-    return [];
+      headers: await _authHeaders(),
+    ));
+    if (res == null || res.statusCode != 200) return [];
+    final list = jsonDecode(res.body) as List;
+    return list.map((e) => PaymentHistoryItem.fromJson(e)).toList();
   }
 
   static Future<void> cancelAutoRenew() async {
-    final headers = await _authHeaders();
-    await http.post(
+    await _send(() async => _client.post(
       Uri.parse('$_base/subscriptions/cancel'),
-      headers: headers,
-    );
+      headers: await _authHeaders(),
+    ));
   }
 }

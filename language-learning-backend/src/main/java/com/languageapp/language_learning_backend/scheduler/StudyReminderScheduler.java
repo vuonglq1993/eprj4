@@ -1,5 +1,6 @@
 package com.languageapp.language_learning_backend.scheduler;
 
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.languageapp.language_learning_backend.firebase.document.ReminderSettingsDocument;
 import com.languageapp.language_learning_backend.firebase.repository.FirebaseReminderRepository;
 import com.languageapp.language_learning_backend.service.FirebasePushService;
@@ -27,28 +28,38 @@ public class StudyReminderScheduler {
     public void sendReminders() {
         try {
             ZonedDateTime utcNow = ZonedDateTime.now(ZoneId.of("UTC"));
+            int totalProcessed = 0;
+            DocumentSnapshot cursor = null;
 
-            List<ReminderSettingsDocument> allEnabled = reminderRepo.findAllEnabled();
-            log.info("Reminder tick UTC {}:{} — checking {} enabled setting(s)",
-                    utcNow.getHour(), utcNow.getMinute(), allEnabled.size());
+            do {
+                List<ReminderSettingsDocument> batch = reminderRepo.findAllEnabledBatch(cursor);
+                if (batch.isEmpty()) break;
 
-            for (ReminderSettingsDocument settings : allEnabled) {
-                try {
-                    // Convert current UTC time to each user's own timezone
-                    ZoneId userZone = parseZone(settings.getTimezone());
-                    ZonedDateTime userNow = utcNow.withZoneSameInstant(userZone);
+                for (ReminderSettingsDocument settings : batch) {
+                    try {
+                        ZoneId userZone = parseZone(settings.getTimezone());
+                        ZonedDateTime userNow = utcNow.withZoneSameInstant(userZone);
 
-                    if (userNow.getHour() == settings.getHour()
-                            && userNow.getMinute() == settings.getMinute()) {
-                        log.info("Sending reminder → userId={} tz={} localTime={}:{}",
-                                settings.getUserId(), userZone,
-                                settings.getHour(), settings.getMinute());
-                        sendReminderToUser(settings.getUserId());
+                        if (userNow.getHour() == settings.getHour()
+                                && userNow.getMinute() == settings.getMinute()) {
+                            log.info("Sending reminder → userId={} tz={} localTime={}:{}",
+                                    settings.getUserId(), userZone,
+                                    settings.getHour(), settings.getMinute());
+                            sendReminderToUser(settings.getUserId());
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed reminder for user {}: {}", settings.getUserId(), e.getMessage());
                     }
-                } catch (Exception e) {
-                    log.warn("Failed reminder for user {}: {}", settings.getUserId(), e.getMessage());
                 }
-            }
+
+                totalProcessed += batch.size();
+                cursor = reminderRepo.findAllEnabledBatchCursor(cursor);
+
+            } while (cursor != null);
+
+            log.debug("Reminder tick UTC {}:{} — processed {} setting(s)",
+                    utcNow.getHour(), utcNow.getMinute(), totalProcessed);
+
         } catch (Exception e) {
             log.error("Scheduler error: {}", e.getMessage());
         }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:app_links/app_links.dart';
 import '../../core/theme.dart';
+import '../../l10n/l10n_ext.dart';
 import '../../services/payment_service.dart';
 import 'invoice_screen.dart';
 
@@ -110,7 +111,12 @@ class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserv
     int attempts = 0;
     _pollTimer = Timer.periodic(const Duration(seconds: 3), (t) async {
       attempts++;
-      if (attempts > 60 || !mounted) { t.cancel(); return; } // 3 min
+      if (!mounted) { t.cancel(); return; }
+      if (attempts > 60) { // 3 min
+        t.cancel();
+        if (mounted) _onPaymentTimeout();
+        return;
+      }
       try {
         final status = await PaymentService.pollStatus(txId);
         if (status == 'SUCCESS') {
@@ -129,7 +135,7 @@ class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserv
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Thanh toán ${_selectedGateway} thành công!'),
+        content: Text(context.l10n.paymentSuccess),
         backgroundColor: AppColors.success,
       ),
     );
@@ -140,8 +146,27 @@ class _PaymentScreenState extends State<PaymentScreen> with WidgetsBindingObserv
     _pollTimer?.cancel();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Thanh toán thất bại hoặc bị hủy'),
-          backgroundColor: AppColors.error),
+      SnackBar(
+        content: Text(context.l10n.paymentFailed),
+        backgroundColor: AppColors.error,
+      ),
+    );
+    setState(() { _processing = false; _waiting = false; });
+  }
+
+  void _onPaymentTimeout() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(context.l10n.paymentTimeout),
+        backgroundColor: AppColors.warning,
+        duration: const Duration(seconds: 6),
+        action: SnackBarAction(
+          label: context.l10n.checkHistory,
+          textColor: Colors.white,
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
     );
     setState(() { _processing = false; _waiting = false; });
   }

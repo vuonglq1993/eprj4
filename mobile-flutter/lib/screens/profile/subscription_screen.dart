@@ -16,6 +16,7 @@ class SubscriptionScreen extends StatefulWidget {
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   SubscriptionStatus? _status;
   List<PaymentHistoryItem> _history = [];
+  List<SubscriptionPlan> _plans = [];
   bool _loading = true;
   bool _cancelling = false;
 
@@ -29,11 +30,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     final results = await Future.wait([
       PaymentService.getStatus(),
       PaymentService.getHistory(),
+      PaymentService.getPlans().catchError((_) => <SubscriptionPlan>[]),
     ]);
     if (mounted) {
       setState(() {
         _status = results[0] as SubscriptionStatus;
         _history = results[1] as List<PaymentHistoryItem>;
+        _plans = results[2] as List<SubscriptionPlan>;
         _loading = false;
       });
     }
@@ -273,9 +276,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   Widget _historySection() {
-    if (_history.isEmpty) return const SizedBox.shrink();
     final successful = _history.where((h) => h.status == 'SUCCESS').toList();
-    if (successful.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,7 +285,26 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
                 color: AppColors.textSecondary, letterSpacing: 0.8)),
         const SizedBox(height: 10),
-        ...successful.map((tx) => _historyItem(tx)),
+        if (successful.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 28),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.receipt_long_outlined, size: 36, color: AppColors.textHint),
+                const SizedBox(height: 8),
+                Text(context.l10n.noPaymentHistory,
+                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              ],
+            ),
+          )
+        else
+          ...successful.map((tx) => _historyItem(tx)),
       ],
     );
   }
@@ -362,12 +382,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         _ => 'Free',
       };
 
-  String _planPrice(String plan) => switch (plan) {
-        'MONTHLY' => '199,000',
-        'THREE_MONTHS' => '479,000',
-        'YEARLY' => '1,390,000',
-        _ => '0',
-      };
+  String _planPrice(String plan) {
+    final found = _plans.where((p) => p.name == plan).firstOrNull;
+    if (found != null) {
+      return NumberFormat('#,###', 'vi_VN').format(found.price);
+    }
+    return switch (plan) {
+      'MONTHLY'      => '199,000',
+      'THREE_MONTHS' => '479,000',
+      'YEARLY'       => '1,390,000',
+      _              => '0',
+    };
+  }
 
   String _planPeriod(String plan) => plan == 'YEARLY' ? 'năm' : 'tháng';
 

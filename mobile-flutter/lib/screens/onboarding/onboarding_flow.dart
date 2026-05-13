@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../l10n/l10n_ext.dart';
 import '../../services/api_service.dart';
+import '../home/home_placeholder.dart';
 import 'step1_language.dart';
 import 'step2_goal.dart';
 import 'step3_personalize.dart';
-import 'step4_placement_test.dart';
 
 /// Quản lý state chung cho 4 bước onboarding.
 /// Tải danh sách ngôn ngữ từ API một lần duy nhất.
@@ -54,9 +54,31 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     });
   }
 
+  bool _submitting = false;
+
   void next() => setState(() => _step++);
   void back() {
     if (_step > 0) setState(() => _step--);
+  }
+
+  Future<void> _submit() async {
+    if (_submitting) return;
+    setState(() => _submitting = true);
+    await ApiService.submitOnboarding(
+      targetLanguageId: selectedLanguageIds.isNotEmpty
+          ? selectedLanguageIds.first
+          : (_languages.isNotEmpty ? _languages.first['id'] as String : ''),
+      selfLevel: 'BEGINNER',
+      goal: goal ?? 'OTHERS',
+      dailyTime: dailyTime,
+      ageGroup: ageGroup,
+    );
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const HomePlaceholder()),
+      (r) => false,
+    );
   }
 
   Widget _currentStep() {
@@ -140,20 +162,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           ageGroup: ageGroup,
           onDailyTimeChanged: (v) => setState(() => dailyTime = v),
           onAgeGroupSelected: (v) => setState(() => ageGroup = v),
-          onNext: next,
-          onBack: back,
-        );
-      case 3:
-        // First selected language ID, fallback empty if none
-        final targetId = selectedLanguageIds.isNotEmpty
-            ? selectedLanguageIds.first
-            : (_languages.isNotEmpty ? _languages.first['id'] as String : '');
-        return Step4PlacementTest(
-          key: const ValueKey(3),
-          targetLanguageId: targetId,
-          goal: goal ?? 'OTHERS',
-          dailyTime: dailyTime,
-          ageGroup: ageGroup,
+          onNext: _submit,
           onBack: back,
         );
       default:

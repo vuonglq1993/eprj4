@@ -43,6 +43,18 @@ public class UserController {
         return ResponseEntity.ok(userService.login(req));
     }
 
+    @Operation(summary = "Kiểm tra email đã tồn tại chưa")
+    @GetMapping("/api/v1/auth/check-email")
+    public ResponseEntity<Map<String, Boolean>> checkEmail(@RequestParam String email) {
+        return ResponseEntity.ok(Map.of("exists", userService.existsByEmail(email)));
+    }
+
+    @Operation(summary = "Kiểm tra số điện thoại đã tồn tại chưa")
+    @GetMapping("/api/v1/auth/check-phone")
+    public ResponseEntity<Map<String, Boolean>> checkPhone(@RequestParam String phone) {
+        return ResponseEntity.ok(Map.of("exists", userService.existsByPhone(phone)));
+    }
+
     @Operation(summary = "Đăng xuất")
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("isAuthenticated()")
