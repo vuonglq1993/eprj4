@@ -45,6 +45,7 @@ public class UserService {
     private final EmailService emailService;
     private final FirebaseOtpRepository otpRepository;
     private final JwtTokenProvider jwt;
+    private final com.languageapp.language_learning_backend.security.JwtBlacklistService jwtBlacklist;
 
     private static final int PASSWORD_HISTORY_LIMIT = 2;
 
@@ -101,14 +102,53 @@ public class UserService {
         return buildTokens(user);
     }
 
-    // ── REFRESH TOKEN (DISABLED) ──────────────────────────────
+    // ── REFRESH TOKEN ─────────────────────────────────────────
+    @Transactional(readOnly = true)
     public AuthResponse refresh(String refreshToken) {
-        throw new UnsupportedOperationException("Refresh token feature is disabled");
+        if (!jwt.validate(refreshToken))
+            throw new UnauthorizedException("Invalid refresh token");
+        if (!jwt.isRefreshToken(refreshToken))
+            throw new UnauthorizedException("Not a refresh token");
+
+        String jti = jwt.getJti(refreshToken);
+        if (jwtBlacklist.isBlacklisted(jti))
+            throw new UnauthorizedException("Refresh token has been revoked");
+
+        UUID userId = jwt.getUserId(refreshToken);
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+        if (!user.getIsActive())
+            throw new UnauthorizedException("Account is disabled");
+
+        return buildTokens(user);
     }
 
     // ── LOGOUT ────────────────────────────────────────────────
-    public void logout(UUID userId) {
-        log.warn("Logout handled on client side (no Redis)");
+    public void logout(String accessToken, String refreshToken) {
+        blacklistToken(accessToken);
+        if (refreshToken != null && !refreshToken.isBlank()) {
+            blacklistToken(refreshToken);
+        }
+    }
+
+    private void blacklistToken(String token) {
+        try {
+            if (jwt.validate(token)) {
+                String jti = jwt.getJti(token);
+                long remaining = jwt.getRemainingSeconds(token);
+                if (remaining > 0) jwtBlacklist.blacklist(jti, remaining);
+            }
+        } catch (Exception e) {
+            log.warn("Blacklist token failed: {}", e.getMessage());
+        }
+    }
+
+    public boolean existsByEmail(String email) {
+        return userRepo.existsByEmail(email);
+    }
+
+    public boolean existsByPhone(String phone) {
+        return userRepo.existsByPhone(phone);
     }
 
     // ── VERIFY EMAIL ──────────────────────────────────────────

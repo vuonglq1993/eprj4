@@ -55,7 +55,7 @@ class Step3Personalize extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          OnboardingHeader(step: 3, total: 4, onBack: onBack),
+          OnboardingHeader(step: 3, total: 3, onBack: onBack),
 
           Expanded(
             child: SingleChildScrollView(

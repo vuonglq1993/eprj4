@@ -33,17 +33,17 @@ class _ProfileTabState extends State<ProfileTab> {
 
   Future<void> _load() async {
     final results = await Future.wait([
-      ApiService.getProfile(),
-      GameService.getProfile(),
-      GameService.getStreak(),
-      ApiService.getOnboardingMe(),
+      ApiService.getProfile().catchError((_) => null),
+      GameService.getProfile().catchError((_) => null),
+      GameService.getStreak().catchError((_) => null),
+      ApiService.getOnboardingMe().catchError((_) => null),
     ]);
     if (mounted) {
       setState(() {
-        _user = results[0];
-        _gameProfile = results[1];
-        _streak = results[2];
-        _onboarding = results[3];
+        _user        = results[0] as Map<String, dynamic>?;
+        _gameProfile = results[1] as Map<String, dynamic>?;
+        _streak      = results[2] as Map<String, dynamic>?;
+        _onboarding  = results[3] as Map<String, dynamic>?;
         _loading = false;
       });
     }

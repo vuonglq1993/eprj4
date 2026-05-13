@@ -29,7 +29,6 @@ class Step2Goal extends StatelessWidget {
   ];
 
   List<(String, String, IconData)> _goals(BuildContext context) => [
-    (_goalKeys[0].$1, context.l10n.goalToeic, _goalKeys[0].$2),
     (_goalKeys[1].$1, context.l10n.goalCommunication, _goalKeys[1].$2),
     (_goalKeys[2].$1, context.l10n.goalStudyAbroad, _goalKeys[2].$2),
     (_goalKeys[3].$1, context.l10n.goalWork, _goalKeys[3].$2),
@@ -43,7 +42,7 @@ class Step2Goal extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          OnboardingHeader(step: 2, total: 4, onBack: onBack),
+          OnboardingHeader(step: 2, total: 3, onBack: onBack),
 
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),

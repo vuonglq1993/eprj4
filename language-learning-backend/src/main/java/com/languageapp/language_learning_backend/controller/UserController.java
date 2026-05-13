@@ -8,6 +8,7 @@ import com.languageapp.language_learning_backend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -43,12 +44,39 @@ public class UserController {
         return ResponseEntity.ok(userService.login(req));
     }
 
+    @Operation(summary = "Làm mới access token")
+    @PostMapping("/api/v1/auth/refresh")
+    public ResponseEntity<AuthResponse> refresh(@RequestBody Map<String, String> body) {
+        String refreshToken = body.get("refreshToken");
+        if (refreshToken == null || refreshToken.isBlank())
+            throw new com.languageapp.language_learning_backend.exception.GlobalExceptionHandler.BadRequestException("refreshToken is required");
+        return ResponseEntity.ok(userService.refresh(refreshToken));
+    }
+
+    @Operation(summary = "Kiểm tra email đã tồn tại chưa")
+    @GetMapping("/api/v1/auth/check-email")
+    public ResponseEntity<Map<String, Boolean>> checkEmail(@RequestParam String email) {
+        return ResponseEntity.ok(Map.of("exists", userService.existsByEmail(email)));
+    }
+
+    @Operation(summary = "Kiểm tra số điện thoại đã tồn tại chưa")
+    @GetMapping("/api/v1/auth/check-phone")
+    public ResponseEntity<Map<String, Boolean>> checkPhone(@RequestParam String phone) {
+        return ResponseEntity.ok(Map.of("exists", userService.existsByPhone(phone)));
+    }
+
     @Operation(summary = "Đăng xuất")
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/api/v1/auth/logout")
-    public ResponseEntity<Map<String, String>> logout(@AuthenticationPrincipal UserPrincipal p) {
-        userService.logout(p.getUserId());
+    public ResponseEntity<Map<String, String>> logout(
+            HttpServletRequest request,
+            @RequestBody(required = false) Map<String, String> body) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            String refreshToken = body != null ? body.get("refreshToken") : null;
+            userService.logout(header.substring(7), refreshToken);
+        }
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 

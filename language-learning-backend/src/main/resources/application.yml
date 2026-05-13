@@ -28,7 +28,13 @@ spring:
           time_zone: Asia/Ho_Chi_Minh
 
   cache:
-    type: simple
+    type: redis
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
 
   mail:
     host: smtp.gmail.com

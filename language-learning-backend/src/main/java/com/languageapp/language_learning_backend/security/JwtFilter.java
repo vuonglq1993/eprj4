@@ -19,6 +19,7 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwt;
+    private final JwtBlacklistService blacklist;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req,
@@ -32,6 +33,14 @@ public class JwtFilter extends OncePerRequestFilter {
             String token = header.substring(7);
 
             if (jwt.validate(token)) {
+
+                String jti = jwt.getJti(token);
+                if (blacklist.isBlacklisted(jti)) {
+                    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    res.setContentType("application/json;charset=UTF-8");
+                    res.getWriter().write("{\"code\":\"UNAUTHORIZED\",\"message\":\"Token has been revoked\"}");
+                    return;
+                }
 
                 String role = jwt.getRole(token);
 
