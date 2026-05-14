@@ -16,28 +16,37 @@ const getRevenueData = () => api.get('/payments/history').then((r) => {
   return total;
 }).catch(() => 0);
 
-const getLeaderboardData = () => api.get('/game/leaderboard', { params: { type: 'weekly' } }).then((r) => {
-  const arr = r?.data?.content ?? r?.data?.data ?? r?.data ?? [];
-  return arr.length;
+const getLeaderboardData = () => api.get('/game/leaderboard').then((r) => {
+  const arr = r?.data?.weekly ?? r?.data?.content ?? r?.data ?? [];
+  return Array.isArray(arr) ? arr.length : 0;
 }).catch(() => 0);
 
 export const getDashboard = async () => {
-  const [usersCount, coursesCount, streak, revenue, activeSessions] = await Promise.all([
+  const [usersCount, coursesCount, streak, revenue, activeSessions] = await Promise.allSettled([
     getUsersCount(),
     getCoursesCount(),
     getStreakData(),
     getRevenueData(),
     getLeaderboardData(),
-  ]);
+  ]).catch(() => []);
+
+  const get = (idx, fallback = 0) =>
+    usersCount[idx]?.status === 'fulfilled' ? usersCount[idx].value : fallback
+
+  const s = get(0)
+  const c = get(1)
+  const st = get(2, null)
+  const rv = get(3)
+  const al = get(4)
 
   return {
     data: {
-      totalUsers: usersCount,
-      totalCourses: coursesCount,
-      activeUsers: activeSessions,
-      activeSessions,
-      totalRevenue: revenue,
-      streakDays: streak?.currentStreak ?? streak?.streak ?? 0,
+      totalUsers: s,
+      totalCourses: c,
+      activeUsers: al,
+      activeSessions: al,
+      totalRevenue: rv,
+      streakDays: st?.currentStreak ?? st?.streak ?? 0,
     },
   };
 };
@@ -49,9 +58,19 @@ export const getAdminSubscriptionBreakdown = () =>
   api.get('/admin/stats/subscription-breakdown').then((r) => r.data).catch(() => null);
 
 export const getTopLeaderboard = (limit = 5) =>
-  api.get('/game/leaderboard', { params: { type: 'weekly' } }).then((r) => {
-    const arr = r?.data?.content ?? r?.data?.data ?? r?.data ?? [];
-    return arr.slice(0, limit);
+  api.get('/game/leaderboard').then((r) => {
+    const resp = r?.data;
+    // Backend trả về { weekly: [], allTime: [], myRank: {} }
+    const arr = resp?.weekly ?? resp?.content ?? resp?.data ?? resp ?? [];
+    const entries = Array.isArray(arr) ? arr : [];
+    return entries.slice(0, limit).map((item) => ({
+      id: item.userId ?? item.id,
+      userId: item.userId ?? item.id,
+      displayName: item.userName ?? item.displayName ?? item.fullName ?? 'Học viên',
+      avatarUrl: item.avatarUrl ?? '',
+      totalXp: item.totalXp ?? item.xp ?? 0,
+      xp: item.totalXp ?? item.xp ?? 0,
+    }));
   }).catch(() => []);
 
 export const getCourseProgress = (courseId) =>

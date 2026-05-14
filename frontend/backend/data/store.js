@@ -202,6 +202,39 @@ const enrollments = [
 ];
 
 // ======================
+// RECORDINGS (audio records for exercises)
+// ======================
+const recordings = [
+  m('rec1', {
+    audioUrl: '/uploads/records/sample_recording_1.mp3',
+    title: 'Alphabet Pronunciation Practice',
+    userId: 'u2',
+    exerciseId: 'ex1',
+    transcript: null,
+    score: 85,
+    isCorrect: true,
+  }),
+  m('rec2', {
+    audioUrl: '/uploads/records/sample_recording_2.mp3',
+    title: 'Fill in the Blank Attempt',
+    userId: 'u2',
+    exerciseId: 'ex2',
+    transcript: null,
+    score: 70,
+    isCorrect: false,
+  }),
+  m('rec3', {
+    audioUrl: '/uploads/records/sample_recording_3.mp3',
+    title: 'Vowel Sounds Practice',
+    userId: 'u2',
+    exerciseId: 'ex3',
+    transcript: null,
+    score: 90,
+    isCorrect: true,
+  }),
+];
+
+// ======================
 // STORE (in-memory)
 // ======================
 const store = {
@@ -219,6 +252,7 @@ const store = {
   progress: [...progress],
   onboardingData: { ...onboardingData },
   enrollments: [...enrollments],
+  recordings: [...recordings],
 };
 
 module.exports = store;

@@ -43,6 +43,7 @@ import ReviewMistakesPage from "./pages/ReviewMistakesPage"
 import WeeklyReportPage from "./pages/WeeklyReportPage"
 import GameProfilePage from "./pages/GameProfilePage"
 import LeaderboardPage from "./pages/LeaderboardPage"
+import RecordingsPage from "./pages/RecordingsPage"
 import LearningPathList from "./pages/LearningPathList"
 
 
@@ -79,6 +80,7 @@ import './styles/topiclist.css'
 import './styles/subscriptionplansadmin.css'
 import './styles/adminuser.css'
 import './styles/gamereview.css'
+import './styles/recordings.css'
 
 
 
@@ -428,6 +430,16 @@ function LeaderboardRoute() {
   )
 }
 
+function RecordingsRoute() {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        <RecordingsPage />
+      </AppLayout>
+    </ProtectedRoute>
+  )
+}
+
 function AdminUserManagementRoute() {
   return (
     <ProtectedRoute allowedRoles={['admin']}>
@@ -494,6 +506,7 @@ function App() {
           <Route path="/reports/weekly" element={<WeeklyReportRoute />} />
           <Route path="/game/profile" element={<GameProfileRoute />} />
           <Route path="/game/leaderboard" element={<LeaderboardRoute />} />
+          <Route path="/recordings" element={<RecordingsRoute />} />
           <Route path="/admin/users" element={<AdminUserManagementRoute />} />
           <Route path="/data/payment-transactions" element={<PaymentTransactionsRoute />} />
           <Route path="/data/study-logs" element={<StudyLogsRoute />} />
