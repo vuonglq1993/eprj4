@@ -28,7 +28,7 @@ public class AdminStatsService {
 
     public record SubscriptionBreakdownResponse(
             long total, long free, long monthly, long threeMonths, long yearly,
-            double monthlyRevenue) {}
+            double monthlyRevenue, double totalRevenue) {}
 
     public DailyActiveResponse getDailyActive(int days) {
         LocalDate today = LocalDate.now(VN);
@@ -67,14 +67,16 @@ public class AdminStatsService {
 
         ZonedDateTime startOfMonth = YearMonth.now(VN).atDay(1).atStartOfDay(VN);
         ZonedDateTime startOfNext  = startOfMonth.plusMonths(1);
-        BigDecimal revenue = paymentRepo.sumRevenue(
+        BigDecimal revenue      = paymentRepo.sumRevenue(
                 PaymentTransaction.TxStatus.SUCCESS,
                 startOfMonth.toInstant(),
                 startOfNext.toInstant());
+        BigDecimal totalRevenue = paymentRepo.sumRevenueAllTime(PaymentTransaction.TxStatus.SUCCESS);
 
         return new SubscriptionBreakdownResponse(
                 free + monthly + threeMonths + yearly,
                 free, monthly, threeMonths, yearly,
-                revenue == null ? 0.0 : revenue.doubleValue());
+                revenue      == null ? 0.0 : revenue.doubleValue(),
+                totalRevenue == null ? 0.0 : totalRevenue.doubleValue());
     }
 }

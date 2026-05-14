@@ -25,11 +25,12 @@ function ActiveUsersCard({ dailyActive } = {}) {
           {counts.length > 0 ? counts.map((c, i) => {
             const pct = Math.round((c / maxCount) * 100)
             const isToday = i === counts.length - 1
+            const heightPx = Math.max(Math.round((c / maxCount) * 112), 11)
             return (
               <div key={labels[i] ?? i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                 <span
-                  className={`active-users-chart__bar${isToday ? ' active-users-chart__bar--xl' : ' active-users-chart__bar--md'}`}
-                  style={{ height: `${Math.max(pct, 8)}%`, opacity: isToday ? 1 : 0.6 }}
+                  className="active-users-chart__bar"
+                  style={{ height: `${heightPx}px`, opacity: isToday ? 1 : 0.6 }}
                   title={`${labels[i]}: ${c} học viên`}
                 />
                 <span style={{ fontSize: 9, color: '#94a3b8' }}>{shortLabel(labels[i])}</span>

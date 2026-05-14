@@ -50,7 +50,7 @@ export const getAdminSubscriptionBreakdown = () =>
 
 export const getTopLeaderboard = (limit = 5) =>
   api.get('/game/leaderboard', { params: { type: 'weekly' } }).then((r) => {
-    const arr = r?.data?.content ?? r?.data?.data ?? r?.data ?? [];
+    const arr = r?.data?.weekly ?? r?.data?.content ?? r?.data?.data ?? [];
     return arr.slice(0, limit);
   }).catch(() => []);
 
