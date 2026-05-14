@@ -16,28 +16,37 @@ const getRevenueData = () => api.get('/payments/history').then((r) => {
   return total;
 }).catch(() => 0);
 
-const getLeaderboardData = () => api.get('/game/leaderboard', { params: { type: 'weekly' } }).then((r) => {
-  const arr = r?.data?.content ?? r?.data?.data ?? r?.data ?? [];
-  return arr.length;
+const getLeaderboardData = () => api.get('/game/leaderboard').then((r) => {
+  const arr = r?.data?.weekly ?? r?.data?.content ?? r?.data ?? [];
+  return Array.isArray(arr) ? arr.length : 0;
 }).catch(() => 0);
 
 export const getDashboard = async () => {
-  const [usersCount, coursesCount, streak, revenue, activeSessions] = await Promise.all([
+  const [usersCount, coursesCount, streak, revenue, activeSessions] = await Promise.allSettled([
     getUsersCount(),
     getCoursesCount(),
     getStreakData(),
     getRevenueData(),
     getLeaderboardData(),
-  ]);
+  ]).catch(() => []);
+
+  const get = (idx, fallback = 0) =>
+    usersCount[idx]?.status === 'fulfilled' ? usersCount[idx].value : fallback
+
+  const s = get(0)
+  const c = get(1)
+  const st = get(2, null)
+  const rv = get(3)
+  const al = get(4)
 
   return {
     data: {
-      totalUsers: usersCount,
-      totalCourses: coursesCount,
-      activeUsers: activeSessions,
-      activeSessions,
-      totalRevenue: revenue,
-      streakDays: streak?.currentStreak ?? streak?.streak ?? 0,
+      totalUsers: s,
+      totalCourses: c,
+      activeUsers: al,
+      activeSessions: al,
+      totalRevenue: rv,
+      streakDays: st?.currentStreak ?? st?.streak ?? 0,
     },
   };
 };

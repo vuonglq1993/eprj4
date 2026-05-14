@@ -100,7 +100,10 @@ export const getUsers = (page = 0, size = 100) =>
 
 // GET /users/count — Admin only — đếm tổng số user đã đăng ký
 export const getUsersCount = () =>
-  api.get('/users/count').then((r) => r.data?.total ?? 0).catch(() => 0);
+  api.get('/users/count').then((r) => {
+    const total = r?.data?.total ?? r?.data?.totalElements ?? r?.data ?? 0;
+    return Number(total);
+  }).catch(() => 0);
 
 // PUT /users/:id/role — Admin only — cập nhật role của user
 export const updateUserRole = (id, role) =>
