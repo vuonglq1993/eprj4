@@ -19,7 +19,7 @@ function SalesSection({ dailyActive, leaderboard } = {}) {
   }
 
   const initials = (user) => {
-    const name = user?.displayName ?? user?.fullName ?? user?.firstName ?? '?'
+    const name = user?.userName ?? user?.displayName ?? user?.fullName ?? user?.firstName ?? '?'
     return name.charAt(0).toUpperCase()
   }
 
@@ -36,15 +36,14 @@ function SalesSection({ dailyActive, leaderboard } = {}) {
         <div className="sales-chart">
           <div className="sales-chart__bars">
             {counts.length > 0 ? counts.map((c, i) => {
-              const pct = Math.round((c / maxCount) * 100)
+              const heightPx = Math.max(Math.round((c / maxCount) * 130), 6)
               return (
                 <div key={labels[i] ?? i} className="sales-chart__bar-group">
                   <div
                     className="sales-chart__bar sales-chart__bar--filled"
-                    style={{ height: `${Math.max(pct, 4)}%` }}
+                    style={{ height: `${heightPx}px` }}
                     title={`${c} học viên`}
                   />
-                  <div className="sales-chart__bar sales-chart__bar--empty" style={{ height: `${Math.max(100 - pct, 0)}%` }} />
                   <span className="sales-chart__label">{shortDate(labels[i])}</span>
                 </div>
               )
@@ -76,7 +75,7 @@ function SalesSection({ dailyActive, leaderboard } = {}) {
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {u.displayName ?? u.fullName ?? u.firstName ?? 'Học viên'}
+                  {u.userName ?? u.displayName ?? u.fullName ?? u.firstName ?? 'Học viên'}
                 </p>
               </div>
               <span style={{ fontSize: 12, color: '#a78bfa', fontWeight: 600 }}>{fmtXp(u.totalXp ?? u.xp)} XP</span>

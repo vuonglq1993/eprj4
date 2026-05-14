@@ -126,9 +126,10 @@ public class ExerciseService {
             isTimeout = elapsed > ex.getTimeLimitSeconds();
         }
 
+        boolean effectivelyCorrect = grade.correct && !isTimeout;
         int pointsEarned = (ex.getType() == Exercise.ExerciseType.SPEAKING)
                 ? grade.points()
-                : (grade.correct ? ex.getPoints() : 0);
+                : (effectivelyCorrect ? ex.getPoints() : 0);
 
         UserProgress progress = progressRepo.findByUserIdAndLessonId(p.getUserId(), lessonId)
                 .orElse(UserProgress.builder()
@@ -174,7 +175,7 @@ public class ExerciseService {
         }
 
         return SubmitResponse.builder()
-                .correct(grade.correct && !isTimeout)
+                .correct(effectivelyCorrect)
                 .pointsEarned(pointsEarned)
                 .correctAnswer(grade.correctAnswer)
                 .explanation(grade.explanation)
