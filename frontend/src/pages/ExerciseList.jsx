@@ -262,11 +262,9 @@ const ExerciseList = () => {
     if (!form.title.trim()) { alert('Vui lòng nhập tiêu đề bài tập.'); return; }
     setSaving(true);
     try {
-      let parsedData = {};
-      if (form.questionData.trim()) {
-        try { parsedData = JSON.parse(form.questionData); } catch { alert('questionData phải là JSON hợp lệ.'); setSaving(false); return; }
-      }
-      const payload = { ...form, questionData: parsedData };
+      const questionDataStr = form.questionData.trim() || '{}';
+      try { JSON.parse(questionDataStr); } catch { alert('questionData phải là JSON hợp lệ.'); setSaving(false); return; }
+      const payload = { ...form, questionData: questionDataStr };
       if (editId) {
         const res = await updateExercise(selectedCourse, selectedLesson, editId, payload);
         setExercises((prev) => prev.map((e) => e.id === editId ? res.data : e));
