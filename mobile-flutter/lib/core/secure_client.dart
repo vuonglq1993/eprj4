@@ -17,6 +17,7 @@ class SecureClient {
     final expectedHost = Uri.parse(AppConfig.baseUrl).host;
 
     final httpClient = HttpClient()
+      ..connectionTimeout = const Duration(seconds: 10)
       ..badCertificateCallback = (X509Certificate cert, String host, int port) {
         // Reject self-signed / invalid certs in all cases
         if (host != expectedHost) return false;

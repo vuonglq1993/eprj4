@@ -29,8 +29,9 @@ public class ExerciseController {
     @GetMapping
     public ResponseEntity<List<ExerciseResponse>> list(
             @PathVariable UUID courseId, @PathVariable UUID lessonId,
+            @RequestParam(defaultValue = "vi") String lang,
             @AuthenticationPrincipal UserPrincipal p) {
-        return ResponseEntity.ok(service.list(courseId, lessonId, p));
+        return ResponseEntity.ok(service.list(courseId, lessonId, lang, p));
     }
 
     @Operation(summary = "Thêm bài tập — Admin")
