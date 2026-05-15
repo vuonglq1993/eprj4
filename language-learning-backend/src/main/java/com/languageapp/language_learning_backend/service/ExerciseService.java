@@ -44,13 +44,14 @@ public class ExerciseService {
 
     // ───────────────────────── LIST
     @Transactional(readOnly = true)
-    public List<ExerciseResponse> list(UUID courseId, UUID lessonId, UserPrincipal p) {
+    public List<ExerciseResponse> list(UUID courseId, UUID lessonId, String lang, UserPrincipal p) {
         courseService.findOrThrow(courseId);
         lessonService.findOrThrow(lessonId, courseId);
 
+        String l = (lang != null && !lang.isBlank()) ? lang : "vi";
         return exerciseRepo.findByLessonIdOrderByOrderIndexAsc(lessonId)
                 .stream()
-                .map(this::toResponse)
+                .map(e -> toResponse(e, l))
                 .collect(Collectors.toList());
     }
 
@@ -367,9 +368,11 @@ public class ExerciseService {
 
     // ───────────────────────── RESPONSE
     private ExerciseResponse toResponse(Exercise e) {
+        return toResponse(e, "vi");
+    }
 
+    private ExerciseResponse toResponse(Exercise e, String lang) {
         List<Record> records = recordRepo.findByExercise_Id(e.getId());
-
         String audioUrl = records.isEmpty() ? null : records.get(0).getAudioUrl();
 
         return ExerciseResponse.builder()
@@ -377,12 +380,40 @@ public class ExerciseService {
                 .lessonId(e.getLesson().getId())
                 .title(e.getTitle())
                 .type(e.getType())
-                .questionData(e.getQuestionData())
+                .questionData(resolveI18n(e.getQuestionData(), lang))
                 .audioUrl(audioUrl)
                 .orderIndex(e.getOrderIndex())
                 .points(e.getPoints())
                 .timeLimitSeconds(e.getTimeLimitSeconds())
                 .build();
+    }
+
+    // ───────────────────────── I18N RESOLVER
+    // Nếu question/explanation/hints là object {vi, en, ja} → lấy đúng lang.
+    // Nếu là plain string/array (format cũ) → giữ nguyên (backward compatible).
+    private String resolveI18n(String questionData, String lang) {
+        try {
+            JsonNode root = mapper.readTree(questionData);
+            if (!root.isObject()) return questionData;
+
+            com.fasterxml.jackson.databind.node.ObjectNode out =
+                    ((com.fasterxml.jackson.databind.node.ObjectNode) root).deepCopy();
+
+            for (String field : new String[]{"question", "explanation", "hints"}) {
+                JsonNode node = root.path(field);
+                if (!node.isObject()) continue; // plain string/array → không chạm
+
+                // Lấy lang → fallback en → fallback vi
+                JsonNode resolved = node.path(lang);
+                if (resolved.isMissingNode() || resolved.isNull()) resolved = node.path("en");
+                if (resolved.isMissingNode() || resolved.isNull()) resolved = node.path("vi");
+                if (!resolved.isMissingNode() && !resolved.isNull()) out.set(field, resolved);
+            }
+
+            return mapper.writeValueAsString(out);
+        } catch (Exception e) {
+            return questionData;
+        }
     }
 
     // ───────────────────────── INNER CLASS

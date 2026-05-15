@@ -58,7 +58,7 @@ class ApiService {
   static Future<http.Response?> _send(
       Future<http.Response> Function() call) async {
     try {
-      final res = await call();
+      final res = await call().timeout(const Duration(seconds: 15));
       if (res.statusCode != 401) return res;
 
       // Nếu đang có refresh khác chạy → đợi kết quả rồi retry
@@ -94,6 +94,11 @@ class ApiService {
     await TokenService.clearTokens();
     SessionManager.instance.notifyExpired();
   }
+
+  /// Public wrapper — cho phép các service khác dùng 401-auto-refresh.
+  static Future<http.Response?> sendRequest(
+          Future<http.Response> Function() call) =>
+      _send(call);
 
   // ─── Helpers ────────────────────────────────────────────────────────────
 
@@ -176,7 +181,7 @@ class ApiService {
         Uri.parse('$_base/auth/logout'),
         headers: await _authHeaders(),
         body: jsonEncode(refreshToken != null ? {'refreshToken': refreshToken} : {}),
-      );
+      ).timeout(const Duration(seconds: 8));
     } catch (_) {}
     await TokenService.clearTokens();
   }
