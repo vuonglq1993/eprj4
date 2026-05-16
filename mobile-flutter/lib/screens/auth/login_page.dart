@@ -8,6 +8,7 @@ import '../../services/notification_service.dart';
 import '../onboarding/onboarding_flow.dart';
 import '../home/home_placeholder.dart';
 import 'register_page.dart';
+import 'otp_verification_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../l10n/l10n_ext.dart';
 
@@ -45,6 +46,20 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (!mounted) return;
+
+    if (user != null && user['_error'] == 'email_not_verified') {
+      setState(() => _isLoading = false);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => OtpVerificationPage(
+            email: user['_email'] as String? ?? _email.text.trim(),
+            password: _password.text.trim(),
+          ),
+        ),
+      );
+      return;
+    }
 
     if (user == null) {
       setState(() => _isLoading = false);

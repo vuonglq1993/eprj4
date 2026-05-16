@@ -42,7 +42,7 @@ public class FirebaseOtpService {
             otpRepo.save(doc);
 
             // Send email
-            if ("VERIFICATION".equals(type)) {
+            if ("VERIFY_EMAIL".equals(type)) {
                 emailService.sendVerificationOtp(email, otp);
             } else if ("RESET_PASSWORD".equals(type)) {
                 emailService.sendPasswordResetOtp(email, otp);
