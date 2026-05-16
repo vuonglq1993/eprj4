@@ -34,8 +34,10 @@ public class UserController {
 
     @Operation(summary = "Đăng ký tài khoản")
     @PostMapping("/api/v1/auth/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest req) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(req));
+    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterRequest req) {
+        userService.register(req);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("message", "OTP đã được gửi đến email của bạn", "email", req.getEmail()));
     }
 
     @Operation(summary = "Đăng nhập")

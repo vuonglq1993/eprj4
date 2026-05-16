@@ -5,8 +5,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -41,7 +43,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Err> forbidden(ForbiddenException e) { return err(403, "FORBIDDEN", e.getMessage()); }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<Err> badRequest(BadRequestException e) { return err(400, "BAD_REQUEST", e.getMessage()); }
+    public ResponseEntity<Err> badRequest(BadRequestException e) {
+        log.warn("BadRequest: {}", e.getMessage());
+        return err(400, "BAD_REQUEST", e.getMessage());
+    }
 
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<Err> tooManyRequests(TooManyRequestsException e) { return err(429, "TOO_MANY_REQUESTS", e.getMessage()); }
@@ -56,9 +61,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(new Err("VALIDATION_ERROR", "Validation failed", errors, LocalDateTime.now()));
     }
 
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Err> authenticationFailed(AuthenticationException e) {
+        return err(401, "UNAUTHORIZED", "Authentication required");
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Err> accessDenied(AccessDeniedException e) {
         return err(403, "FORBIDDEN", "Access denied");
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Err> missingParam(MissingServletRequestParameterException e) {
+        return err(400, "BAD_REQUEST", "Missing required parameter: " + e.getParameterName());
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

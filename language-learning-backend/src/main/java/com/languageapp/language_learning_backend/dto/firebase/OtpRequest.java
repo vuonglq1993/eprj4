@@ -12,8 +12,4 @@ public class OtpRequest {
     @NotBlank
     @Pattern(regexp = "\\d{6}", message = "OTP phải là 6 chữ số")
     private String otp;
-
-    @NotBlank
-    @Pattern(regexp = "VERIFICATION|RESET_PASSWORD", message = "Type không hợp lệ")
-    private String type;
 }
