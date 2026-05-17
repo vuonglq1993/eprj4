@@ -206,6 +206,7 @@ class LearningService {
         'answer': answer,
         'clientStartTime': clientStartMs,
         'clientSubmitTime': clientSubmitMs,
+        'lang': _uiLang,
         if (audioUrl != null) 'audioUrl': audioUrl,
       };
       final res = await ApiService.sendRequest(() async => http.post(

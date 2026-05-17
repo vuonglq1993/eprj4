@@ -71,13 +71,10 @@ public class UserController {
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/api/v1/auth/logout")
-    public ResponseEntity<Map<String, String>> logout(
-            HttpServletRequest request,
-            @RequestBody(required = false) Map<String, String> body) {
+    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
-            String refreshToken = body != null ? body.get("refreshToken") : null;
-            userService.logout(header.substring(7), refreshToken);
+            userService.logout(header.substring(7), null);
         }
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
