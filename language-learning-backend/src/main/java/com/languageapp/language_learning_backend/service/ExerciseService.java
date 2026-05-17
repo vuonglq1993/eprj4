@@ -116,7 +116,8 @@ public class ExerciseService {
 
         Exercise ex = findOrThrow(req.getExerciseId(), lessonId);
 
-        GradeResult grade = grade(ex, req);
+        String lang = (req.getLang() != null && !req.getLang().isBlank()) ? req.getLang() : "vi";
+        GradeResult grade = grade(ex, req, lang);
 
         boolean isTimeout = false;
         if (ex.getTimeLimitSeconds() > 0
@@ -172,7 +173,9 @@ public class ExerciseService {
             try {
                 User user = userRepo.getReferenceById(p.getUserId());
                 gamificationService.awardXp(user, pointsEarned);
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                log.warn("Failed to award XP to user {}: {}", p.getUserId(), e.getMessage());
+            }
         }
 
         return SubmitResponse.builder()
@@ -185,7 +188,7 @@ public class ExerciseService {
     }
 
     // ───────────────────────── GRADING
-    private GradeResult grade(Exercise ex, SubmitRequest req) {
+    private GradeResult grade(Exercise ex, SubmitRequest req, String lang) {
 
         try {
             JsonNode q = mapper.readTree(ex.getQuestionData());
@@ -224,7 +227,7 @@ public class ExerciseService {
                             ok,
                             ex.getPoints(),
                             correctText,
-                            q.path("explanation").asText(null)
+                            resolveText(q.path("explanation"), lang)
                     );
                 }
 
@@ -237,16 +240,18 @@ public class ExerciseService {
                             ok,
                             ex.getPoints(),
                             correct,
-                            q.path("explanation").asText(null)
+                            resolveText(q.path("explanation"), lang)
                     );
                 }
 
                 case SPEAKING -> {
                     // Support both old format (targetText/sentence) and new format (question/sample_answer)
-                    String question     = q.path("question").asText(
-                            q.path("targetText").asText(
-                                    q.path("text").asText(
-                                            q.path("sentence").asText(""))));
+                    String question = resolveText(q.path("question"), lang);
+                    if (question == null || question.isBlank()) {
+                        question = q.path("targetText").asText(
+                                q.path("text").asText(
+                                        q.path("sentence").asText("")));
+                    }
                     String sampleAnswer = q.path("sample_answer").asText("");
                     String hint         = q.path("hint").asText("");
 
@@ -389,6 +394,17 @@ public class ExerciseService {
     }
 
     // ───────────────────────── I18N RESOLVER
+    private String resolveText(JsonNode node, String lang) {
+        if (node == null || node.isMissingNode() || node.isNull()) return null;
+        if (node.isObject()) {
+            JsonNode v = node.path(lang);
+            if (v.isMissingNode() || v.isNull()) v = node.path("en");
+            if (v.isMissingNode() || v.isNull()) v = node.path("vi");
+            return (v.isMissingNode() || v.isNull()) ? null : v.asText();
+        }
+        return node.asText(null);
+    }
+
     // Nếu question/explanation/hints là object {vi, en, ja} → lấy đúng lang.
     // Nếu là plain string/array (format cũ) → giữ nguyên (backward compatible).
     private String resolveI18n(String questionData, String lang) {

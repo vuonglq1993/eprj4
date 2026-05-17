@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .cors(c -> c.configurationSource(corsSource()))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
+                        .requestMatchers("/api/v1/auth/logout").authenticated()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/courses/**", "/api/v1/languages/**","/api/v1/subscription-plans/**", "/api/v1/topics/**", "/api/v1/learning-paths/**").permitAll()
                         .requestMatchers("/api/v1/payments/webhook/**").permitAll()
