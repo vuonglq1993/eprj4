@@ -1,9 +1,10 @@
 import api from './api';
 
-export const uploadRecord = async (file, title, exerciseId) => {
+export const uploadRecord = async (file, title, exerciseId, userId) => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('title', title);
+  formData.append('userId', userId);
   formData.append('exerciseId', exerciseId);
   const response = await api.post('/records/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },

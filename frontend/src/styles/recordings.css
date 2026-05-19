@@ -82,30 +82,28 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: none;
+  gap: 0.35rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  border: 1px solid #ddd6fe;
   background: #ede9fe;
   color: #7c3aed;
+  font-size: 0.8rem;
+  font-weight: 500;
   cursor: pointer;
   transition: background 0.2s, transform 0.15s;
+  min-width: 72px;
 }
 
 .rec-play-btn:hover {
   background: #ddd6fe;
-  transform: scale(1.08);
+  transform: scale(1.04);
 }
 
 .rec-play-btn.playing {
   background: #7c3aed;
   color: #fff;
-  animation: pulse-ring 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse-ring {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(124, 58, 237, 0); }
+  border-color: #7c3aed;
 }
 
 /* Action buttons */
@@ -113,14 +111,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
+  gap: 0.35rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
   border: 1px solid #e2e8f0;
   background: transparent;
-  color: #94a3b8;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  min-width: 72px;
 }
 
 .rec-btn-action:hover {

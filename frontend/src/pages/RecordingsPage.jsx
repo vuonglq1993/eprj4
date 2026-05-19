@@ -4,6 +4,7 @@ import { uploadRecord, getRecordsByExercise } from '../services/recordService';
 import { getCourses } from '../services/courseService';
 import { getLessons } from '../services/lessonService';
 import { getExercises } from '../services/exerciseService';
+import { useAuth } from '../contexts/AuthContext';
 import CourseCombobox from '../components/common/CourseCombobox';
 import '../styles/recordings.css';
 
@@ -25,7 +26,7 @@ function LessonCombobox({ courseId, value, onChange, disabled }) {
     (async () => {
       try {
         const res = await getLessons(courseId);
-        const list = res.data?.content ?? res.data ?? [];
+        const list = Array.isArray(res.data) ? res.data : (res.data?.content ?? []);
         const found = list.find((l) => l.id === value);
         if (found) setSelectedLabel(found.title);
       } catch {}
@@ -39,7 +40,7 @@ function LessonCombobox({ courseId, value, onChange, disabled }) {
       setLoading(true);
       try {
         const res = await getLessons(courseId);
-        if (!cancelled) setOptions(res.data?.content ?? res.data ?? []);
+        if (!cancelled) setOptions(Array.isArray(res.data) ? res.data : (res.data?.content ?? []));
       } catch {
         if (!cancelled) setOptions([]);
       } finally {
@@ -151,7 +152,7 @@ function ExerciseCombobox({ courseId, lessonId, value, onChange, disabled }) {
     (async () => {
       try {
         const res = await getExercises(courseId, lessonId);
-        const list = res.data?.content ?? res.data ?? [];
+        const list = Array.isArray(res.data) ? res.data : (res.data?.content ?? []);
         const found = list.find((e) => e.id === value);
         if (found) setSelectedLabel(found.title || found.question?.substring(0, 40) || value);
       } catch {}
@@ -165,7 +166,7 @@ function ExerciseCombobox({ courseId, lessonId, value, onChange, disabled }) {
       setLoading(true);
       try {
         const res = await getExercises(courseId, lessonId);
-        if (!cancelled) setOptions(res.data?.content ?? res.data ?? []);
+        if (!cancelled) setOptions(Array.isArray(res.data) ? res.data : (res.data?.content ?? []));
       } catch {
         if (!cancelled) setOptions([]);
       } finally {
@@ -399,6 +400,7 @@ function AudioRecorder({ onRecorded }) {
 }
 
 const RecordingsPage = () => {
+  const { user } = useAuth()
   const [selectedCourse, setSelectedCourse] = useState('');
   const [selectedLesson, setSelectedLesson] = useState('');
   const [selectedExercise, setSelectedExercise] = useState('');
@@ -475,9 +477,12 @@ const RecordingsPage = () => {
       const fileName = `recording_${Date.now()}.${ext}`;
       const file = new File([recordedBlob], fileName, { type: recordedBlob.type || 'audio/mp3' });
 
-      const result = await uploadRecord(file, uploadForm.title.trim(), selectedExercise);
+      const result = await uploadRecord(file, uploadForm.title.trim(), selectedExercise, user.id);
 
-      const newRecord = { audioUrl: result.audioUrl, title: result.title };
+      const newRecord = {
+        audioUrl: result?.audioUrl ?? result?.url ?? '',
+        title: uploadForm.title.trim(),
+      };
       setRecords((prev) => [...prev, newRecord]);
 
       setShowUpload(false);
@@ -564,44 +569,39 @@ const RecordingsPage = () => {
                 <table className="table rec-table mb-0">
                   <thead>
                     <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Title</th>
-                      <th scope="col">Audio</th>
-                      <th scope="col">Actions</th>
+                      <th scope="col" style={{ width: 60 }}>#</th>
+                      <th scope="col">Tiêu đề</th>
+                      <th scope="col" style={{ width: 160, textAlign: 'center' }}>Audio</th>
+                      <th scope="col" style={{ width: 120, textAlign: 'center' }}>Hành động</th>
                     </tr>
                   </thead>
                   <tbody>
                     {records.map((rec, idx) => (
                       <tr key={rec.audioUrl || idx}>
-                        <td style={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.8rem' }}>#{idx + 1}</td>
+                        <td style={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.8rem', textAlign: 'center' }}>#{idx + 1}</td>
                         <td>
                           <span className="fw-semibold" style={{ color: '#1e293b' }}>{rec.title}</span>
                         </td>
-                        <td>
+                        <td style={{ textAlign: 'center' }}>
                           <button
                             type="button"
                             className={`rec-play-btn ${playingId === rec.audioUrl ? 'playing' : ''}`}
                             onClick={() => playAudio(rec)}
-                            title={playingId === rec.audioUrl ? 'Stop' : 'Play'}
                           >
-                            {playingId === rec.audioUrl
-                              ? <FiPause size={14} />
-                              : <FiPlay size={14} />
-                            }
+                            {playingId === rec.audioUrl ? 'Dừng' : 'Phát'}
                           </button>
                         </td>
-                        <td className="text-center">
+                        <td style={{ textAlign: 'center' }}>
                           <button
                             type="button"
-                            className="rec-btn-action"
-                            title="Delete"
+                            className="rec-btn-action rec-btn-action--danger"
                             onClick={() => {
                               if (window.confirm('Xóa bản ghi này?')) {
                                 setRecords((prev) => prev.filter((r) => r !== rec));
                               }
                             }}
                           >
-                            <FiTrash2 size={14} />
+                            Xóa
                           </button>
                         </td>
                       </tr>
