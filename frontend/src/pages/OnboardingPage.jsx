@@ -119,9 +119,10 @@ function OnboardingPage() {
 
   const handleSubmit = async () => {
     if (!answers.nativeLanguage || !answers.learningLanguage || !answers.currentLevel || !answers.goal || !answers.dailyMinutes) {
-      alert('Vui lòng trả lời tất cả câu hỏi.');
+      setError('Vui lòng trả lời tất cả câu hỏi.');
       return;
     }
+    setError('');
     setSubmitting(true);
     try {
       const res = await submitOnboarding({
@@ -135,7 +136,7 @@ function OnboardingPage() {
       setSuggestedPath(data.suggestedPath || null);
       setCompleted(true);
     } catch (err) {
-      alert(err.response?.data?.message || 'Lưu onboarding thất bại.');
+      setError(err.response?.data?.message || 'Lưu onboarding thất bại.');
     } finally {
       setSubmitting(false);
     }

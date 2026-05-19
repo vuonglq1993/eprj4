@@ -5,9 +5,12 @@ import AuthLayout from '../layouts/AuthLayout'
 function ForgotPassword() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
+  const [emailError, setEmailError] = useState('')
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (!email.trim()) { setEmailError('Vui lòng nhập email.'); return; }
+    setEmailError('')
     setSent(true)
   }
 
@@ -27,7 +30,7 @@ function ForgotPassword() {
             Link gửi thành công (demo). <Link to="/login" className="auth-form__link">Quay lại đăng nhập</Link>
           </p>
         ) : (
-          <form className="auth-form__form" onSubmit={handleSubmit}>
+          <form className="auth-form__form" onSubmit={handleSubmit} noValidate>
             <div className="auth-form__field">
               <label className="auth-form__label" htmlFor="forgot-email">Email</label>
               <input
@@ -37,8 +40,8 @@ function ForgotPassword() {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
               />
+              {emailError && <div className="invalid-feedback" style={{ display: 'block' }}>{emailError}</div>}
             </div>
             <button type="submit" className="auth-form__submit">Send reset link</button>
           </form>

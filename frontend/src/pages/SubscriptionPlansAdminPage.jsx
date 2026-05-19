@@ -23,7 +23,7 @@ const EMPTY_FORM = {
   isActive: true,
 };
 
-function formatPrice(p, currency = 'VND') {
+function formatPrice(p) {
   if (p == null) return '—';
   return new Intl.NumberFormat('vi-VN').format(p) + ' đ';
 }
@@ -48,6 +48,7 @@ export default function SubscriptionPlansAdminPage() {
   const [saving, setSaving] = useState(false);
   const [togglingId, setTogglingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   const fetchPlans = async () => {
     setLoading(true);
@@ -68,11 +69,13 @@ export default function SubscriptionPlansAdminPage() {
   const openCreate = () => {
     setEditId(null);
     setForm(EMPTY_FORM);
+    setFormErrors({});
     setShowModal(true);
   };
 
   const openEdit = (p) => {
     setEditId(p.id);
+    setFormErrors({});
     setForm({
       name: p.name || '',
       description: p.description || '',
@@ -117,10 +120,12 @@ export default function SubscriptionPlansAdminPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim()) {
-      alert('Vui lòng nhập tên gói.');
-      return;
-    }
+    const errs = {};
+    if (!form.name.trim()) errs.name = 'Plan Name không được để trống.';
+    if (form.price === '' || form.price === null) errs.price = 'Vui lòng nhập giá.';
+    if (!form.durationDays || Number(form.durationDays) < 1) errs.durationDays = 'Duration phải ít nhất 1 ngày.';
+    if (Object.keys(errs).length) { setFormErrors(errs); return; }
+    setFormErrors({});
     const features = form.features
       ? form.features.split('\n').map((f) => f.trim()).filter(Boolean)
       : [];
@@ -242,12 +247,13 @@ export default function SubscriptionPlansAdminPage() {
                 <FiX size={22} />
               </button>
             </div>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
               <div className="sp-modal-panel__body">
                 <div className="mb-3">
                   <label className="form-label small fw-semibold">Plan Name *</label>
-                  <input type="text" className="form-control" value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={50} required />
+                  <input type="text" className={`form-control${formErrors.name ? ' is-invalid' : ''}`} value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={50} />
+                  {formErrors.name && <div className="invalid-feedback">{formErrors.name}</div>}
                 </div>
                 <div className="mb-3">
                   <label className="form-label small fw-semibold">Description</label>
@@ -257,13 +263,15 @@ export default function SubscriptionPlansAdminPage() {
                 <div className="row">
                   <div className="col-md-6 mb-3">
                     <label className="form-label small fw-semibold">Price (VND) *</label>
-                    <input type="number" className="form-control" value={form.price}
-                      onChange={(e) => setForm({ ...form, price: e.target.value })} min={0} required />
+                    <input type="number" className={`form-control${formErrors.price ? ' is-invalid' : ''}`} value={form.price}
+                      onChange={(e) => setForm({ ...form, price: e.target.value })} min={0} />
+                    {formErrors.price && <div className="invalid-feedback">{formErrors.price}</div>}
                   </div>
                   <div className="col-md-6 mb-3">
                     <label className="form-label small fw-semibold">Duration (days) *</label>
-                    <input type="number" className="form-control" value={form.durationDays}
-                      onChange={(e) => setForm({ ...form, durationDays: e.target.value })} min={1} required />
+                    <input type="number" className={`form-control${formErrors.durationDays ? ' is-invalid' : ''}`} value={form.durationDays}
+                      onChange={(e) => setForm({ ...form, durationDays: e.target.value })} min={1} />
+                    {formErrors.durationDays && <div className="invalid-feedback">{formErrors.durationDays}</div>}
                   </div>
                 </div>
                 <div className="mb-3">
@@ -321,7 +329,7 @@ function PlanCard({ plan: p, admin, togglingId, deletingId, onEdit, onToggle, on
       </div>
 
       <div className="sp-price-row">
-        <span className="sp-price">{formatPrice(p?.price, p?.currency)}</span>
+        <span className="sp-price">{formatPrice(p?.price)}</span>
         <span className="sp-duration">/ {formatDuration(p?.durationDays)}</span>
       </div>
 

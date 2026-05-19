@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/adminuser.css';
-import { FiEdit2, FiTrash2, FiUser, FiMail, FiShield, FiCheckCircle, FiXCircle } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiMail, FiShield, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import { getUsers, updateUserRole, deleteUser } from '../services/userService';
 import { isAdmin } from '../utils/roleUtils';
 
@@ -89,7 +89,7 @@ const AdminUserManagementPage = () => {
       // Backend trả về Spring Page<UserResponse>: { content: [...], totalElements, totalPages, ... }
       const content = res.data?.content ?? res.data ?? [];
       setUsers(Array.isArray(content) ? content : []);
-    } catch (err) {
+    } catch {
       setError('Không tải được danh sách người dùng.');
     } finally {
       setLoading(false);
@@ -105,7 +105,7 @@ const AdminUserManagementPage = () => {
       await deleteUser(id);
       setUsers((prev) => prev.filter((u) => u.id !== id));
     } catch {
-      alert('Xóa thất bại.');
+      setError('Xóa người dùng thất bại.');
     } finally {
       setDeletingId(null);
     }
@@ -131,7 +131,7 @@ const AdminUserManagementPage = () => {
       );
       setEditingId(null);
     } catch (err) {
-      alert(err.response?.data?.message || 'Cập nhật vai trò thất bại.');
+      setError(err.response?.data?.message || 'Cập nhật vai trò thất bại.');
     } finally {
       setSaving(false);
     }

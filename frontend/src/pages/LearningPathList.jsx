@@ -4,6 +4,7 @@ import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
 import { FaRoute } from 'react-icons/fa6';
 import {
   getLearningPaths,
+  getLearningPath,
   createLearningPath,
   updateLearningPath,
   togglePublishLearningPath,
@@ -81,6 +82,7 @@ const LearningPathList = () => {
   const [saving, setSaving] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const canManage = isAdmin();
@@ -145,21 +147,36 @@ const LearningPathList = () => {
   const openCreate = () => {
     setEditId(null);
     setForm(EMPTY_FORM);
+    setFormErrors({});
     setShowModal(true);
   };
 
-  const openEdit = (p) => {
+  const openEdit = async (p) => {
     setEditId(p.id);
+    setFormErrors({});
+    const matchedLang = languages.find(
+      (l) => l.id === p.languageId || l.id === p.language?.id || l.name === p.languageName || l.code === p.languageCode
+    );
+    let courseIds = [];
+    if (!isDemoLearningPathId(p.id)) {
+      try {
+        const detail = await getLearningPath(p.id);
+        const detailData = detail.data?.data ?? detail.data;
+        courseIds = detailData?.steps?.map((s) => s.courseId) || [];
+      } catch {
+        courseIds = [];
+      }
+    }
     setForm({
       title: p.title || '',
       description: p.description || '',
-      languageId: p.languageId || p.language?.id || '',
+      languageId: matchedLang?.id || '',
       targetLevel: p.targetLevel || 'BEGINNER',
       estimatedDays: p.estimatedHours || p.estimatedDays || 0,
       goal: p.goal || '',
       thumbnailUrl: p.thumbnailUrl || '',
       isPublished: p.isPublished ?? false,
-      courseIds: p.steps?.map((s) => s.courseId) || [],
+      courseIds,
     });
     setShowModal(true);
   };
@@ -201,14 +218,12 @@ const LearningPathList = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.title.trim() || !form.languageId) {
-      alert('Vui lòng điền Title và chọn Language.');
-      return;
-    }
-    if (form.courseIds.length === 0) {
-      alert('Vui lòng chọn ít nhất một khóa học.');
-      return;
-    }
+    const errs = {};
+    if (!form.title.trim()) errs.title = 'Title không được để trống.';
+    if (!form.languageId) errs.languageId = 'Vui lòng chọn ngôn ngữ.';
+    if (form.courseIds.length === 0) errs.courseIds = 'Vui lòng chọn ít nhất một khóa học.';
+    if (Object.keys(errs).length) { setFormErrors(errs); return; }
+    setFormErrors({});
     if (editId && isDemoLearningPathId(editId)) {
       const lang = languages.find((l) => l.id === form.languageId);
       setPaths((prev) =>
@@ -293,10 +308,10 @@ const LearningPathList = () => {
                         <FaRoute size={36} style={{ color: '#94a3b8' }} />
                       </div>
                     )}
-                    <span className={`lp-badge lp-badge--${getLevelClass(p.targetLevel)}`}>
-                      {levelLabel(p.targetLevel)}
-                    </span>
                   </div>
+                  <span className={`lp-badge lp-badge--${getLevelClass(p.targetLevel)}`}>
+                    {levelLabel(p.targetLevel)}
+                  </span>
                   <div className="lp-card-body">
                     <h6 className="fw-bold mb-1" style={{ color: '#1e293b' }}>{p.title}</h6>
                     <p className="text-muted small mb-2" style={{ fontSize: '0.82rem' }}>
@@ -315,7 +330,7 @@ const LearningPathList = () => {
                       <div className="lp-actions">
                         {canManage && (
                           <>
-                            <button type="button" className="lp-action-btn" title="Edit" onClick={() => openEdit(p)}>
+                            <button type="button" className="lp-action-btn" onClick={() => openEdit(p)}>
                               <FiEdit2 size={13} /><span>Edit</span>
                             </button>
                             {!p.isPublished && (
@@ -332,11 +347,10 @@ const LearningPathList = () => {
                             <button
                               type="button"
                               className="lp-action-btn lp-action-btn--del"
-                              title="Delete"
                               onClick={() => handleDelete(p.id)}
                               disabled={deletingId === p.id}
                             >
-                              <FiTrash2 size={13} /><span>Del</span>
+                              <FiTrash2 size={13} /><span>Delete</span>
                             </button>
                           </>
                         )}
@@ -384,12 +398,13 @@ const LearningPathList = () => {
                 <div className="modal-header">
                   <h5 className="modal-title">{editId ? 'Edit Learning Path' : 'New Learning Path'}</h5>
                 </div>
-                <form onSubmit={handleSubmit}>
-                  <div className="modal-body">
+                <form onSubmit={handleSubmit} noValidate>
+                  <div className="modal-body" style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 220px)' }}>
                     <div className="mb-2">
                       <label className="form-label small fw-semibold">Title *</label>
-                      <input type="text" className="form-control" value={form.title}
-                        onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={150} required />
+                      <input type="text" className={`form-control${formErrors.title ? ' is-invalid' : ''}`} value={form.title}
+                        onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={150} />
+                      {formErrors.title && <div className="invalid-feedback">{formErrors.title}</div>}
                     </div>
                     <div className="mb-2">
                       <label className="form-label small fw-semibold">Description</label>
@@ -399,11 +414,12 @@ const LearningPathList = () => {
                     <div className="row">
                       <div className="col-md-6 mb-2">
                         <label className="form-label small fw-semibold">Language *</label>
-                        <select className="form-select" value={form.languageId}
-                          onChange={(e) => setForm({ ...form, languageId: e.target.value })} required>
+                        <select className={`form-select${formErrors.languageId ? ' is-invalid' : ''}`} value={form.languageId}
+                          onChange={(e) => setForm({ ...form, languageId: e.target.value })}>
                           <option value="">Select…</option>
                           {languages.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                         </select>
+                        {formErrors.languageId && <div className="invalid-feedback">{formErrors.languageId}</div>}
                       </div>
                       <div className="col-md-6 mb-2">
                         <label className="form-label small fw-semibold">Target Level *</label>
@@ -436,6 +452,7 @@ const LearningPathList = () => {
                     </div>
                     <div className="mb-2">
                       <label className="form-label small fw-semibold">Courses ({form.courseIds.length} selected)</label>
+                      {formErrors.courseIds && <div className="text-danger small mb-1">{formErrors.courseIds}</div>}
                       {courses.length === 0 ? (
                         <div className="form-control" style={{ color: '#64748b', fontSize: '0.875rem' }}>
                           {canManage ? 'Đang tải khóa học…' : 'Không có khóa học nào.'}

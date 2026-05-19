@@ -18,7 +18,7 @@ function StatusDot({ status }) {
 
 function LanguageList() {
   const { user } = useAuth();
-  const admin = user?.role === 'ADMIN';
+  const admin = user?.role === 'admin';
   const [languages, setLanguages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,6 +27,7 @@ function LanguageList() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   const fetchLanguages = async () => {
     setLoading(true);
@@ -34,23 +35,25 @@ function LanguageList() {
     try {
       const res = await getLanguages();
       setLanguages(res.data || []);
-    } catch (err) {
+    } catch {
       setError('Không tải được danh sách ngôn ngữ.');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchLanguages(); }, []);
+  useEffect(() => { void fetchLanguages(); }, []);
 
   const openCreate = () => {
     setEditId(null);
     setForm(EMPTY_FORM);
+    setFormErrors({});
     setShowModal(true);
   };
 
   const openEdit = (lang) => {
     setEditId(lang.id);
+    setFormErrors({});
     setForm({
       code: lang.code || '',
       name: lang.name || '',
@@ -76,10 +79,12 @@ function LanguageList() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.code.trim() || !form.name.trim() || !form.nativeName.trim()) {
-      alert('Vui lòng điền đầy đủ Code, Name, Native Name.');
-      return;
-    }
+    const errs = {};
+    if (!editId && !form.code.trim()) errs.code = 'Code không được để trống.';
+    if (!form.name.trim()) errs.name = 'Name không được để trống.';
+    if (!form.nativeName.trim()) errs.nativeName = 'Native Name không được để trống.';
+    if (Object.keys(errs).length) { setFormErrors(errs); return; }
+    setFormErrors({});
     setSaving(true);
     try {
       if (editId) {
@@ -180,36 +185,67 @@ function LanguageList() {
                 <FiX size={22} />
               </button>
             </div>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
               <div className="ll-modal-panel__body">
                 <div className="mb-2">
                   <label className="form-label small fw-semibold">
-                    Code (e.g. EN) {!editId && ' *'}
+                    Code (e.g. en) {!editId && ' *'}
                   </label>
                   <input
                     type="text"
-                    className="form-control"
+                    className={`form-control${formErrors.code ? ' is-invalid' : ''}`}
                     value={form.code}
                     onChange={(e) => setForm({ ...form, code: e.target.value.toLowerCase() })}
                     maxLength={10}
-                    required
                     readOnly={!!editId}
                     style={editId ? { backgroundColor: '#f1f5f9', cursor: 'not-allowed', color: '#64748b' } : {}}
-                    placeholder={!editId ? 'EN' : ''}
+                    placeholder={!editId ? 'en' : ''}
                   />
-                  {editId && <small className="form-text text-muted">Code cannot be changed after creation.</small>}
+                  {editId
+                    ? <small className="form-text text-muted">Code không thể thay đổi sau khi tạo.</small>
+                    : formErrors.code && <div className="invalid-feedback">{formErrors.code}</div>}
                 </div>
                 <div className="mb-2">
                   <label className="form-label small fw-semibold">Name *</label>
-                  <input type="text" className="form-control" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={100} required />
+                  <input
+                    type="text"
+                    className={`form-control${formErrors.name ? ' is-invalid' : ''}`}
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    maxLength={100}
+                  />
+                  {formErrors.name && <div className="invalid-feedback">{formErrors.name}</div>}
                 </div>
                 <div className="mb-2">
                   <label className="form-label small fw-semibold">Native Name *</label>
-                  <input type="text" className="form-control" value={form.nativeName} onChange={(e) => setForm({ ...form, nativeName: e.target.value })} maxLength={100} required />
+                  <input
+                    type="text"
+                    className={`form-control${formErrors.nativeName ? ' is-invalid' : ''}`}
+                    value={form.nativeName}
+                    onChange={(e) => setForm({ ...form, nativeName: e.target.value })}
+                    maxLength={100}
+                  />
+                  {formErrors.nativeName && <div className="invalid-feedback">{formErrors.nativeName}</div>}
                 </div>
                 <div className="mb-2">
-                  <label className="form-label small fw-semibold">Flag (country code, viết HOA)</label>
-                  <input type="text" className="form-control" value={form.flag} onChange={(e) => setForm({ ...form, flag: e.target.value.toUpperCase() })} maxLength={20} placeholder="US" />
+                  <label className="form-label small fw-semibold">Flag (mã quốc gia 2 ký tự, e.g. US, VN)</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={form.flag}
+                    onChange={(e) => {
+                      const code = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
+                      const emoji = code.length === 2
+                        ? [...code].map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('')
+                        : code;
+                      setForm({ ...form, flag: emoji });
+                    }}
+                    maxLength={2}
+                    placeholder="US"
+                  />
+                  <small className="form-text text-muted">
+                    Nhập 2 ký tự → tự chuyển thành emoji cờ ({form.flag || '—'})
+                  </small>
                 </div>
                 <div className="form-check">
                   <input type="checkbox" className="form-check-input" id="langActive" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />
