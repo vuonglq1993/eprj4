@@ -1,9 +1,6 @@
 import React from 'react';
 
-/**
- * 课程无缩略图时的静态占位：深蓝渐变底 + 三个并列圆角方块（不重叠、无模糊玻璃）。
- * 仅负责展示，不包含数据逻辑。
- */
+
 export function CourseThumbnailPlaceholder() {
   return (
     <div className="cl-card-thumb-placeholder" aria-hidden="true">

@@ -12,6 +12,7 @@ import '../auth/login_page.dart';
 import '../home/home_placeholder.dart';
 import '../onboarding/onboarding_flow.dart';
 import '../../services/notification_service.dart';
+import '../../services/learning_service.dart';
 import 'dart:developer' as developer;
 
 
@@ -118,6 +119,8 @@ class _SplashScreenState extends State<SplashScreen>
       final profile = await ApiService.getProfile();
       if (!mounted) return;
       if (profile != null) {
+        final uiLang = profile['uiLanguage'] as String? ?? 'vi';
+        LearningService.setUiLanguage(uiLang);
         final onboardingDone = await ApiService.isOnboardingCompleted();
         if (!mounted) return;
         AiButtonController.onLogin();

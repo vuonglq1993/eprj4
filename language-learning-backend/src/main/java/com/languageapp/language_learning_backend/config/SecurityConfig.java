@@ -1,6 +1,7 @@
 package com.languageapp.language_learning_backend.config;
 
 import com.languageapp.language_learning_backend.security.JwtFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
@@ -39,8 +40,9 @@ public class SecurityConfig {
                 .cors(c -> c.configurationSource(corsSource()))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
+                        .requestMatchers("/api/v1/auth/logout").authenticated()
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/courses/**", "/api/v1/languages/**","/api/v1/subscription-plans/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/courses/**", "/api/v1/languages/**","/api/v1/subscription-plans/**", "/api/v1/topics/**", "/api/v1/learning-paths/**").permitAll()
                         .requestMatchers("/api/v1/payments/webhook/**").permitAll()
                         .requestMatchers("/api/v1/payments/vnpay/**").permitAll()
                         .requestMatchers("/api/v1/payments/paypal/return", "/api/v1/payments/paypal/cancel").permitAll()
@@ -58,6 +60,11 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated())
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((req, res, e) ->
+                                res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
+                        .accessDeniedHandler((req, res, e) ->
+                                res.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden")))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

@@ -10,14 +10,14 @@ export const loginWithGoogle = (idToken) =>
   api.post('/auth/google', { idToken });
 
 export const refreshTokens = (refreshToken) =>
-  api.post('/auth/refresh', {}, {
-    headers: { Authorization: `Bearer ${refreshToken}` },
-  });
+  api.post('/auth/refresh', { refreshToken });
 
-/** Logout chủ yếu xóa session phía client; gọi API là tuỳ chọn. */
+/** Logout: gửi refreshToken để backend blacklist cả 2 token. */
 export const logout = async () => {
   try {
-    await api.post('/auth/logout');
+    const raw = localStorage.getItem('auth_tokens');
+    const { refreshToken } = raw ? JSON.parse(raw) : {};
+    await api.post('/auth/logout', refreshToken ? { refreshToken } : {});
   } catch {
     /* ignore */
   }

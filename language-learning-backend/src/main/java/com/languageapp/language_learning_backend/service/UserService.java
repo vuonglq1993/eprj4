@@ -35,7 +35,6 @@ public class UserService {
     private final StudyLogRepository studyLogRepo;
     private final AIInteractionLogRepository aiLogRepo;
     private final PaymentTransactionRepository paymentRepo;
-    private final DeviceTokenRepository deviceTokenRepo;
     private final UserOnboardingRepository onboardingRepo;
     private final UserLearningPathRepository ulpRepo;
     private final UserBadgeRepository badgeRepo;
@@ -45,12 +44,13 @@ public class UserService {
     private final EmailService emailService;
     private final FirebaseOtpRepository otpRepository;
     private final JwtTokenProvider jwt;
+    private final com.languageapp.language_learning_backend.security.JwtBlacklistService jwtBlacklist;
 
     private static final int PASSWORD_HISTORY_LIMIT = 2;
 
     // ── REGISTER ───────────────────────────────────────────────
     @Transactional
-    public AuthResponse register(RegisterRequest req) {
+    public void register(RegisterRequest req) {
         if (userRepo.existsByEmail(req.getEmail()))
             throw new ConflictException("Email already registered");
 
@@ -79,8 +79,6 @@ public class UserService {
         } catch (Exception e) {
             log.error("Failed to send OTP", e);
         }
-
-        return buildTokens(user);
     }
 
     // ── LOGIN ─────────────────────────────────────────────────
@@ -98,17 +96,51 @@ public class UserService {
         if (!encoder.matches(req.getPassword(), user.getPassword()))
             throw new UnauthorizedException("Invalid credentials");
 
+        if (Boolean.FALSE.equals(user.getEmailVerified()))
+            throw new ForbiddenException("email_not_verified");
+
         return buildTokens(user);
     }
 
-    // ── REFRESH TOKEN (DISABLED) ──────────────────────────────
+    // ── REFRESH TOKEN ─────────────────────────────────────────
+    @Transactional(readOnly = true)
     public AuthResponse refresh(String refreshToken) {
-        throw new UnsupportedOperationException("Refresh token feature is disabled");
+        if (!jwt.validate(refreshToken))
+            throw new UnauthorizedException("Invalid refresh token");
+        if (!jwt.isRefreshToken(refreshToken))
+            throw new UnauthorizedException("Not a refresh token");
+
+        String jti = jwt.getJti(refreshToken);
+        if (jwtBlacklist.isBlacklisted(jti))
+            throw new UnauthorizedException("Refresh token has been revoked");
+
+        UUID userId = jwt.getUserId(refreshToken);
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+        if (!user.getIsActive())
+            throw new UnauthorizedException("Account is disabled");
+
+        return buildTokens(user);
     }
 
     // ── LOGOUT ────────────────────────────────────────────────
-    public void logout(UUID userId) {
-        log.warn("Logout handled on client side (no Redis)");
+    public void logout(String accessToken, String refreshToken) {
+        blacklistToken(accessToken);
+        if (refreshToken != null && !refreshToken.isBlank()) {
+            blacklistToken(refreshToken);
+        }
+    }
+
+    private void blacklistToken(String token) {
+        try {
+            if (jwt.validate(token)) {
+                String jti = jwt.getJti(token);
+                long remaining = jwt.getRemainingSeconds(token);
+                if (remaining > 0) jwtBlacklist.blacklist(jti, remaining);
+            }
+        } catch (Exception e) {
+            log.warn("Blacklist token failed: {}", e.getMessage());
+        }
     }
 
     public boolean existsByEmail(String email) {
@@ -121,26 +153,22 @@ public class UserService {
 
     // ── VERIFY EMAIL ──────────────────────────────────────────
     @Transactional
-    public void verifyEmail(String email, String otp) {
-        try {
-            OtpDocument doc = otpRepository.findByEmailAndType(email, "VERIFY_EMAIL")
-                    .orElseThrow(() -> new BadRequestException("OTP not found"));
+    public void verifyEmail(String email, String otp) throws Exception {
+        OtpDocument doc = otpRepository.findByEmailAndType(email, "VERIFY_EMAIL")
+                .orElseThrow(() -> new BadRequestException("OTP not found"));
 
-            if (doc.isUsed())
-                throw new BadRequestException("OTP already used");
-            if (!doc.getOtp().equals(otp))
-                throw new BadRequestException("Invalid OTP");
-            if (doc.getExpiresAt().isBefore(Instant.now()))
-                throw new BadRequestException("OTP expired");
+        if (doc.isUsed())
+            throw new BadRequestException("OTP already used");
+        if (doc.getExpiresAt().isBefore(Instant.now()))
+            throw new BadRequestException("OTP expired");
+        if (!doc.getOtp().equals(otp))
+            throw new BadRequestException("Invalid OTP");
 
-            User user = userRepo.findByEmail(email)
-                    .orElseThrow(() -> new NotFoundException("User not found"));
-            user.setEmailVerified(true);
-            userRepo.save(user);
-            otpRepository.markAsUsed(email, "VERIFY_EMAIL");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        user.setEmailVerified(true);
+        userRepo.save(user);
+        otpRepository.markAsUsed(email, "VERIFY_EMAIL");
     }
 
     // ── FORGOT PASSWORD ──────────────────────────────────────
@@ -168,29 +196,25 @@ public class UserService {
 
     // ── RESET PASSWORD ────────────────────────────────────────
     @Transactional
-    public void resetPassword(String email, String otp, String newPassword) {
-        try {
-            OtpDocument doc = otpRepository.findByEmailAndType(email, "RESET_PASSWORD")
-                    .orElseThrow(() -> new BadRequestException("OTP not found"));
+    public void resetPassword(String email, String otp, String newPassword) throws Exception {
+        OtpDocument doc = otpRepository.findByEmailAndType(email, "RESET_PASSWORD")
+                .orElseThrow(() -> new BadRequestException("OTP not found"));
 
-            if (doc.isUsed())
-                throw new BadRequestException("OTP already used");
-            if (!doc.getOtp().equals(otp))
-                throw new BadRequestException("Invalid OTP");
-            if (doc.getExpiresAt().isBefore(Instant.now()))
-                throw new BadRequestException("OTP expired");
+        if (doc.isUsed())
+            throw new BadRequestException("OTP already used");
+        if (doc.getExpiresAt().isBefore(Instant.now()))
+            throw new BadRequestException("OTP expired");
+        if (!doc.getOtp().equals(otp))
+            throw new BadRequestException("Invalid OTP");
 
-            User user = userRepo.findByEmail(email)
-                    .orElseThrow(() -> new NotFoundException("User not found"));
-            checkPasswordHistory(user.getId(), newPassword);
-            savePasswordHistory(user.getId(), user.getPassword());
-            user.setPassword(encoder.encode(newPassword));
-            userRepo.save(user);
-            otpRepository.markAsUsed(email, "RESET_PASSWORD");
-            log.info("Password reset success for {}", email);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        checkPasswordHistory(user.getId(), newPassword);
+        savePasswordHistory(user.getId(), user.getPassword());
+        user.setPassword(encoder.encode(newPassword));
+        userRepo.save(user);
+        otpRepository.markAsUsed(email, "RESET_PASSWORD");
+        log.info("Password reset success for {}", email);
     }
 
     // ── GET PROFILE ───────────────────────────────────────────
@@ -204,6 +228,7 @@ public class UserService {
     public UserProfileResponse updateProfile(UpdateProfileRequest req, UserPrincipal principal) {
         User user = findUser(principal.getUserId());
 
+        if (req.getDisplayName() != null) user.setFirstName(req.getDisplayName());
         if (req.getFirstName()   != null) user.setFirstName(req.getFirstName());
         if (req.getLastName()    != null) user.setLastName(req.getLastName());
         if (req.getAvatarUrl()   != null) user.setAvatarUrl(req.getAvatarUrl());
@@ -317,7 +342,6 @@ public class UserService {
         studyLogRepo.deleteByUserId(userId);
         aiLogRepo.deleteByUserId(userId);
         paymentRepo.deleteByUserId(userId);
-        deviceTokenRepo.deleteByUserId(userId);
         onboardingRepo.deleteByUserId(userId);
         ulpRepo.deleteByUserId(userId);
         badgeRepo.deleteByUserId(userId);

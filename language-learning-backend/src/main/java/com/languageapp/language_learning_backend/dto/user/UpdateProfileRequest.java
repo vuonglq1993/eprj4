@@ -7,6 +7,7 @@ import java.time.LocalDate;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class UpdateProfileRequest {
+    @Size(max = 100)          private String    displayName;
     @Size(min = 1, max = 50)  private String    firstName;
     @Size(max = 50)           private String    lastName;
     @Size(max = 500)          private String    avatarUrl;

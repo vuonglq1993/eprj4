@@ -51,28 +51,18 @@ function isPublicResourceGet(config) {
   return true;
 }
 
-// ── Request interceptor ───────────────────────────────────────
-api.interceptors.request.use((config) => {
-  const url = config.url || '';
-  if (isPublicAuthPath(url)) return config;
-  if (isPublicResourceGet(config)) {
-    delete config.headers.Authorization;
-    return config;
-  }
-
-  const raw = localStorage.getItem(TOKENS_KEY);
-  if (raw) {
-    try {
-      const { accessToken } = JSON.parse(raw);
-      if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
-    } catch {}
-  }
-  return config;
-});
-
 // ── Refresh token helpers ─────────────────────────────────────
 let isRefreshing = false;
 let refreshSubscribers = [];
+
+// Decode JWT payload (no verification) to read exp claim
+function getTokenExpMs(token) {
+  try { return JSON.parse(atob(token.split('.')[1])).exp * 1000; } catch { return 0; }
+}
+
+function isAccessTokenExpired(token) {
+  return getTokenExpMs(token) < Date.now() + 10_000; // expired or expiring within 10s
+}
 
 function subscribeTokenRefresh(cb) {
   refreshSubscribers.push(cb);
@@ -93,6 +83,50 @@ function redirectToLogin() {
     window.location.href = '/login';
   }
 }
+
+// ── Request interceptor ───────────────────────────────────────
+api.interceptors.request.use(async (config) => {
+  const url = config.url || '';
+  if (isPublicAuthPath(url)) return config;
+  if (isPublicResourceGet(config)) {
+    delete config.headers.Authorization;
+    return config;
+  }
+
+  const raw = localStorage.getItem(TOKENS_KEY);
+  if (!raw) return config;
+
+  let { accessToken, refreshToken } = JSON.parse(raw);
+
+  // Proactive refresh: token đã hết hạn → refresh trước khi gửi, không chờ 401
+  if (accessToken && isAccessTokenExpired(accessToken) && refreshToken) {
+    if (!isRefreshing) {
+      isRefreshing = true;
+      try {
+        const res = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+        const { accessToken: newAt, refreshToken: newRt } = res.data;
+        accessToken = newAt;
+        localStorage.setItem(TOKENS_KEY, JSON.stringify({
+          accessToken: newAt,
+          refreshToken: newRt || refreshToken,
+        }));
+        isRefreshing = false;
+        onTokenRefreshed(newAt);
+      } catch {
+        isRefreshing = false;
+        clearSession();
+        redirectToLogin();
+        return Promise.reject(new Error('Session expired'));
+      }
+    } else {
+      // Refresh đang chạy từ request khác — đợi kết quả
+      accessToken = await new Promise((resolve) => subscribeTokenRefresh(resolve));
+    }
+  }
+
+  if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
+  return config;
+});
 
 // ── Response interceptor ──────────────────────────────────────
 api.interceptors.response.use(
@@ -120,18 +154,15 @@ api.interceptors.response.use(
 
           if (!refreshToken) throw new Error('No refresh token');
 
-          // Gọi endpoint refresh (backend chưa có → tạm thời fallback)
-          // Khi backend có /auth/refresh, uncomment dòng dưới và xóa catch
-          // const res = await axios.post(`${BASE_URL}/auth/refresh`, {}, {
-          //   headers: { Authorization: `Bearer ${refreshToken}` }
-          // });
-          // const { accessToken, refreshToken: newRt } = res.data;
-          // const newTokens = { accessToken, refreshToken: newRt || refreshToken };
-          // localStorage.setItem(TOKENS_KEY, JSON.stringify(newTokens));
-          // onTokenRefreshed(accessToken);
+          const res = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+          const { accessToken, refreshToken: newRt } = res.data;
+          const newTokens = { accessToken, refreshToken: newRt || refreshToken };
+          localStorage.setItem(TOKENS_KEY, JSON.stringify(newTokens));
+          isRefreshing = false;
+          onTokenRefreshed(accessToken);
 
-          // Tạm thời: nếu không refresh được, xóa session
-          throw new Error('Refresh not available');
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          return api(originalRequest);
         } catch {
           isRefreshing = false;
           clearSession();
@@ -140,7 +171,7 @@ api.interceptors.response.use(
         }
       }
 
-      // Đợi token mới rồi retry request gốc
+      // Các request 401 đến sau khi refresh đang chạy → đợi token mới
       return new Promise((resolve) => {
         subscribeTokenRefresh((token) => {
           originalRequest.headers.Authorization = `Bearer ${token}`;
