@@ -58,7 +58,7 @@ class ApiService {
   static Future<http.Response?> _send(
       Future<http.Response> Function() call) async {
     try {
-      final res = await call();
+      final res = await call().timeout(const Duration(seconds: 15));
       if (res.statusCode != 401) return res;
 
       // Nếu đang có refresh khác chạy → đợi kết quả rồi retry
@@ -95,6 +95,11 @@ class ApiService {
     SessionManager.instance.notifyExpired();
   }
 
+  /// Public wrapper — cho phép các service khác dùng 401-auto-refresh.
+  static Future<http.Response?> sendRequest(
+          Future<http.Response> Function() call) =>
+      _send(call);
+
   // ─── Helpers ────────────────────────────────────────────────────────────
 
   static Future<Map<String, dynamic>?> _parseAndSaveAuth(http.Response res) async {
@@ -128,10 +133,7 @@ class ApiService {
           'phone': phone,
         }),
       );
-      if (res.statusCode == 201) {
-        await _parseAndSaveAuth(res);
-        return null;
-      }
+      if (res.statusCode == 201) return null; // OTP sent, no tokens
       if (res.statusCode == 409) return 'email_exists';
       return 'register_failed';
     } catch (_) {
@@ -149,9 +151,44 @@ class ApiService {
         headers: _jsonHeaders,
         body: jsonEncode({'email': email, 'password': password}),
       );
+      if (res.statusCode == 403) {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        if (data['message'] == 'email_not_verified') {
+          return {'_error': 'email_not_verified', '_email': email};
+        }
+      }
       return await _parseAndSaveAuth(res);
     } catch (_) {
       return null;
+    }
+  }
+
+  static Future<String?> verifyEmail(String email, String otp) async {
+    try {
+      final res = await _client.post(
+        Uri.parse('$_base/auth/verify-email'),
+        headers: _jsonHeaders,
+        body: jsonEncode({'email': email, 'otp': otp}),
+      );
+      if (res.statusCode == 200) return null;
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      return data['message'] ?? 'verify_failed';
+    } catch (_) {
+      return 'network_error';
+    }
+  }
+
+  static Future<String?> resendOtp(String email) async {
+    try {
+      final res = await _client.post(
+        Uri.parse('$_base/auth/resend-otp'),
+        headers: _jsonHeaders,
+        body: jsonEncode({'email': email, 'type': 'VERIFY_EMAIL'}),
+      );
+      if (res.statusCode == 200) return null;
+      return 'resend_failed';
+    } catch (_) {
+      return 'network_error';
     }
   }
 
@@ -176,7 +213,7 @@ class ApiService {
         Uri.parse('$_base/auth/logout'),
         headers: await _authHeaders(),
         body: jsonEncode(refreshToken != null ? {'refreshToken': refreshToken} : {}),
-      );
+      ).timeout(const Duration(seconds: 8));
     } catch (_) {}
     await TokenService.clearTokens();
   }

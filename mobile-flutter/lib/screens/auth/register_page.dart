@@ -8,6 +8,7 @@ import '../../services/notification_service.dart';
 import '../home/home_placeholder.dart';
 import '../onboarding/onboarding_flow.dart';
 import 'login_page.dart';
+import 'otp_verification_page.dart';
 import '../../l10n/l10n_ext.dart';
 
 enum _CheckStatus { idle, checking, available, taken, error }
@@ -191,14 +192,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
     setState(() => _isLoading = false);
 
-    // Tokens are already saved by register (201 response)
     if (!mounted) return;
-    AiButtonController.onLogin();
-    NotificationService.instance.registerToken();
-    Navigator.pushAndRemoveUntil(
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const OnboardingFlow()),
-      (r) => false,
+      MaterialPageRoute(
+        builder: (_) => OtpVerificationPage(
+          email: _email.text.trim(),
+          password: _password.text.trim(),
+        ),
+      ),
     );
   }
 

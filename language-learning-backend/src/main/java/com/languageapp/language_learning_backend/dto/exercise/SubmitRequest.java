@@ -14,4 +14,5 @@ public class SubmitRequest {
     private Long clientSubmitTime;  // ms, FE gửi lúc bấm submit / hết giờ
     private String audioUrl;
     private String transcript;
+    private String lang;
 }

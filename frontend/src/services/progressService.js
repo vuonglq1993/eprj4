@@ -58,19 +58,9 @@ export const getAdminSubscriptionBreakdown = () =>
   api.get('/admin/stats/subscription-breakdown').then((r) => r.data).catch(() => null);
 
 export const getTopLeaderboard = (limit = 5) =>
-  api.get('/game/leaderboard').then((r) => {
-    const resp = r?.data;
-    // Backend trả về { weekly: [], allTime: [], myRank: {} }
-    const arr = resp?.weekly ?? resp?.content ?? resp?.data ?? resp ?? [];
-    const entries = Array.isArray(arr) ? arr : [];
-    return entries.slice(0, limit).map((item) => ({
-      id: item.userId ?? item.id,
-      userId: item.userId ?? item.id,
-      displayName: item.userName ?? item.displayName ?? item.fullName ?? 'Học viên',
-      avatarUrl: item.avatarUrl ?? '',
-      totalXp: item.totalXp ?? item.xp ?? 0,
-      xp: item.totalXp ?? item.xp ?? 0,
-    }));
+  api.get('/game/leaderboard', { params: { type: 'weekly' } }).then((r) => {
+    const arr = r?.data?.weekly ?? r?.data?.content ?? r?.data?.data ?? [];
+    return arr.slice(0, limit);
   }).catch(() => []);
 
 export const getCourseProgress = (courseId) =>

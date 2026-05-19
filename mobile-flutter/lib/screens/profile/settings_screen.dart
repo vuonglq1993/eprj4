@@ -7,6 +7,7 @@ import '../../main.dart';
 import '../../core/ai_button_controller.dart';
 import '../../services/api_service.dart';
 import '../../services/token_service.dart';
+import '../../services/learning_service.dart';
 import '../splash/splash_screen.dart';
 import 'change_password_screen.dart';
 
@@ -50,7 +51,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _xpGoal = prefs.getInt(_kXpGoal) ?? 200;
         _learningStyle = prefs.getString(_kLearningStyle) ?? 'Visual';
-        _uiLanguage = user?['uiLanguage'] as String? ?? 'en';
+        _uiLanguage = user?['uiLanguage'] as String? ?? 'vi';
+        LearningService.setUiLanguage(_uiLanguage);
         if (reminder != null) {
           _reminderEnabled = reminder['enabled'] as bool? ?? false;
           _reminderHour = reminder['hour'] as int? ?? 20;
@@ -396,6 +398,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await ApiService.updateProfile(uiLanguage: chosen);
       if (!mounted) return;
       setState(() => _uiLanguage = chosen);
+      LearningService.setUiLanguage(chosen);
       appStateKey.currentState?.setLocale(Locale(chosen));
     }
   }

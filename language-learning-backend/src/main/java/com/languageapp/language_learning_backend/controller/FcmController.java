@@ -107,6 +107,12 @@ public class FcmController {
                         "message", "userId là bắt buộc"
                 ));
             }
+            if (title == null || bodyText == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "title và body là bắt buộc"
+                ));
+            }
 
             pushService.sendToUser(userId, title, bodyText, type);
             log.info("📨 Sent to user {}: {}", userId, title);

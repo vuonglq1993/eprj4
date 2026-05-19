@@ -32,7 +32,7 @@ public class User {
     @Column(length = 255)
     private String password;           // null nếu OAuth2
 
-    @Column(length = 25)
+    @Column(length = 11)
     private String phone;
 
     @Column(nullable = false, length = 50)

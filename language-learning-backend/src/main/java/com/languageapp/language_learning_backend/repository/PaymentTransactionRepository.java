@@ -18,4 +18,7 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM PaymentTransaction t WHERE t.status = :status AND t.paidAt >= :from AND t.paidAt < :to")
     BigDecimal sumRevenue(@Param("status") PaymentTransaction.TxStatus status, @Param("from") Instant from, @Param("to") Instant to);
+
+    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM PaymentTransaction t WHERE t.status = :status")
+    BigDecimal sumRevenueAllTime(@Param("status") PaymentTransaction.TxStatus status);
 }

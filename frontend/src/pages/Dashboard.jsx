@@ -30,7 +30,7 @@ function Dashboard() {
         const premiumUsers = sub != null
           ? (sub.monthly ?? 0) + (sub.threeMonths ?? 0) + (sub.yearly ?? 0)
           : null
-        setStats({ ...base, premiumUsers })
+        setStats({ ...base, premiumUsers, totalRevenue: sub?.totalRevenue ?? base.totalRevenue })
         setDailyActive(daily)
         setSubBreakdown(sub)
         setLeaderboard(lb ?? [])

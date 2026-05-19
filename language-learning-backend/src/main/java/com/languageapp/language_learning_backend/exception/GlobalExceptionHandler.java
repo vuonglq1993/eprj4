@@ -1,10 +1,19 @@
 package com.languageapp.language_learning_backend.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -36,7 +45,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Err> forbidden(ForbiddenException e) { return err(403, "FORBIDDEN", e.getMessage()); }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<Err> badRequest(BadRequestException e) { return err(400, "BAD_REQUEST", e.getMessage()); }
+    public ResponseEntity<Err> badRequest(BadRequestException e) {
+        log.warn("BadRequest: {}", e.getMessage());
+        return err(400, "BAD_REQUEST", e.getMessage());
+    }
 
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<Err> tooManyRequests(TooManyRequestsException e) { return err(429, "TOO_MANY_REQUESTS", e.getMessage()); }
@@ -49,6 +61,51 @@ public class GlobalExceptionHandler {
             errors.put(field, err.getDefaultMessage());
         });
         return ResponseEntity.badRequest().body(new Err("VALIDATION_ERROR", "Validation failed", errors, LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Err> authenticationFailed(AuthenticationException e) {
+        return err(401, "UNAUTHORIZED", "Authentication required");
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Err> accessDenied(AccessDeniedException e) {
+        return err(403, "FORBIDDEN", "Access denied");
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Err> missingParam(MissingServletRequestParameterException e) {
+        return err(400, "BAD_REQUEST", "Missing required parameter: " + e.getParameterName());
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Err> typeMismatch(MethodArgumentTypeMismatchException e) {
+        return err(400, "BAD_REQUEST", "Invalid value for parameter: " + e.getName());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Err> messageNotReadable(HttpMessageNotReadableException e) {
+        return err(400, "BAD_REQUEST", "Invalid request body: " + e.getMostSpecificCause().getMessage());
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Err> noResourceFound(NoResourceFoundException e) {
+        return err(404, "NOT_FOUND", "Endpoint not found");
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Err> methodNotSupported(HttpRequestMethodNotSupportedException e) {
+        return err(405, "METHOD_NOT_ALLOWED", "Method not allowed: " + e.getMethod());
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<Err> mediaTypeNotSupported(HttpMediaTypeNotSupportedException e) {
+        return err(415, "UNSUPPORTED_MEDIA_TYPE", "Unsupported content type: " + e.getContentType());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Err> dataIntegrity(DataIntegrityViolationException e) {
+        return err(409, "CONFLICT", "Resource is in use and cannot be deleted");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
