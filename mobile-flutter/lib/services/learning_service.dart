@@ -191,6 +191,19 @@ class LearningService {
   }
 
   /// Submit một exercise. Trả về SubmitResponse hoặc null nếu lỗi.
+  static Future<Map<String, dynamic>?> getCertificate(String courseId) async {
+    try {
+      final res = await ApiService.sendRequest(() async => http.get(
+        Uri.parse('$_base/progress/courses/$courseId/certificate'),
+        headers: await _auth(),
+      ));
+      if (res == null || res.statusCode != 200) return null;
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
   static Future<Map<String, dynamic>?> submitExercise({
     required String courseId,
     required String lessonId,

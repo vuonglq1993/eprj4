@@ -346,6 +346,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
           lessonTitle: widget.lessonTitle,
           lessonType: widget.lessonType,
           attempts: _attempts,
+          courseId: widget.courseId,
         ),
         transitionDuration: const Duration(milliseconds: 400),
         reverseTransitionDuration: const Duration(milliseconds: 250),
