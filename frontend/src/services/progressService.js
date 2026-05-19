@@ -22,7 +22,7 @@ const getLeaderboardData = () => api.get('/game/leaderboard').then((r) => {
 }).catch(() => 0);
 
 export const getDashboard = async () => {
-  const [usersCount, coursesCount, streak, revenue, activeSessions] = await Promise.allSettled([
+  const results = await Promise.allSettled([
     getUsersCount(),
     getCoursesCount(),
     getStreakData(),
@@ -31,7 +31,7 @@ export const getDashboard = async () => {
   ]).catch(() => []);
 
   const get = (idx, fallback = 0) =>
-    usersCount[idx]?.status === 'fulfilled' ? usersCount[idx].value : fallback
+    results[idx]?.status === 'fulfilled' ? results[idx].value : fallback
 
   const s = get(0)
   const c = get(1)
