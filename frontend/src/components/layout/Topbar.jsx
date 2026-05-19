@@ -1,5 +1,4 @@
 import { useLocation } from 'react-router-dom'
-import { IoSearch } from 'react-icons/io5'
 import { MdMenu } from 'react-icons/md'
 
 const PAGE_TITLES = {
@@ -10,6 +9,7 @@ const PAGE_TITLES = {
   '/courses':                   'Khoá học',
   '/lessons':                   'Bài học',
   '/exercises':                 'Bài tập',
+  '/recordings':                'Ghi âm',
   '/admin/users':               'Người dùng',
   '/admin/subscription-plans':  'Gói đăng ký',
   '/data/payment-transactions': 'Giao dịch',
@@ -37,14 +37,6 @@ function Topbar({ onOpenNav }) {
         <h1 className="topbar__title">{title}</h1>
       </div>
 
-      <div className="topbar__search">
-        <input
-          type="text"
-          className="topbar__search-input"
-          placeholder="Tìm kiếm..."
-        />
-        <IoSearch className="topbar__search-icon" aria-hidden />
-      </div>
     </header>
   )
 }
