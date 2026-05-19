@@ -35,7 +35,6 @@ public class UserService {
     private final StudyLogRepository studyLogRepo;
     private final AIInteractionLogRepository aiLogRepo;
     private final PaymentTransactionRepository paymentRepo;
-    private final DeviceTokenRepository deviceTokenRepo;
     private final UserOnboardingRepository onboardingRepo;
     private final UserLearningPathRepository ulpRepo;
     private final UserBadgeRepository badgeRepo;
@@ -343,7 +342,6 @@ public class UserService {
         studyLogRepo.deleteByUserId(userId);
         aiLogRepo.deleteByUserId(userId);
         paymentRepo.deleteByUserId(userId);
-        deviceTokenRepo.deleteByUserId(userId);
         onboardingRepo.deleteByUserId(userId);
         ulpRepo.deleteByUserId(userId);
         badgeRepo.deleteByUserId(userId);

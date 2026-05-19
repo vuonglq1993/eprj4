@@ -19,7 +19,6 @@ public class RecordService {
     private final RecordRepository recordRepo;
     private final UserRepository userRepo;
     private final ExerciseRepository exerciseRepo;
-    private final FirebaseService firebaseService;
 
 
     public List<RecordResponse> getByExercise(UUID exerciseId) {
