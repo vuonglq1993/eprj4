@@ -82,7 +82,7 @@ public class LessonService {
 
         Lesson saved = lessonRepo.save(Lesson.builder()
                 .course(course).title(req.getTitle()).content(req.getContent())
-                .type(req.getType()).videoUrl(req.getVideoUrl()).audioUrl(req.getAudioUrl())
+                .type(req.getType())
                 .orderIndex(order)
                 .durationMinutes(req.getDurationMinutes() != null ? req.getDurationMinutes() : 0)
                 .isFree(Boolean.TRUE.equals(req.getIsFree()))
@@ -100,8 +100,7 @@ public class LessonService {
         courseService.checkOwnerOrAdmin(p, courseService.findOrThrow(courseId));
         Lesson l = findOrThrow(lessonId, courseId);
         l.setTitle(req.getTitle());   l.setContent(req.getContent());
-        l.setType(req.getType());     l.setVideoUrl(req.getVideoUrl());
-        l.setAudioUrl(req.getAudioUrl());
+        l.setType(req.getType());
         if (req.getOrderIndex()      != null) l.setOrderIndex(req.getOrderIndex());
         if (req.getDurationMinutes() != null) l.setDurationMinutes(req.getDurationMinutes());
         if (req.getIsFree()          != null) l.setIsFree(req.getIsFree());
@@ -139,7 +138,6 @@ public class LessonService {
         return LessonDetailResponse.builder()
                 .id(l.getId()).courseId(l.getCourse().getId())
                 .title(l.getTitle()).content(l.getContent()).type(l.getType())
-                .videoUrl(l.getVideoUrl()).audioUrl(l.getAudioUrl())
                 .orderIndex(l.getOrderIndex()).durationMinutes(l.getDurationMinutes())
                 .isFree(l.getIsFree()).totalExercises(lessonRepo.countExercises(l.getId()))
                 .createdAt(l.getCreatedAt())

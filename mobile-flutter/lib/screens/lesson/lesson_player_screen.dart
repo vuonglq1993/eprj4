@@ -580,7 +580,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
   }
 
   Future<void> _playListeningAudio() async {
-    final audioUrl = _exercises[_current]['audioUrl'] as String?;
+    final audioUrl = _qData['audioUrl'] as String?;
     if (audioUrl == null || audioUrl.isEmpty) return;
 
     if (_isPlaying) {
@@ -606,7 +606,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
     final question = _qData['question'] as String? ?? '';
     final options = (_qData['options'] as List?)?.cast<String>() ?? [];
     final correctIndex = _resolveCorrectIndex(_qData);
-    final audioUrl = _exercises[_current]['audioUrl'] as String?;
+    final audioUrl = _qData['audioUrl'] as String?;
     final isListening = _exType == 'LISTENING_CHOICE';
 
     return Column(
