@@ -7,7 +7,7 @@ import { getLanguages } from '../services/languageService';
 import { isAdmin } from '../utils/roleUtils';
 import { CourseThumbnailPlaceholder } from '../components/courses/CourseThumbnailPlaceholder';
 
-const LEVELS = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
+const LEVELS = ['BEGINNER', 'ELEMENTARY', 'INTERMEDIATE', 'UPPER_INTERMEDIATE', 'ADVANCED'];
 
 const EMPTY_FORM = { title: '', description: '', languageId: '', level: 'BEGINNER', thumbnailUrl: '', isPublished: false };
 
@@ -200,7 +200,7 @@ const CourseList = () => {
   };
 
 
-  const levelLabel = (l) => l ? l.charAt(0) + l.slice(1).toLowerCase() : 'Beginner';
+  const levelLabel = (l) => l ? l.replace(/_/g, ' ').replace(/\w+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()) : 'Beginner';
 
   return (
     <div className="cl-page py-4 px-3">

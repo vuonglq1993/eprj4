@@ -23,10 +23,11 @@ const QUESTIONS = [
     placeholder: 'Chọn ngôn ngữ muốn học…',
   },
   {
-    id: 'currentLevel',
+    id: 'selfLevel',
     question: 'Trình độ hiện tại của bạn ở ngôn ngữ muốn học?',
     type: 'radio',
     options: [
+      { value: 'COMPLETE_BEGINNER', label: 'Complete Beginner — Chưa biết gì' },
       { value: 'BEGINNER', label: 'Beginner — Mới bắt đầu' },
       { value: 'INTERMEDIATE', label: 'Intermediate — Trung cấp' },
       { value: 'ADVANCED', label: 'Advanced — Nâng cao' },
@@ -37,21 +38,21 @@ const QUESTIONS = [
     question: 'Mục tiêu học tập của bạn là gì?',
     type: 'radio',
     options: [
-      { value: 'CONVERSATION', label: 'Giao tiếp thông thường' },
+      { value: 'FAMILY_FRIENDS', label: 'Giao tiếp thông thường' },
       { value: 'WORK', label: 'Công việc / Nghề nghiệp' },
       { value: 'TRAVEL', label: 'Du lịch / Định cư' },
-      { value: 'ACADEMIC', label: 'Học thuật / Thi chứng chỉ' },
+      { value: 'SCHOOL', label: 'Học thuật / Thi chứng chỉ' },
     ],
   },
   {
-    id: 'dailyMinutes',
+    id: 'dailyTime',
     question: 'Bạn có thể dành bao nhiêu phút mỗi ngày để học?',
     type: 'radio',
     options: [
-      { value: '15', label: '15 phút — Tôi bận' },
-      { value: '30', label: '30 phút — Khá ổn định' },
-      { value: '60', label: '1 giờ — Tôi nghiêm túc' },
-      { value: '120', label: '2+ giờ — Tôi cực kỳ nghiêm túc' },
+      { value: 'FIVE_MIN',     label: '5 phút — Tôi rất bận' },
+      { value: 'FIFTEEN_MIN',  label: '15 phút — Tôi bận' },
+      { value: 'THIRTY_MIN',   label: '30 phút — Khá ổn định' },
+      { value: 'SIXTY_MIN',    label: '1 giờ — Tôi nghiêm túc' },
     ],
   },
 ];
@@ -69,9 +70,9 @@ function OnboardingPage() {
   const [answers, setAnswers] = useState({
     nativeLanguage: '',
     learningLanguage: '',
-    currentLevel: '',
+    selfLevel: '',
     goal: '',
-    dailyMinutes: '',
+    dailyTime: '',
   });
 
   useEffect(() => {
@@ -118,19 +119,20 @@ function OnboardingPage() {
   };
 
   const handleSubmit = async () => {
-    if (!answers.nativeLanguage || !answers.learningLanguage || !answers.currentLevel || !answers.goal || !answers.dailyMinutes) {
+    if (!answers.nativeLanguage || !answers.learningLanguage || !answers.selfLevel || !answers.goal || !answers.dailyTime) {
       setError('Vui lòng trả lời tất cả câu hỏi.');
       return;
     }
     setError('');
     setSubmitting(true);
     try {
+      const nativeLang = languages.find((l) => String(l.id) === String(answers.nativeLanguage));
       const res = await submitOnboarding({
-        nativeLanguage: answers.nativeLanguage,
-        learningLanguage: answers.learningLanguage,
-        currentLevel: answers.currentLevel,
+        targetLanguageId: answers.learningLanguage,
+        nativeLanguageCode: nativeLang?.code || null,
+        selfLevel: answers.selfLevel,
         goal: answers.goal,
-        dailyMinutes: Number(answers.dailyMinutes),
+        dailyTime: answers.dailyTime,
       });
       const data = res.data || {};
       setSuggestedPath(data.suggestedPath || null);

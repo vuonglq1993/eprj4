@@ -6,6 +6,7 @@ import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -20,7 +21,7 @@ public class SubscriptionPlan {
     private UUID id;
 
     @Column(nullable = false, length = 100)
-    private String name; // FREE, PREMIUM, PRO
+    private String name;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -30,6 +31,11 @@ public class SubscriptionPlan {
 
     @Column(nullable = false)
     private Integer durationDays; // 30, 90, 365
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "JSON")
+    @Builder.Default
+    private List<String> features = new java.util.ArrayList<>();
 
     @Column(nullable = false)
     @Builder.Default
