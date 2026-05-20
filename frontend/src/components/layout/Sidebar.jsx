@@ -12,10 +12,8 @@ import {
   MdPayment,
   MdLeaderboard,
   MdNotifications,
-  MdBarChart,
   MdSettings,
   MdLogout,
-  MdMic,
 } from 'react-icons/md'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -29,7 +27,6 @@ const menuConfig = [
   { id: 'courses',        label: 'Khoá học',        icon: MdSchool,         path: '/courses' },
   { id: 'lessons',        label: 'Bài học',         icon: MdMenuBook,       path: '/lessons' },
   { id: 'exercises',      label: 'Bài tập',         icon: MdAssignment,     path: '/exercises' },
-  { id: 'recordings',     label: 'Ghi âm',           icon: MdMic,           path: '/recordings' },
 
   { id: 'div-admin',      label: 'Quản lý',         type: 'divider' },
   { id: 'users',          label: 'Người dùng',      icon: MdPeople,         path: '/admin/users' },
@@ -41,7 +38,6 @@ const menuConfig = [
 
   { id: 'div-system',     label: 'Hệ thống',        type: 'divider' },
   { id: 'notifications',  label: 'Thông báo',       icon: MdNotifications,  path: '/admin/notifications' },
-  { id: 'reports',        label: 'Báo cáo',         icon: MdBarChart,       path: '/reports/weekly' },
   { id: 'settings',       label: 'Cài đặt',         icon: MdSettings,       path: '/setting' },
 ]
 

@@ -7,7 +7,7 @@ import { getLanguages } from '../services/languageService';
 import { isAdmin } from '../utils/roleUtils';
 import { CourseThumbnailPlaceholder } from '../components/courses/CourseThumbnailPlaceholder';
 
-const LEVELS = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
+const LEVELS = ['BEGINNER', 'ELEMENTARY', 'INTERMEDIATE', 'UPPER_INTERMEDIATE', 'ADVANCED'];
 
 const EMPTY_FORM = { title: '', description: '', languageId: '', level: 'BEGINNER', thumbnailUrl: '', isPublished: false };
 
@@ -80,6 +80,7 @@ const CourseList = () => {
   const [saving, setSaving] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
   const [thumbnailFieldError, setThumbnailFieldError] = useState('');
+  const [formErrors, setFormErrors] = useState({});
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const canManage = isAdmin();
@@ -106,7 +107,7 @@ const CourseList = () => {
     try {
       const res = await getLanguages();
       setLanguages(res.data || []);
-    } catch {}
+    } catch { /* silent — language list is optional */ }
   };
 
   useEffect(() => {
@@ -119,21 +120,26 @@ const CourseList = () => {
     setEditId(null);
     setForm(EMPTY_FORM);
     setThumbnailFieldError('');
+    setFormErrors({});
     setShowModal(true);
   };
 
 
   const openEdit = (course) => {
     setEditId(course.id);
+    const matchedLang = languages.find(
+      (l) => l.code === course.languageCode || l.name === course.languageName
+    );
     setForm({
       title: course.title || '',
       description: course.description || '',
-      languageId: course.languageId || '',
+      languageId: matchedLang?.id || '',
       level: course.level || 'BEGINNER',
       thumbnailUrl: course.thumbnailUrl || '',
       isPublished: course.isPublished ?? false,
     });
     setThumbnailFieldError('');
+    setFormErrors({});
     setShowModal(true);
   };
 
@@ -164,10 +170,11 @@ const CourseList = () => {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.title.trim() || !form.languageId) {
-      alert('Vui lòng điền đầy đủ Title và chọn Language.');
-      return;
-    }
+    const errs = {};
+    if (!form.title.trim()) errs.title = 'Title không được để trống.';
+    if (!form.languageId) errs.languageId = 'Vui lòng chọn ngôn ngữ.';
+    if (Object.keys(errs).length) { setFormErrors(errs); return; }
+    setFormErrors({});
     const thumb = validateThumbnailUrl(form.thumbnailUrl);
     if (!thumb.ok) {
       setThumbnailFieldError(thumb.message);
@@ -193,7 +200,7 @@ const CourseList = () => {
   };
 
 
-  const levelLabel = (l) => l ? l.charAt(0) + l.slice(1).toLowerCase() : 'Beginner';
+  const levelLabel = (l) => l ? l.replace(/_/g, ' ').replace(/\w+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()) : 'Beginner';
 
   return (
     <div className="cl-page py-4 px-3">
@@ -321,19 +328,21 @@ const CourseList = () => {
                 <div className="modal-header">
                   <h5 className="modal-title">{editId ? 'Edit Course' : 'New Course'}</h5>
                 </div>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
                   <div className="modal-body">
                     <div className="row">
                       <div className="col-md-8 mb-2">
                         <label className="form-label small fw-semibold">Title *</label>
-                        <input type="text" className="form-control" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={150} required />
+                        <input type="text" className={`form-control${formErrors.title ? ' is-invalid' : ''}`} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={150} />
+                        {formErrors.title && <div className="invalid-feedback">{formErrors.title}</div>}
                       </div>
                       <div className="col-md-4 mb-2">
                         <label className="form-label small fw-semibold">Language *</label>
-                        <select className="form-select" value={form.languageId} onChange={(e) => setForm({ ...form, languageId: e.target.value })} required>
+                        <select className={`form-select${formErrors.languageId ? ' is-invalid' : ''}`} value={form.languageId} onChange={(e) => setForm({ ...form, languageId: e.target.value })}>
                           <option value="">Select…</option>
                           {languages.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                         </select>
+                        {formErrors.languageId && <div className="invalid-feedback">{formErrors.languageId}</div>}
                       </div>
                     </div>
                     <div className="mb-2">

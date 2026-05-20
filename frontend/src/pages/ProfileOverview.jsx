@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { MdHelpOutline, MdPeople, MdSettings, MdExpandMore } from 'react-icons/md'
 import {
   LineChart,
@@ -88,9 +87,7 @@ const hashtagSets = [
 
 function ProfileOverview() {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
-  const [loadingProfile, setLoadingProfile] = useState(true)
   const [bestTimeView, setBestTimeView] = useState('days')
   const [ageRangeFilter, setAgeRangeFilter] = useState('all')
   const [expandedSets, setExpandedSets] = useState(new Set(['sport', 'animals', 'beauty']))
@@ -99,7 +96,6 @@ function ProfileOverview() {
     getProfile()
       .then((res) => setProfile(res.data))
       .catch(() => {})
-      .finally(() => setLoadingProfile(false))
   }, [])
 
   const toggleSet = (id) => {

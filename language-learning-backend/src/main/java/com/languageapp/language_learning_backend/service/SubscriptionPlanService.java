@@ -43,6 +43,7 @@ public class SubscriptionPlanService {
                 .description(req.getDescription())
                 .price(req.getPrice())
                 .durationDays(req.getDurationDays())
+                .features(req.getFeatures() != null ? req.getFeatures() : List.of())
                 .isActive(req.getIsActive())
                 .build()));
     }
@@ -65,6 +66,7 @@ public class SubscriptionPlanService {
         plan.setDescription(req.getDescription());
         plan.setPrice(req.getPrice());
         plan.setDurationDays(req.getDurationDays());
+        plan.setFeatures(req.getFeatures() != null ? req.getFeatures() : List.of());
 
         if (req.getIsActive() != null) {
             plan.setIsActive(req.getIsActive());
@@ -82,11 +84,19 @@ public class SubscriptionPlanService {
         return toResponse(repo.save(plan));
     }
 
+    // ── DELETE (Admin) ────────────────────────────────────────
+    @Transactional
+    public void delete(UUID id) {
+        if (!repo.existsById(id))
+            throw new NotFoundException("Plan not found");
+        repo.deleteById(id);
+    }
+
     // ── MAPPER ────────────────────────────────────────────────
     private SubscriptionPlanResponse toResponse(SubscriptionPlan p) {
         return SubscriptionPlanResponse.builder()
                 .id(p.getId()).name(p.getName()).description(p.getDescription())
                 .price(p.getPrice()).durationDays(p.getDurationDays())
-                .isActive(p.getIsActive()).build();
+                .features(p.getFeatures()).isActive(p.getIsActive()).build();
     }
 }

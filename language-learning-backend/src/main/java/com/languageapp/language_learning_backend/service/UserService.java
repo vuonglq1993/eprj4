@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.languageapp.language_learning_backend.exception.GlobalExceptionHandler.*;
@@ -54,7 +55,7 @@ public class UserService {
         if (userRepo.existsByEmail(req.getEmail()))
             throw new ConflictException("Email already registered");
 
-        User user = userRepo.save(User.builder()
+        userRepo.save(User.builder()
                 .email(req.getEmail())
                 .password(encoder.encode(req.getPassword()))
                 .firstName(req.getFirstName())
@@ -64,10 +65,15 @@ public class UserService {
                 .provider(AuthProvider.LOCAL)
                 .build());
 
+        sendOtpAsync(req.getEmail());
+    }
+
+    @Async
+    public void sendOtpAsync(String email) {
         try {
             String otp = String.format("%06d", (int) (Math.random() * 1_000_000));
             otpRepository.save(OtpDocument.builder()
-                    .email(user.getEmail())
+                    .email(email)
                     .otp(otp)
                     .type("VERIFY_EMAIL")
                     .createdAt(Instant.now())
@@ -75,7 +81,7 @@ public class UserService {
                     .used(false)
                     .attempts(0)
                     .build());
-            emailService.sendVerificationOtp(user.getEmail(), otp);
+            emailService.sendVerificationOtp(email, otp);
         } catch (Exception e) {
             log.error("Failed to send OTP", e);
         }
@@ -234,7 +240,7 @@ public class UserService {
         if (req.getAvatarUrl()   != null) user.setAvatarUrl(req.getAvatarUrl());
         if (req.getUiLanguage()  != null) user.setUiLanguage(req.getUiLanguage());
         if (req.getPhone()       != null) user.setPhone(req.getPhone());
-        if (req.getGender()      != null) user.setGender(req.getGender());
+        if (req.getGender()      != null) user.setGender(User.Gender.valueOf(req.getGender().toUpperCase()));
         if (req.getDateOfBirth() != null) user.setDateOfBirth(req.getDateOfBirth());
         if (req.getCountry()     != null) user.setCountry(req.getCountry());
         if (req.getTimezone()    != null) user.setTimezone(req.getTimezone());

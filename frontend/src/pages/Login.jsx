@@ -1,10 +1,7 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import AuthLayout from '../layouts/AuthLayout';
-import { FcGoogle } from 'react-icons/fc';
-import { loginWithGoogle } from '../services/authService';
-// Google OAuth cần cài @react-oauth/google + GOOGLE_CLIENT_ID — xem README
 
 function Login() {
   const navigate = useNavigate();
@@ -27,14 +24,11 @@ function Login() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    setError('Google OAuth cần cấu hình GOOGLE_CLIENT_ID trong backend. Vui lòng đăng nhập bằng email.');
-  };
-
   return (
     <AuthLayout
-      headline="Very good works are"
-      subline="waiting for you — Sign up Now"
+      headline="LinguaNext"
+      subline="Hệ thống quản trị"
+      adminMode
     >
       <div className="auth-form">
         <h1 className="auth-form__title">Login</h1>
@@ -61,7 +55,6 @@ function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
-              required
             />
           </div>
 
@@ -77,13 +70,7 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
-              required
             />
-            <div className="auth-form__field-footer">
-              <Link to="/forgot-password" className="auth-form__link">
-                Forgot password
-              </Link>
-            </div>
           </div>
 
           <button
@@ -94,24 +81,6 @@ function Login() {
             {loading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
-
-        <div className="auth-form__social">
-          <button
-            type="button"
-            className="auth-form__social-btn"
-            onClick={handleGoogleLogin}
-          >
-            <FcGoogle size={20} />
-            <span>Sign in with Google</span>
-          </button>
-        </div>
-
-        <p className="auth-form__footer">
-          Don&apos;t have an account.{' '}
-          <Link to="/signup" className="auth-form__link">
-            Sign up
-          </Link>
-        </p>
       </div>
     </AuthLayout>
   );

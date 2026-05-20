@@ -80,7 +80,7 @@ const Setting = () => {
       const dataUrl = ev.target.result;
       // Validate size (max 1MB)
       if (file.size > 1024 * 1024) {
-        alert('Kích thước ảnh tối đa 1MB. Hãy chọn ảnh nhỏ hơn.');
+        setError('Kích thước ảnh tối đa 1MB. Hãy chọn ảnh nhỏ hơn.');
         return;
       }
       setForm((prev) => ({ ...prev, avatarUrl: dataUrl }));

@@ -52,4 +52,13 @@ public class SubscriptionPlanController {
     public ResponseEntity<SubscriptionPlanResponse> toggle(@PathVariable UUID id) {
         return ResponseEntity.ok(service.toggle(id));
     }
+
+    @Operation(summary = "Xoá gói — Admin only")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
