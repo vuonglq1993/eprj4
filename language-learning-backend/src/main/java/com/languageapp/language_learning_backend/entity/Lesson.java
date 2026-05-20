@@ -41,9 +41,6 @@ public class Lesson {
     @Column(nullable = false, length = 20)
     private LessonType type;
 
-    @Column(length = 500) private String  videoUrl;
-    @Column(length = 500) private String  audioUrl;
-
     @Column(nullable = false) @Builder.Default private Integer orderIndex      = 0;
     @Column(nullable = false) @Builder.Default private Integer durationMinutes = 0;
     @Column(nullable = false) @Builder.Default private Boolean isFree          = false;

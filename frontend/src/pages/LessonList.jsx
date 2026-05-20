@@ -6,7 +6,7 @@ import { isAdmin } from '../utils/roleUtils';
 import CourseCombobox from '../components/common/CourseCombobox';
 
 const LESSON_TYPES = ['VOCABULARY', 'GRAMMAR', 'SPEAKING', 'READING', 'LISTENING', 'WRITING'];
-const EMPTY_FORM = { title: '', content: '', type: 'VOCABULARY', videoUrl: '', audioUrl: '', orderIndex: 0, durationMinutes: 0, isFree: false };
+const EMPTY_FORM = { title: '', content: '', type: 'VOCABULARY', orderIndex: 0, durationMinutes: 0, isFree: false };
 
 const typeLabel = (t) => t ? t.charAt(0) + t.slice(1).toLowerCase() : 'Vocabulary';
 
@@ -79,8 +79,6 @@ const LessonList = () => {
       title: lesson.title || '',
       content: lesson.content || '',
       type: lesson.type || 'VOCABULARY',
-      videoUrl: lesson.videoUrl || '',
-      audioUrl: lesson.audioUrl || '',
       orderIndex: lesson.orderIndex ?? 0,
       durationMinutes: lesson.durationMinutes ?? 0,
       isFree: lesson.isFree ?? false,
@@ -233,14 +231,6 @@ const LessonList = () => {
                       {formErrors.content && <div className="invalid-feedback">{formErrors.content}</div>}
                     </div>
                     <div className="row">
-                      <div className="col-md-6 mb-2">
-                        <label className="form-label small fw-semibold">Video URL</label>
-                        <input type="url" className="form-control" value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} />
-                      </div>
-                      <div className="col-md-6 mb-2">
-                        <label className="form-label small fw-semibold">Audio URL</label>
-                        <input type="url" className="form-control" value={form.audioUrl} onChange={(e) => setForm({ ...form, audioUrl: e.target.value })} />
-                      </div>
                     </div>
                     <div className="row">
                       <div className="col-md-4 mb-2">

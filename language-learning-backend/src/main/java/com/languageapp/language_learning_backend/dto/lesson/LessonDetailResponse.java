@@ -13,8 +13,6 @@ public class LessonDetailResponse {
     private String        title;
     private String        content;
     private LessonType    type;
-    private String        videoUrl;
-    private String        audioUrl;
     private Integer       orderIndex;
     private Integer       durationMinutes;
     private Boolean       isFree;
