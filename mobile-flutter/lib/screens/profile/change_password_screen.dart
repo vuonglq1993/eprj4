@@ -72,6 +72,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       _snack(context.l10n.passwordsDoNotMatch);
       return;
     }
+    if (!_isGoogleNoPassword && newPw == current) {
+      _snack(context.l10n.passwordRecentlyUsed);
+      return;
+    }
 
     setState(() => _saving = true);
     final error = await ApiService.changePassword(
