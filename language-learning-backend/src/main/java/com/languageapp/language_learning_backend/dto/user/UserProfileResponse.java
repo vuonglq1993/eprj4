@@ -1,5 +1,6 @@
 package com.languageapp.language_learning_backend.dto.user;
 
+import com.languageapp.language_learning_backend.entity.User.Gender;
 import lombok.*;
 
 import java.time.Instant;
@@ -23,7 +24,7 @@ public class UserProfileResponse {
     private String    uiLanguage;
     private Boolean   hasPassword;
     private String    phone;
-    private String    gender;
+    private Gender    gender;
     private LocalDate dateOfBirth;
     private String    country;
     private String    timezone;

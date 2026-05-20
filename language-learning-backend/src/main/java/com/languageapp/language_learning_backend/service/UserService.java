@@ -234,7 +234,7 @@ public class UserService {
         if (req.getAvatarUrl()   != null) user.setAvatarUrl(req.getAvatarUrl());
         if (req.getUiLanguage()  != null) user.setUiLanguage(req.getUiLanguage());
         if (req.getPhone()       != null) user.setPhone(req.getPhone());
-        if (req.getGender()      != null) user.setGender(req.getGender());
+        if (req.getGender()      != null) user.setGender(User.Gender.valueOf(req.getGender().toUpperCase()));
         if (req.getDateOfBirth() != null) user.setDateOfBirth(req.getDateOfBirth());
         if (req.getCountry()     != null) user.setCountry(req.getCountry());
         if (req.getTimezone()    != null) user.setTimezone(req.getTimezone());

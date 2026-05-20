@@ -74,7 +74,7 @@ export async function changePassword(data) {
     if (status === 500 || status === 400) {
       try {
         return await tryPatch();
-      } catch (err2) {
+      } catch {
         const snakeOnly = {
           current_password: currentPassword,
           new_password: newPassword,

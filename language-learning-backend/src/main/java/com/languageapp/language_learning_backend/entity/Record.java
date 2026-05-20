@@ -12,9 +12,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "records", indexes = {
-        @Index(name = "idx_record_user", columnList = "user_id"),
-        @Index(name = "idx_record_lesson", columnList = "lesson_id"),
-        @Index(name = "idx_record_type", columnList = "type")
+        @Index(name = "idx_record_user",     columnList = "user_id"),
+        @Index(name = "idx_record_exercise", columnList = "exercise_id")
 })
 @Getter
 @Setter
@@ -25,9 +24,11 @@ public class Record {
 
     @Id
     @UuidGenerator
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(length = 36)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 500)
     private String audioUrl;
 
     @Column(length = 150)
@@ -41,6 +42,7 @@ public class Record {
     @JoinColumn(name = "exercise_id", nullable = false)
     private Exercise exercise;
 
+    @Column(columnDefinition = "TEXT")
     private String transcript;
     private Integer score;
     private Boolean isCorrect;

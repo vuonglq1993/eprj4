@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import '../styles/exerciselist.css';
 import { FiEdit2, FiTrash2, FiPlus, FiX, FiTarget } from 'react-icons/fi';
 import { getExercises, createExercise, updateExercise, deleteExercise } from '../services/exerciseService';
-import { getCourses } from '../services/courseService';
 import { getLessons } from '../services/lessonService';
 import { isAdmin } from '../utils/roleUtils';
 import CourseCombobox from '../components/common/CourseCombobox';
@@ -77,7 +76,7 @@ function LessonCombobox({ courseId, value, onChange, disabled }) {
         const list = res.data?.content ?? res.data ?? [];
         const found = list.find((l) => l.id === value);
         if (found) setSelectedLabel(found.title);
-      } catch {}
+      } catch { /* silent — label lookup is best-effort */ }
     })();
   }, [value, courseId]);
 
@@ -204,6 +203,7 @@ const ExerciseList = () => {
   const [selectedLesson, setSelectedLesson] = useState('');
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
   const canManage = isAdmin();
   const loading = lessonsLoading;
 
@@ -228,11 +228,13 @@ const ExerciseList = () => {
   const openCreate = () => {
     setEditId(null);
     setForm(EMPTY_FORM);
+    setFormErrors({});
     setShowModal(true);
   };
 
   const openEdit = (ex) => {
     setEditId(ex.id);
+    setFormErrors({});
     setForm({
       title: ex.title || '',
       type: ex.type || 'MULTIPLE_CHOICE',
@@ -259,11 +261,18 @@ const ExerciseList = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.title.trim()) { alert('Vui lòng nhập tiêu đề bài tập.'); return; }
+    const errs = {};
+    if (!form.title.trim()) errs.title = 'Title không được để trống.';
+    const questionDataStr = form.questionData.trim() || '{}';
+    if (!form.questionData.trim()) {
+      errs.questionData = 'Question Data không được để trống.';
+    } else {
+      try { JSON.parse(questionDataStr); } catch { errs.questionData = 'Question Data phải là JSON hợp lệ.'; }
+    }
+    if (Object.keys(errs).length) { setFormErrors(errs); return; }
+    setFormErrors({});
     setSaving(true);
     try {
-      const questionDataStr = form.questionData.trim() || '{}';
-      try { JSON.parse(questionDataStr); } catch { alert('questionData phải là JSON hợp lệ.'); setSaving(false); return; }
       const payload = { ...form, questionData: questionDataStr };
       if (editId) {
         const res = await updateExercise(selectedCourse, selectedLesson, editId, payload);
@@ -385,13 +394,14 @@ const ExerciseList = () => {
                   <h5 className="modal-title">{editId ? 'Edit Exercise' : 'New Exercise'}</h5>
                   <button type="button" className="btn-close" aria-label="Đóng" onClick={() => setShowModal(false)} />
                 </div>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
                   <div className="modal-body">
                     <div className="row">
                       <div className="col-md-8 mb-2">
                         <label className="form-label small fw-semibold">Title *</label>
-                        <input type="text" className="form-control" value={form.title}
-                          onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={200} required />
+                        <input type="text" className={`form-control${formErrors.title ? ' is-invalid' : ''}`} value={form.title}
+                          onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={200} />
+                        {formErrors.title && <div className="invalid-feedback">{formErrors.title}</div>}
                       </div>
                       <div className="col-md-4 mb-2">
                         <label className="form-label small fw-semibold">Type</label>
@@ -402,14 +412,16 @@ const ExerciseList = () => {
                       </div>
                     </div>
                     <div className="mb-2">
-                      <label className="form-label small fw-semibold">Question Data (JSON)</label>
-                      <textarea className="form-control font-monospace" rows={6}
+                      <label className="form-label small fw-semibold">Question Data (JSON) *</label>
+                      <textarea className={`form-control font-monospace${formErrors.questionData ? ' is-invalid' : ''}`} rows={6}
                         value={form.questionData}
                         onChange={(e) => setForm({ ...form, questionData: e.target.value })}
                         placeholder={'{\n  "question": "...",\n  "options": ["A", "B", "C", "D"],\n  "correctAnswer": 0\n}'}
                         style={{ fontSize: '0.8rem' }}
                       />
-                      <div className="form-text small">Nhập JSON hợp lệ cho nội dung câu hỏi.</div>
+                      {formErrors.questionData
+                        ? <div className="invalid-feedback">{formErrors.questionData}</div>
+                        : <div className="form-text small">Nhập JSON hợp lệ cho nội dung câu hỏi.</div>}
                     </div>
                     <div className="row">
                       <div className="col-md-4 mb-2">

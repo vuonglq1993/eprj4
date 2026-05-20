@@ -9,13 +9,11 @@ const PAGE_TITLES = {
   '/courses':                   'Khoá học',
   '/lessons':                   'Bài học',
   '/exercises':                 'Bài tập',
-  '/recordings':                'Ghi âm',
   '/admin/users':               'Người dùng',
   '/admin/subscription-plans':  'Gói đăng ký',
   '/data/payment-transactions': 'Giao dịch',
   '/game/leaderboard':          'Bảng xếp hạng',
   '/admin/notifications':       'Thông báo',
-  '/reports/weekly':            'Báo cáo',
   '/setting':                   'Cài đặt',
 }
 

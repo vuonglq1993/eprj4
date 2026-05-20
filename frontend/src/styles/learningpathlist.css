@@ -18,7 +18,7 @@
   background: #fff;
   border-radius: 16px;
   border: 1px solid #edf2f7;
-  overflow: hidden;
+  position: relative;
   transition: box-shadow 0.2s, transform 0.2s;
 }
 
@@ -125,12 +125,14 @@
   padding: 5px 10px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 6px;
   cursor: pointer;
   color: #475569;
   font-size: 0.72rem;
   font-weight: 600;
-  transition: background 0.18s, color 0.18s;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
 }
 
 .lp-action-btn:disabled { opacity: 0.65; cursor: not-allowed; }

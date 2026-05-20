@@ -40,10 +40,8 @@ import TopicList from "./pages/TopicList"
 import SubscriptionPlansAdminPage from "./pages/SubscriptionPlansAdminPage"
 import AdminUserManagementPage from "./pages/AdminUserManagementPage"
 import ReviewMistakesPage from "./pages/ReviewMistakesPage"
-import WeeklyReportPage from "./pages/WeeklyReportPage"
 import GameProfilePage from "./pages/GameProfilePage"
 import LeaderboardPage from "./pages/LeaderboardPage"
-import RecordingsPage from "./pages/RecordingsPage"
 import LearningPathList from "./pages/LearningPathList"
 
 
@@ -80,7 +78,6 @@ import './styles/topiclist.css'
 import './styles/subscriptionplansadmin.css'
 import './styles/adminuser.css'
 import './styles/gamereview.css'
-import './styles/recordings.css'
 
 
 
@@ -400,16 +397,6 @@ function ReviewMistakesRoute() {
   )
 }
 
-function WeeklyReportRoute() {
-  return (
-    <ProtectedRoute>
-      <AppLayout>
-        <WeeklyReportPage />
-      </AppLayout>
-    </ProtectedRoute>
-  )
-}
-
 function GameProfileRoute() {
   return (
     <ProtectedRoute>
@@ -425,16 +412,6 @@ function LeaderboardRoute() {
     <ProtectedRoute>
       <AppLayout>
         <LeaderboardPage />
-      </AppLayout>
-    </ProtectedRoute>
-  )
-}
-
-function RecordingsRoute() {
-  return (
-    <ProtectedRoute>
-      <AppLayout>
-        <RecordingsPage />
       </AppLayout>
     </ProtectedRoute>
   )
@@ -503,10 +480,8 @@ function App() {
 
           <Route path="/admin/subscription-plans" element={<SubscriptionPlansAdminRoute />} />
           <Route path="/reviews/mistakes" element={<ReviewMistakesRoute />} />
-          <Route path="/reports/weekly" element={<WeeklyReportRoute />} />
           <Route path="/game/profile" element={<GameProfileRoute />} />
           <Route path="/game/leaderboard" element={<LeaderboardRoute />} />
-          <Route path="/recordings" element={<RecordingsRoute />} />
           <Route path="/admin/users" element={<AdminUserManagementRoute />} />
           <Route path="/data/payment-transactions" element={<PaymentTransactionsRoute />} />
           <Route path="/data/study-logs" element={<StudyLogsRoute />} />

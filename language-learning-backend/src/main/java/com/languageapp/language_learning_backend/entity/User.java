@@ -32,7 +32,7 @@ public class User {
     @Column(length = 255)
     private String password;           // null nếu OAuth2
 
-    @Column(length = 11)
+    @Column(length = 20)
     private String phone;
 
     @Column(nullable = false, length = 50)
@@ -63,8 +63,9 @@ public class User {
     @Column(length = 10) @Builder.Default
     private String uiLanguage = "vi";
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 10)
-    private String gender;              // MALE / FEMALE / OTHER
+    private Gender gender;
 
     private LocalDate dateOfBirth;
 
@@ -85,7 +86,8 @@ public class User {
     private Subscription subscription;
 
     public enum Role         { STUDENT, ADMIN }
-    public enum AuthProvider { LOCAL, GOOGLE}
+    public enum AuthProvider { LOCAL, GOOGLE }
+    public enum Gender       { MALE, FEMALE, OTHER }
 
     public String  getFullName() { return firstName + (lastName != null ? " " + lastName : ""); }
     public boolean isPremium()   { return subscription != null && subscription.isPremium(); }

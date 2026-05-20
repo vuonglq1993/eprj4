@@ -2,19 +2,23 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../l10n/l10n_ext.dart';
+import '../../services/learning_service.dart';
 import 'lesson_player_screen.dart';
 import 'wrong_answer_review_screen.dart';
+import 'certificate_screen.dart';
 
 class LessonResultScreen extends StatefulWidget {
   final String lessonTitle;
   final String lessonType;
   final List<ExerciseAttempt> attempts;
+  final String? courseId;
 
   const LessonResultScreen({
     super.key,
     required this.lessonTitle,
     required this.lessonType,
     required this.attempts,
+    this.courseId,
   });
 
   @override
@@ -29,9 +33,16 @@ class _LessonResultScreenState extends State<LessonResultScreen>
   late Animation<double> _contentOpacity;
   late Animation<Offset> _contentSlide;
 
+  Map<String, dynamic>? _certificate;
+
   @override
   void initState() {
     super.initState();
+    if (widget.courseId != null) {
+      LearningService.getCertificate(widget.courseId!).then((cert) {
+        if (mounted && cert != null) setState(() => _certificate = cert);
+      });
+    }
     _entranceCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -414,6 +425,16 @@ class _LessonResultScreenState extends State<LessonResultScreen>
   Widget _buildActions() {
     return Column(
       children: [
+        if (_certificate != null) ...[
+          GradientButton(
+            label: '🎓 Xem chứng chỉ',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => CertificateScreen(data: _certificate!)),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         if (_wrongAttempts.isNotEmpty)
           GradientButton(
             label: 'Xem lại câu sai (${_wrongAttempts.length})',

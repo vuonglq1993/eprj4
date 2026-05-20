@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../core/theme.dart';
 import '../../core/app_widgets.dart';
 import '../../core/ai_button_controller.dart';
@@ -104,7 +105,8 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => _isGoogleLoading = true);
     try {
       final googleSignIn = GoogleSignIn(
-        serverClientId: '579961382537-hfli270fo9pvfhb51d8fe1birvu1s113.apps.googleusercontent.com',
+        scopes: ['email', 'profile'],
+        serverClientId: dotenv.env['GOOGLE_WEB_CLIENT_ID'],
       );
       final account = await googleSignIn.signIn();
       if (account == null) {
