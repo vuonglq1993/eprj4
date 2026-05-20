@@ -84,6 +84,14 @@ public class SubscriptionPlanService {
         return toResponse(repo.save(plan));
     }
 
+    // ── DELETE (Admin) ────────────────────────────────────────
+    @Transactional
+    public void delete(UUID id) {
+        if (!repo.existsById(id))
+            throw new NotFoundException("Plan not found");
+        repo.deleteById(id);
+    }
+
     // ── MAPPER ────────────────────────────────────────────────
     private SubscriptionPlanResponse toResponse(SubscriptionPlan p) {
         return SubscriptionPlanResponse.builder()

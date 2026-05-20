@@ -152,11 +152,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _save() async {
-    final first = _firstName.text.trim();
+    final first   = _firstName.text.trim();
+    final last    = _lastName.text.trim();
+    final phone   = _phone.text.trim();
+    final country = _country.text.trim();
+
     if (first.isEmpty) {
       _snack(context.l10n.lastNameRequired);
       return;
     }
+    if (first.length > 50) {
+      _snack('Họ không được dài quá 50 ký tự');
+      return;
+    }
+    if (last.length > 50) {
+      _snack('Tên không được dài quá 50 ký tự');
+      return;
+    }
+    if (phone.isNotEmpty) {
+      final validPhone = RegExp(r'^\+?[0-9]{7,25}$');
+      if (!validPhone.hasMatch(phone)) {
+        _snack(context.l10n.invalidPhone);
+        return;
+      }
+    }
+    if (country.length > 100) {
+      _snack('Quốc gia không được dài quá 100 ký tự');
+      return;
+    }
+
     setState(() => _saving = true);
 
     String? dobStr;
@@ -260,9 +284,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         _sectionLabel(context.l10n.basicInfo.toUpperCase()),
                         const SizedBox(height: 10),
                         _card([
-                          _fieldTile('${context.l10n.lastName} *', _firstName, hint: 'Nguyễn'),
+                          _fieldTile('${context.l10n.lastName} *', _firstName, hint: 'Nguyễn', maxLength: 50),
                           _divider(),
-                          _fieldTile(context.l10n.firstName, _lastName, hint: 'Văn A'),
+                          _fieldTile(context.l10n.firstName, _lastName, hint: 'Văn A', maxLength: 50),
                           _divider(),
                           _readonlyTile(context.l10n.email, email, Icons.lock_outline_rounded),
                         ]),
@@ -275,9 +299,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         _card([
                           _fieldTile(context.l10n.phone, _phone,
                               hint: context.l10n.phoneHint,
-                              keyboardType: TextInputType.phone),
+                              keyboardType: TextInputType.phone,
+                              maxLength: 25),
                           _divider(),
-                          _fieldTile(context.l10n.country, _country, hint: 'Việt Nam'),
+                          _fieldTile(context.l10n.country, _country, hint: 'Việt Nam', maxLength: 100),
                           _divider(),
                           _dropdownTile(
                             label: context.l10n.timezone,
@@ -422,7 +447,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.border);
 
   Widget _fieldTile(String label, TextEditingController ctrl,
-      {String? hint, TextInputType keyboardType = TextInputType.text}) {
+      {String? hint, TextInputType keyboardType = TextInputType.text, int? maxLength}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -437,6 +462,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               controller: ctrl,
               keyboardType: keyboardType,
               textAlign: TextAlign.right,
+              maxLength: maxLength,
               style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
               decoration: InputDecoration(
                 hintText: hint,
@@ -444,6 +470,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
+                counterText: '',
               ),
             ),
           ),

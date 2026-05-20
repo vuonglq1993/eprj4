@@ -1,5 +1,6 @@
 package com.languageapp.language_learning_backend.entity;
 
+import com.languageapp.language_learning_backend.converter.StringListConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -32,8 +33,8 @@ public class SubscriptionPlan {
     @Column(nullable = false)
     private Integer durationDays; // 30, 90, 365
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "JSON")
+    @Convert(converter = StringListConverter.class)
+    @Column(columnDefinition = "LONGTEXT")
     @Builder.Default
     private List<String> features = new java.util.ArrayList<>();
 
