@@ -349,6 +349,20 @@ class ApiService {
     return (jsonDecode(res.body) as Map)['message'] as String? ?? 'Đổi mật khẩu thất bại';
   }
 
+  static Future<List<Map<String, dynamic>>> getTopics() async {
+    try {
+      final res = await _client.get(
+        Uri.parse('$_base/topics'),
+        headers: await _authHeaders(),
+      );
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        if (body is List) return body.cast<Map<String, dynamic>>();
+      }
+    } catch (_) {}
+    return [];
+  }
+
   static Future<Map<String, dynamic>?> submitOnboarding({
     required String targetLanguageId,
     required String selfLevel,
@@ -356,6 +370,7 @@ class ApiService {
     required String dailyTime,
     String nativeLanguageCode = 'vi',
     String? ageGroup,
+    String? heardFrom,
   }) async {
     final res = await _send(() async => _client.post(
       Uri.parse('$_base/onboarding'),
@@ -367,6 +382,7 @@ class ApiService {
         'dailyTime': dailyTime,
         'nativeLanguageCode': nativeLanguageCode,
         if (ageGroup != null) 'ageGroup': ageGroup,
+        if (heardFrom != null) 'heardFrom': heardFrom,
       }),
     ));
     if (res == null) return null;
@@ -401,7 +417,7 @@ class ApiService {
     await _send(() async => _client.post(
       Uri.parse('$_base/fcm/register'),
       headers: await _authHeaders(),
-      body: jsonEncode({'token': token}),
+      body: jsonEncode({'token': token, 'deviceType': Platform.isIOS ? 'IOS' : 'ANDROID'}),
     ));
   }
 
