@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme.dart';
 import '../../l10n/l10n_ext.dart';
@@ -120,6 +121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (confirmed != true || !mounted) return;
     await ApiService.logout();
     await TokenService.clearTokens();
+    await GoogleSignIn().signOut();
     AiButtonController.onLogout();
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(

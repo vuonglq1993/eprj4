@@ -108,6 +108,7 @@ class _RegisterPageState extends State<RegisterPage> {
         scopes: ['email', 'profile'],
         serverClientId: dotenv.env['GOOGLE_WEB_CLIENT_ID'],
       );
+      await googleSignIn.signOut();
       final account = await googleSignIn.signIn();
       if (account == null) {
         setState(() => _isGoogleLoading = false);
