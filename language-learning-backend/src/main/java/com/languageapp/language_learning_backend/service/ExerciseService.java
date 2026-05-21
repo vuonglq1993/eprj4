@@ -140,15 +140,12 @@ public class ExerciseService {
                         .lesson(lessonRepo.getReferenceById(lessonId))
                         .build());
 
-        // Track whether lesson was already completed (replay = no new XP)
-        boolean wasAlreadyCompleted = progress.getStatus() == ProgressStatus.COMPLETED;
+        // Track whether lesson was already completed before this session (replay = no new XP)
+        boolean wasAlreadyCompleted = progress.getStatus() == ProgressStatus.COMPLETED
+                && Boolean.TRUE.equals(req.getResetSession());
 
-        // Reset score when: (a) lesson was COMPLETED and user replays, or
-        // (b) user is starting a fresh session from the first exercise (resetSession flag)
-        boolean shouldReset = wasAlreadyCompleted
-                || (Boolean.TRUE.equals(req.getResetSession())
-                    && progress.getStatus() == ProgressStatus.IN_PROGRESS);
-        if (shouldReset) {
+        // Reset only when user explicitly starts a new session (resetSession=true on first exercise)
+        if (Boolean.TRUE.equals(req.getResetSession())) {
             progress.setScore(0);
             progress.setStatus(ProgressStatus.IN_PROGRESS);
             progress.setCompletedAt(null);
