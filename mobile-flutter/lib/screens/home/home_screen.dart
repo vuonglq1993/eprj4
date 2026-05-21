@@ -4,6 +4,7 @@ import '../../core/theme.dart';
 import '../../l10n/l10n_ext.dart';
 import 'dashboard_tab.dart';
 import '../learning_path/learning_path_tab.dart';
+import '../courses/courses_tab.dart';
 import '../profile/profile_tab.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -23,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _tabs = [
       DashboardTab(onGoToLearningPath: () => setState(() => _tab = 1)),
       const LearningPathTab(),
+      const CoursesTab(),
       const ProfileTab(),
     ];
   }
@@ -61,6 +63,7 @@ class _BottomNav extends StatelessWidget {
     final items = [
       (Icons.home_rounded, Icons.home_outlined, context.l10n.home),
       (Icons.route_rounded, Icons.route_outlined, context.l10n.path),
+      (Icons.menu_book_rounded, Icons.menu_book_outlined, context.l10n.courses),
       (Icons.person_rounded, Icons.person_outline_rounded, context.l10n.profile),
     ];
 

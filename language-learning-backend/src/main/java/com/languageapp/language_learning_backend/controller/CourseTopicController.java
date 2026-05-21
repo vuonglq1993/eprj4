@@ -1,6 +1,5 @@
 package com.languageapp.language_learning_backend.controller;
 
-import com.languageapp.language_learning_backend.dto.course.CourseResponse;
 import com.languageapp.language_learning_backend.dto.topic.TopicResponse;
 import com.languageapp.language_learning_backend.entity.Course;
 import com.languageapp.language_learning_backend.entity.Topic;
@@ -74,13 +73,4 @@ public class CourseTopicController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Lọc khoá học theo topic (public)")
-    @GetMapping("/courses-by-topic")
-    @RequestMapping(value = "/api/v1/topics/{topicId}/courses", method = RequestMethod.GET)
-    public ResponseEntity<?> getCoursesByTopic(@PathVariable UUID topicId) {
-        Topic t = topicService.findOrThrow(topicId);
-        return ResponseEntity.ok(t.getCourses().stream()
-                .filter(Course::getIsPublished)
-                .collect(Collectors.toList()));
-    }
 }

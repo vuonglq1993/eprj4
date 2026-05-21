@@ -191,33 +191,42 @@ class _LearningPathTabState extends State<LearningPathTab> {
   }
 
   Widget _filterBar() {
-    return SizedBox(
-      height: 36,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        children: [
-          // Language chips
-          ..._languages.map((lang) => _chip(
-                label: lang,
-                selected: _filterLanguage == lang,
-                onTap: () => setState(() =>
-                    _filterLanguage = _filterLanguage == lang ? null : lang),
-              )),
-          if (_languages.isNotEmpty) const SizedBox(width: 4),
-          // Level chips
-          ..._levelFilters(context).map((entry) {
-            final (value, label) = entry;
-            return _chip(
-              label: label,
-              selected: _filterLevel == value,
-              onTap: () => setState(
-                  () => _filterLevel = _filterLevel == value ? null : value),
-            );
-          }),
-        ],
-      ),
+    return Column(
+      children: [
+        SizedBox(
+          height: 36,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            children: _languages.map((lang) => _chip(
+                  label: lang,
+                  selected: _filterLanguage == lang,
+                  onTap: () => setState(() =>
+                      _filterLanguage = _filterLanguage == lang ? null : lang),
+                )).toList(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 36,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            children: _levelFilters(context).map((entry) {
+              final (value, label) = entry;
+              return _chip(
+                label: label,
+                selected: _filterLevel == value,
+                onTap: () => setState(
+                    () => _filterLevel = _filterLevel == value ? null : value),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 4),
+      ],
     );
   }
 

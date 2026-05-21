@@ -4,13 +4,12 @@ import '../../services/api_service.dart';
 import '../home/home_placeholder.dart';
 import 'step1_language.dart';
 import 'step2_goal.dart';
-import 'step3_topics.dart';
 import 'step3_level.dart';
 import 'step3_personalize.dart';
 import 'step5_heard_from.dart';
 import 'step6_recommended.dart';
 
-/// Flow: Language → Goal → Topics → Level → Personalize → HeardFrom → [submit] → Recommended
+/// Flow: Language → Goal → Level → Personalize → HeardFrom → [submit] → Recommended
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({super.key});
 
@@ -28,7 +27,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   // Collected answers
   final List<String> selectedLanguageIds = [];
   String? goal;
-  final List<String> selectedTopicIds = [];
   String? selfLevel;
   String dailyTime = 'FIFTEEN_MIN';
   String? ageGroup;
@@ -78,7 +76,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     if (recommended != null) {
       setState(() {
         _recommendedPath = recommended;
-        _step = 6; // show recommended path screen
+        _step = 5; // show recommended path screen
       });
     } else {
       Navigator.pushAndRemoveUntil(
@@ -154,28 +152,16 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           onBack: back,
         );
       case 2:
-        return Step3Topics(
-          key: const ValueKey(2),
-          selectedIds: selectedTopicIds,
-          onToggle: (id) => setState(() {
-            selectedTopicIds.contains(id)
-                ? selectedTopicIds.remove(id)
-                : selectedTopicIds.add(id);
-          }),
-          onNext: next,
-          onBack: back,
-        );
-      case 3:
         return Step3Level(
-          key: const ValueKey(3),
+          key: const ValueKey(2),
           selected: selfLevel,
           onSelect: (v) => setState(() => selfLevel = v),
           onNext: next,
           onBack: back,
         );
-      case 4:
+      case 3:
         return Step3Personalize(
-          key: const ValueKey(4),
+          key: const ValueKey(3),
           dailyTime: dailyTime,
           ageGroup: ageGroup,
           onDailyTimeChanged: (v) => setState(() => dailyTime = v),
@@ -183,18 +169,18 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
           onNext: next,
           onBack: back,
         );
-      case 5:
+      case 4:
         return Step5HeardFrom(
-          key: const ValueKey(5),
+          key: const ValueKey(4),
           selected: heardFrom,
           onSelect: (v) => setState(() => heardFrom = v),
           onNext: _submit,
           onBack: back,
           isLoading: _submitting,
         );
-      case 6:
+      case 5:
         return Step6Recommended(
-          key: const ValueKey(6),
+          key: const ValueKey(5),
           recommendedPath: _recommendedPath!,
         );
       default:

@@ -36,7 +36,7 @@ class Step5HeardFrom extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          OnboardingHeader(step: 6, total: 6, onBack: onBack),
+          OnboardingHeader(step: 5, total: 5, onBack: onBack),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
             child: Column(

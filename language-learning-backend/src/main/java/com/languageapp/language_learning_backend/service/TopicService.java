@@ -62,7 +62,7 @@ public class TopicService {
 
     // ── DELETE (Admin) ────────────────────────────────────────
     @Transactional
-    @CacheEvict(value = "topics", allEntries = true)
+    @CacheEvict(value = "topics", allEntries = true, beforeInvocation = true)
     public void delete(UUID id) {
         Topic t = findOrThrow(id);
         if (!t.getCourses().isEmpty())
