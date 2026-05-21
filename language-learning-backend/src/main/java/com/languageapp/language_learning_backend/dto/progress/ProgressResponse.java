@@ -15,6 +15,7 @@ public class ProgressResponse {
     private ProgressStatus status;
     private Integer        score;
     private Integer        bestScore;
+    private Integer        scorePercent;
     private Integer        attempts;
     private Integer        timeSpentMinutes;
     private Instant completedAt;

@@ -142,6 +142,7 @@ public class ProgressService {
                         .status(pr.getStatus())
                         .score(pr.getScore())
                         .bestScore(pr.getBestScore())
+                        .scorePercent((int) Math.round(normalizedScore(pr)))
                         .attempts(pr.getAttempts())
                         .timeSpentMinutes(pr.getTimeSpentSeconds() / 60)
                         .completedAt(pr.getCompletedAt())

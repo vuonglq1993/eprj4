@@ -212,6 +212,7 @@ class LearningService {
     required int clientStartMs,
     required int clientSubmitMs,
     String? audioUrl,
+    bool resetSession = false,
   }) async {
     try {
       final body = {
@@ -221,6 +222,7 @@ class LearningService {
         'clientSubmitTime': clientSubmitMs,
         'lang': _uiLang,
         if (audioUrl != null) 'audioUrl': audioUrl,
+        if (resetSession) 'resetSession': true,
       };
       final res = await ApiService.sendRequest(() async => http.post(
         Uri.parse(
