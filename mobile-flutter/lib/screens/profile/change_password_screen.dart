@@ -64,12 +64,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       _snack(context.l10n.fillAllFields);
       return;
     }
-    if (newPw.length < 6) {
+    if (newPw.length < 8) {
       _snack(context.l10n.newPasswordMinLength);
       return;
     }
     if (newPw != confirm) {
       _snack(context.l10n.passwordsDoNotMatch);
+      return;
+    }
+    if (!_isGoogleNoPassword && newPw == current) {
+      _snack(context.l10n.passwordRecentlyUsed);
       return;
     }
 
@@ -91,7 +95,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     } else {
       _snack(error.contains('incorrect') || error.contains('wrong')
           ? context.l10n.currentPasswordWrong
-          : error);
+          : error.contains('last')
+              ? context.l10n.passwordRecentlyUsed
+              : error);
     }
   }
 

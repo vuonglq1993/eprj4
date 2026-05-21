@@ -11,7 +11,6 @@ public class LearningPathResponse {
     private UUID        id;
     private String      title;
     private String      description;
-    private String      thumbnailUrl;
     private String      languageCode;
     private String      languageName;
     private TargetLevel targetLevel;
@@ -38,7 +37,6 @@ public class LearningPathResponse {
         private UUID    courseId;
         private String  courseTitle;
         private String  courseLevel;
-        private String  thumbnailUrl;
         private Integer totalLessons;
         private String  note;
         private Boolean isRequired;

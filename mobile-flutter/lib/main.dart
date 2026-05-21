@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' as dev;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config/app_config.dart';
+import 'core/ai_button_controller.dart';
+import 'core/session_manager.dart';
 import 'core/theme.dart';
 import 'core/ai_floating_button.dart';
 import 'firebase_options.dart';
@@ -49,11 +52,25 @@ class LinguaNextApp extends StatefulWidget {
 
 class LinguaNextAppState extends State<LinguaNextApp> {
   late Locale _locale;
+  StreamSubscription<void>? _sessionSub;
 
   @override
   void initState() {
     super.initState();
     _locale = widget.initialLocale;
+    _sessionSub = SessionManager.instance.onSessionExpired.listen((_) {
+      AiButtonController.onLogout();
+      _navigatorKey.currentState?.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const SplashScreen()),
+        (r) => false,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _sessionSub?.cancel();
+    super.dispose();
   }
 
   void setLocale(Locale locale) {

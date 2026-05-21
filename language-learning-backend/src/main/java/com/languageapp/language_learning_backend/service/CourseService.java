@@ -94,7 +94,7 @@ public class CourseService {
         return CourseDetailResponse.builder()
                 .id(c.getId()).title(c.getTitle()).description(c.getDescription())
                 .languageCode(c.getLanguage().getCode()).languageName(c.getLanguage().getName())
-                .level(c.getLevel()).thumbnailUrl(c.getThumbnailUrl())
+                .level(c.getLevel())
                 .isPublished(c.getIsPublished()).totalLessons(c.getTotalLessons())
                 .createdByName(c.getCreatedBy() != null ? c.getCreatedBy().getFullName() : null)
                 .createdAt(c.getCreatedAt()).progressPercent(pct)
@@ -128,7 +128,7 @@ public class CourseService {
         return toCourseResponse(courseRepo.save(Course.builder()
                 .language(lang).createdBy(userRepo.getReferenceById(p.getUserId()))
                 .title(req.getTitle()).description(req.getDescription())
-                .level(req.getLevel()).thumbnailUrl(req.getThumbnailUrl())
+                .level(req.getLevel())
                 .isPublished(Boolean.TRUE.equals(req.getIsPublished()))
                 .totalLessons(0).build()), 0);
     }
@@ -142,7 +142,7 @@ public class CourseService {
         Language lang = languageRepo.findById(req.getLanguageId())
                 .orElseThrow(() -> new NotFoundException("Language not found"));
         c.setTitle(req.getTitle()); c.setDescription(req.getDescription());
-        c.setLanguage(lang); c.setLevel(req.getLevel()); c.setThumbnailUrl(req.getThumbnailUrl());
+        c.setLanguage(lang); c.setLevel(req.getLevel());
         if (req.getIsPublished() != null) c.setIsPublished(req.getIsPublished());
         return toCourseResponse(courseRepo.save(c), 0);
     }
@@ -198,7 +198,7 @@ public class CourseService {
         return CourseResponse.builder()
                 .id(c.getId()).title(c.getTitle()).description(c.getDescription())
                 .languageCode(c.getLanguage().getCode()).languageName(c.getLanguage().getName())
-                .level(c.getLevel()).thumbnailUrl(c.getThumbnailUrl())
+                .level(c.getLevel())
                 .isPublished(c.getIsPublished()).totalLessons(c.getTotalLessons())
                 .createdByName(c.getCreatedBy() != null ? c.getCreatedBy().getFullName() : null)
                 .createdAt(c.getCreatedAt()).updatedAt(c.getUpdatedAt()).progressPercent(pct).build();

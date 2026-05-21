@@ -250,6 +250,18 @@ abstract class AppLocalizations {
   /// **'Thanh toán thất bại hoặc bị hủy'**
   String get paymentFailed;
 
+  /// No description provided for @paymentTimeout.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán đang mất nhiều thời gian. Kiểm tra lịch sử để biết kết quả.'**
+  String get paymentTimeout;
+
+  /// No description provided for @checkHistory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem lịch sử'**
+  String get checkHistory;
+
   /// No description provided for @language.
   ///
   /// In vi, this message translates to:
@@ -994,6 +1006,12 @@ abstract class AppLocalizations {
   /// **'Ngày học'**
   String get studyDays;
 
+  /// No description provided for @bestStreak.
+  ///
+  /// In vi, this message translates to:
+  /// **'Streak cao nhất'**
+  String get bestStreak;
+
   /// No description provided for @xpEarned.
   ///
   /// In vi, this message translates to:
@@ -1660,6 +1678,12 @@ abstract class AppLocalizations {
   /// **'Mật khẩu hiện tại không đúng'**
   String get currentPasswordWrong;
 
+  /// No description provided for @passwordRecentlyUsed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mật khẩu mới không được trùng với 2 mật khẩu gần nhất'**
+  String get passwordRecentlyUsed;
+
   /// No description provided for @saving.
   ///
   /// In vi, this message translates to:
@@ -1755,12 +1779,6 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'AI sẽ tạo lộ trình phù hợp nhất'**
   String get onboardingGoalSubtitle;
-
-  /// No description provided for @goalToeic.
-  ///
-  /// In vi, this message translates to:
-  /// **'Thi TOEIC / IELTS'**
-  String get goalToeic;
 
   /// No description provided for @goalCommunication.
   ///
@@ -1875,6 +1893,378 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'{score} / {total} câu đúng'**
   String correctAnswers(int score, int total);
+
+  /// No description provided for @free.
+  ///
+  /// In vi, this message translates to:
+  /// **'Free'**
+  String get free;
+
+  /// No description provided for @enabled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang bật'**
+  String get enabled;
+
+  /// No description provided for @disabled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tắt'**
+  String get disabled;
+
+  /// No description provided for @invalidPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại không hợp lệ'**
+  String get invalidPhone;
+
+  /// No description provided for @minEightChars.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ít nhất 8 ký tự'**
+  String get minEightChars;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chụp ảnh'**
+  String get takePhoto;
+
+  /// No description provided for @selectFromLibrary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn từ thư viện'**
+  String get selectFromLibrary;
+
+  /// No description provided for @uploadPhotoFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Upload ảnh thất bại, thử lại nhé'**
+  String get uploadPhotoFailed;
+
+  /// No description provided for @basicInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông tin cơ bản'**
+  String get basicInfo;
+
+  /// No description provided for @contactLocation.
+  ///
+  /// In vi, this message translates to:
+  /// **'Liên hệ & Vị trí'**
+  String get contactLocation;
+
+  /// No description provided for @country.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quốc gia'**
+  String get country;
+
+  /// No description provided for @timezone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Múi giờ'**
+  String get timezone;
+
+  /// No description provided for @selectTimezone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn múi giờ'**
+  String get selectTimezone;
+
+  /// No description provided for @personalInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông tin cá nhân'**
+  String get personalInfo;
+
+  /// No description provided for @gender.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giới tính'**
+  String get gender;
+
+  /// No description provided for @selectGender.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn giới tính'**
+  String get selectGender;
+
+  /// No description provided for @aboutYourself.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giới thiệu bản thân'**
+  String get aboutYourself;
+
+  /// No description provided for @bioHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Viết vài dòng về bản thân...'**
+  String get bioHint;
+
+  /// No description provided for @dateOfBirth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngày sinh'**
+  String get dateOfBirth;
+
+  /// No description provided for @selectDateOfBirth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn ngày sinh'**
+  String get selectDateOfBirth;
+
+  /// No description provided for @phoneHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'+84 xxx xxx xxx'**
+  String get phoneHint;
+
+  /// No description provided for @dailyReminder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhắc nhở học hàng ngày'**
+  String get dailyReminder;
+
+  /// No description provided for @reminderTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giờ nhắc nhở'**
+  String get reminderTime;
+
+  /// No description provided for @sendTestNotification.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gửi thử notification'**
+  String get sendTestNotification;
+
+  /// No description provided for @testNotificationSent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã gửi test notification!'**
+  String get testNotificationSent;
+
+  /// No description provided for @twoFactorAuth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác thực 2 lớp (2FA)'**
+  String get twoFactorAuth;
+
+  /// No description provided for @twoFaComingSoon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tính năng 2FA sẽ ra mắt trong bản cập nhật tới'**
+  String get twoFaComingSoon;
+
+  /// No description provided for @proMember.
+  ///
+  /// In vi, this message translates to:
+  /// **'Pro Member'**
+  String get proMember;
+
+  /// No description provided for @pathAndLanguage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lộ trình & ngôn ngữ'**
+  String get pathAndLanguage;
+
+  /// No description provided for @badgesAchievements.
+  ///
+  /// In vi, this message translates to:
+  /// **'Huy hiệu & thành tích'**
+  String get badgesAchievements;
+
+  /// No description provided for @subscriptionBilling.
+  ///
+  /// In vi, this message translates to:
+  /// **'Subscription & Billing'**
+  String get subscriptionBilling;
+
+  /// No description provided for @currentPlan.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gói hiện tại'**
+  String get currentPlan;
+
+  /// No description provided for @activeStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang hoạt động'**
+  String get activeStatus;
+
+  /// No description provided for @startDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu'**
+  String get startDate;
+
+  /// No description provided for @renewalDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gia hạn tiếp'**
+  String get renewalDate;
+
+  /// No description provided for @paymentMethod.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phương thức thanh toán'**
+  String get paymentMethod;
+
+  /// No description provided for @upgradeToYearly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nâng lên Yearly'**
+  String get upgradeToYearly;
+
+  /// No description provided for @paymentHistory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch sử thanh toán'**
+  String get paymentHistory;
+
+  /// No description provided for @noPaymentHistory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có lịch sử thanh toán'**
+  String get noPaymentHistory;
+
+  /// No description provided for @securePaymentNotice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán an toàn • Hủy bất kỳ lúc nào'**
+  String get securePaymentNotice;
+
+  /// No description provided for @waitingPaymentResult.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ kết quả thanh toán'**
+  String get waitingPaymentResult;
+
+  /// No description provided for @cancelWaiting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy chờ'**
+  String get cancelWaiting;
+
+  /// No description provided for @orderSummary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng'**
+  String get orderSummary;
+
+  /// No description provided for @totalPayment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng thanh toán'**
+  String get totalPayment;
+
+  /// No description provided for @monthly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng tháng'**
+  String get monthly;
+
+  /// No description provided for @yearly.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hàng năm'**
+  String get yearly;
+
+  /// No description provided for @mostPopular.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phổ biến nhất'**
+  String get mostPopular;
+
+  /// No description provided for @perMonth.
+  ///
+  /// In vi, this message translates to:
+  /// **'/tháng'**
+  String get perMonth;
+
+  /// No description provided for @perYear.
+  ///
+  /// In vi, this message translates to:
+  /// **'/năm'**
+  String get perYear;
+
+  /// No description provided for @cancelAnytime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy bất kỳ lúc nào trong Settings'**
+  String get cancelAnytime;
+
+  /// No description provided for @seeResults.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem kết quả'**
+  String get seeResults;
+
+  /// No description provided for @nextQuestion.
+  ///
+  /// In vi, this message translates to:
+  /// **'Câu tiếp theo'**
+  String get nextQuestion;
+
+  /// No description provided for @dailyXpGoal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mục tiêu XP mỗi ngày'**
+  String get dailyXpGoal;
+
+  /// No description provided for @learningStyle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phong cách học'**
+  String get learningStyle;
+
+  /// No description provided for @selectXpGoal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn mục tiêu XP'**
+  String get selectXpGoal;
+
+  /// No description provided for @selectLearningStyle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn phong cách học'**
+  String get selectLearningStyle;
+
+  /// No description provided for @secureLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bảo mật'**
+  String get secureLabel;
+
+  /// No description provided for @paymentLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán'**
+  String get paymentLabel;
+
+  /// No description provided for @completePaymentInstruction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tất thanh toán trong cửa sổ vừa mở, sau đó quay lại app.'**
+  String get completePaymentInstruction;
+
+  /// No description provided for @autoRenewal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự động gia hạn mỗi {period}. Hủy bất kỳ lúc nào.'**
+  String autoRenewal(String period);
+
+  /// No description provided for @subscribePlan.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng ký {plan}'**
+  String subscribePlan(String plan);
+
+  /// No description provided for @currentPlanCheck.
+  ///
+  /// In vi, this message translates to:
+  /// **'✓ Gói hiện tại'**
+  String get currentPlanCheck;
 }
 
 class _AppLocalizationsDelegate

@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
+import '../core/secure_client.dart';
 import 'token_service.dart';
+import 'api_service.dart';
 
 class GameService {
   static String get _base => AppConfig.baseUrl;
+  static final http.Client _client = SecureClient.create();
 
   static Future<Map<String, String>> _auth() async {
     final token = await TokenService.getAccessToken();
@@ -14,36 +17,33 @@ class GameService {
     };
   }
 
+  static Future<http.Response?> _send(Future<http.Response> Function() call) =>
+      ApiService.sendRequest(call);
+
   static Future<Map<String, dynamic>?> getProfile() async {
-    try {
-      final res = await http.get(
-        Uri.parse('$_base/game/profile'),
-        headers: await _auth(),
-      );
-      if (res.statusCode == 200) return jsonDecode(res.body) as Map<String, dynamic>;
-      return null;
-    } catch (_) { return null; }
+    final res = await _send(() async => _client.get(
+      Uri.parse('$_base/game/profile'),
+      headers: await _auth(),
+    ));
+    if (res == null || res.statusCode != 200) return null;
+    return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
   static Future<Map<String, dynamic>?> getStreak() async {
-    try {
-      final res = await http.get(
-        Uri.parse('$_base/study-logs/streak'),
-        headers: await _auth(),
-      );
-      if (res.statusCode == 200) return jsonDecode(res.body) as Map<String, dynamic>;
-      return null;
-    } catch (_) { return null; }
+    final res = await _send(() async => _client.get(
+      Uri.parse('$_base/study-logs/streak'),
+      headers: await _auth(),
+    ));
+    if (res == null || res.statusCode != 200) return null;
+    return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
   static Future<Map<String, dynamic>?> getWeeklyLogs() async {
-    try {
-      final res = await http.get(
-        Uri.parse('$_base/study-logs/weekly'),
-        headers: await _auth(),
-      );
-      if (res.statusCode == 200) return jsonDecode(res.body) as Map<String, dynamic>;
-      return null;
-    } catch (_) { return null; }
+    final res = await _send(() async => _client.get(
+      Uri.parse('$_base/study-logs/weekly'),
+      headers: await _auth(),
+    ));
+    if (res == null || res.statusCode != 200) return null;
+    return jsonDecode(res.body) as Map<String, dynamic>;
   }
 }

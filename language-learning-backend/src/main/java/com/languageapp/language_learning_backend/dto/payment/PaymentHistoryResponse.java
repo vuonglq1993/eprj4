@@ -2,6 +2,7 @@ package com.languageapp.language_learning_backend.dto.payment;
 
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,6 +15,6 @@ public class PaymentHistoryResponse {
     private String        plan;
     private String        status;
     private String        gatewayRef;
-    private LocalDateTime createdAt;
-    private LocalDateTime paidAt;
+    private Instant createdAt;
+    private Instant paidAt;
 }

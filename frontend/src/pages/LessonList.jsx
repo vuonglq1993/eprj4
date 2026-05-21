@@ -6,7 +6,7 @@ import { isAdmin } from '../utils/roleUtils';
 import CourseCombobox from '../components/common/CourseCombobox';
 
 const LESSON_TYPES = ['VOCABULARY', 'GRAMMAR', 'SPEAKING', 'READING', 'LISTENING', 'WRITING'];
-const EMPTY_FORM = { title: '', content: '', type: 'VOCABULARY', videoUrl: '', audioUrl: '', orderIndex: 0, durationMinutes: 0, isFree: false };
+const EMPTY_FORM = { title: '', content: '', type: 'VOCABULARY', orderIndex: 0, durationMinutes: 0, isFree: false };
 
 const typeLabel = (t) => t ? t.charAt(0) + t.slice(1).toLowerCase() : 'Vocabulary';
 
@@ -38,6 +38,7 @@ const LessonList = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [saving, setSaving] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
   const canManage = isAdmin();
   const loading = lessonsLoading;
 
@@ -67,17 +68,17 @@ const LessonList = () => {
   const openCreate = () => {
     setEditId(null);
     setForm(EMPTY_FORM);
+    setFormErrors({});
     setShowModal(true);
   };
 
   const openEdit = (lesson) => {
     setEditId(lesson.id);
+    setFormErrors({});
     setForm({
       title: lesson.title || '',
       content: lesson.content || '',
       type: lesson.type || 'VOCABULARY',
-      videoUrl: lesson.videoUrl || '',
-      audioUrl: lesson.audioUrl || '',
       orderIndex: lesson.orderIndex ?? 0,
       durationMinutes: lesson.durationMinutes ?? 0,
       isFree: lesson.isFree ?? false,
@@ -97,7 +98,12 @@ const LessonList = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.title.trim()) { alert('Vui lòng nhập tiêu đề bài học.'); return; }
+    const errs = {};
+    if (!form.title.trim()) errs.title = 'Title không được để trống.';
+    if (!form.content.trim()) errs.content = 'Content không được để trống.';
+    if (!form.durationMinutes || Number(form.durationMinutes) <= 0) errs.durationMinutes = 'Duration phải lớn hơn 0.';
+    if (Object.keys(errs).length) { setFormErrors(errs); return; }
+    setFormErrors({});
     setSaving(true);
     try {
       if (editId) {
@@ -204,12 +210,13 @@ const LessonList = () => {
                   <h5 className="modal-title">{editId ? 'Edit Lesson' : 'New Lesson'}</h5>
                   <button type="button" className="btn-close" aria-label="Đóng" onClick={() => setShowModal(false)} />
                 </div>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
                   <div className="modal-body">
                     <div className="row">
                       <div className="col-md-8 mb-2">
                         <label className="form-label small fw-semibold">Title *</label>
-                        <input type="text" className="form-control" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={150} required />
+                        <input type="text" className={`form-control${formErrors.title ? ' is-invalid' : ''}`} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={150} />
+                        {formErrors.title && <div className="invalid-feedback">{formErrors.title}</div>}
                       </div>
                       <div className="col-md-4 mb-2">
                         <label className="form-label small fw-semibold">Type</label>
@@ -219,18 +226,11 @@ const LessonList = () => {
                       </div>
                     </div>
                     <div className="mb-2">
-                      <label className="form-label small fw-semibold">Content</label>
-                      <textarea className="form-control" rows={4} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} />
+                      <label className="form-label small fw-semibold">Content *</label>
+                      <textarea className={`form-control${formErrors.content ? ' is-invalid' : ''}`} rows={4} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} />
+                      {formErrors.content && <div className="invalid-feedback">{formErrors.content}</div>}
                     </div>
                     <div className="row">
-                      <div className="col-md-6 mb-2">
-                        <label className="form-label small fw-semibold">Video URL</label>
-                        <input type="url" className="form-control" value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} />
-                      </div>
-                      <div className="col-md-6 mb-2">
-                        <label className="form-label small fw-semibold">Audio URL</label>
-                        <input type="url" className="form-control" value={form.audioUrl} onChange={(e) => setForm({ ...form, audioUrl: e.target.value })} />
-                      </div>
                     </div>
                     <div className="row">
                       <div className="col-md-4 mb-2">
@@ -238,8 +238,9 @@ const LessonList = () => {
                         <input type="number" className="form-control" value={form.orderIndex} onChange={(e) => setForm({ ...form, orderIndex: parseInt(e.target.value) || 0 })} min={0} />
                       </div>
                       <div className="col-md-4 mb-2">
-                        <label className="form-label small fw-semibold">Duration (minutes)</label>
-                        <input type="number" className="form-control" value={form.durationMinutes} onChange={(e) => setForm({ ...form, durationMinutes: parseInt(e.target.value) || 0 })} min={0} />
+                        <label className="form-label small fw-semibold">Duration (minutes) *</label>
+                        <input type="number" className={`form-control${formErrors.durationMinutes ? ' is-invalid' : ''}`} value={form.durationMinutes} onChange={(e) => setForm({ ...form, durationMinutes: parseInt(e.target.value) || 0 })} min={0} />
+                        {formErrors.durationMinutes && <div className="invalid-feedback">{formErrors.durationMinutes}</div>}
                       </div>
                       <div className="col-md-4 mb-2 d-flex align-items-end">
                         <div className="form-check">

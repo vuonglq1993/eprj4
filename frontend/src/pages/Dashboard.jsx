@@ -3,16 +3,38 @@ import ActiveUsersCard from '../components/dashboard/ActiveUsersCard.jsx'
 import StatsSummary from '../components/dashboard/StatsSummary.jsx'
 import EarningsSummary from '../components/dashboard/EarningsSummary.jsx'
 import SalesSection from '../components/dashboard/SalesSection.jsx'
-import { getDashboard } from '../services/progressService.js'
+import {
+  getDashboard,
+  getAdminDailyActive,
+  getAdminSubscriptionBreakdown,
+  getTopLeaderboard,
+} from '../services/progressService.js'
 
 function Dashboard() {
-  const [data, setData] = useState(null)
+  const [stats, setStats]          = useState(null)
+  const [dailyActive, setDailyActive]   = useState(null)
+  const [subBreakdown, setSubBreakdown] = useState(null)
+  const [leaderboard, setLeaderboard]   = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError]     = useState('')
 
   useEffect(() => {
-    getDashboard()
-      .then((res) => setData(res.data))
+    Promise.all([
+      getDashboard(),
+      getAdminDailyActive(7),
+      getAdminSubscriptionBreakdown(),
+      getTopLeaderboard(5),
+    ])
+      .then(([dash, daily, sub, lb]) => {
+        const base = dash?.data ?? {}
+        const premiumUsers = sub != null
+          ? (sub.monthly ?? 0) + (sub.threeMonths ?? 0) + (sub.yearly ?? 0)
+          : null
+        setStats({ ...base, premiumUsers, totalRevenue: sub?.totalRevenue ?? base.totalRevenue })
+        setDailyActive(daily)
+        setSubBreakdown(sub)
+        setLeaderboard(lb ?? [])
+      })
       .catch(() => setError('Không tải được dữ liệu dashboard.'))
       .finally(() => setLoading(false))
   }, [])
@@ -50,14 +72,14 @@ function Dashboard() {
     <div className="dashboard">
       <section className="dashboard-section dashboard-section--top">
         <div className="dashboard-grid dashboard-grid--top">
-          <ActiveUsersCard data={data} />
-          <EarningsSummary data={data} />
+          <ActiveUsersCard dailyActive={dailyActive} />
+          <EarningsSummary subBreakdown={subBreakdown} />
         </div>
       </section>
 
-      <StatsSummary data={data} />
+      <StatsSummary data={stats} />
 
-      <SalesSection data={data} />
+      <SalesSection dailyActive={dailyActive} leaderboard={leaderboard} />
     </div>
   )
 }

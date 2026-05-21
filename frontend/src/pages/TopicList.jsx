@@ -34,6 +34,7 @@ function TopicList() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   const fetchTopics = async () => {
     setLoading(true);
@@ -44,10 +45,8 @@ function TopicList() {
       const list = normalizeTopicList(res.data);
       setTopics(list);
     } catch {
-      setTopics([...DEMO_TOPICS]);
-      setLoadWarning(
-        'Không tải được danh sách từ máy chủ (mạng, proxy hoặc API). Đang hiển thị dữ liệu mẫu để xem giao diện.'
-      );
+      setTopics([]);
+      setLoadWarning('Không tải được danh sách từ máy chủ (mạng, proxy hoặc API).');
     } finally {
       setLoading(false);
     }
@@ -58,11 +57,13 @@ function TopicList() {
   const openCreate = () => {
     setEditId(null);
     setForm(EMPTY_FORM);
+    setFormErrors({});
     setShowModal(true);
   };
 
   const openEdit = (t) => {
     setEditId(t.id);
+    setFormErrors({});
     setForm({
       name: t.name || '',
       description: t.description || '',
@@ -92,9 +93,10 @@ function TopicList() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) {
-      alert('Vui lòng nhập tên chủ đề.');
+      setFormErrors({ name: 'Name không được để trống.' });
       return;
     }
+    setFormErrors({});
     if (editId && isDemoTopicId(editId)) {
       setTopics((prev) =>
         prev.map((t) =>
@@ -217,12 +219,13 @@ function TopicList() {
                 <FiX size={22} />
               </button>
             </div>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
               <div className="tl-modal-panel__body">
                 <div className="mb-2">
                   <label className="form-label small fw-semibold">Name *</label>
-                  <input type="text" className="form-control" value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={100} required />
+                  <input type="text" className={`form-control${formErrors.name ? ' is-invalid' : ''}`} value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={100} />
+                  {formErrors.name && <div className="invalid-feedback">{formErrors.name}</div>}
                 </div>
                 <div className="mb-2">
                   <label className="form-label small fw-semibold">Description</label>

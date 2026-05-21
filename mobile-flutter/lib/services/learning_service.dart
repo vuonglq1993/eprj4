@@ -3,9 +3,14 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import 'token_service.dart';
+import 'api_service.dart';
 
 class LearningService {
   static String get _base => AppConfig.baseUrl;
+
+  // UI language cho i18n exercises — set khi user đăng nhập / đổi ngôn ngữ
+  static String _uiLang = 'vi';
+  static void setUiLanguage(String lang) => _uiLang = lang;
 
   static Future<Map<String, String>> _auth() async {
     final token = await TokenService.getAccessToken();
@@ -167,10 +172,11 @@ class LearningService {
   static Future<List<Map<String, dynamic>>> getExercises(
       String courseId, String lessonId) async {
     try {
-      final res = await http.get(
-        Uri.parse('$_base/courses/$courseId/lessons/$lessonId/exercises'),
+      final res = await ApiService.sendRequest(() async => http.get(
+        Uri.parse('$_base/courses/$courseId/lessons/$lessonId/exercises?lang=$_uiLang'),
         headers: await _auth(),
-      );
+      ));
+      if (res == null) return [];
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
         if (body is List) return body.cast<Map<String, dynamic>>();
@@ -185,6 +191,19 @@ class LearningService {
   }
 
   /// Submit một exercise. Trả về SubmitResponse hoặc null nếu lỗi.
+  static Future<Map<String, dynamic>?> getCertificate(String courseId) async {
+    try {
+      final res = await ApiService.sendRequest(() async => http.get(
+        Uri.parse('$_base/progress/courses/$courseId/certificate'),
+        headers: await _auth(),
+      ));
+      if (res == null || res.statusCode != 200) return null;
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
   static Future<Map<String, dynamic>?> submitExercise({
     required String courseId,
     required String lessonId,
@@ -200,14 +219,16 @@ class LearningService {
         'answer': answer,
         'clientStartTime': clientStartMs,
         'clientSubmitTime': clientSubmitMs,
+        'lang': _uiLang,
         if (audioUrl != null) 'audioUrl': audioUrl,
       };
-      final res = await http.post(
+      final res = await ApiService.sendRequest(() async => http.post(
         Uri.parse(
             '$_base/courses/$courseId/lessons/$lessonId/exercises/submit'),
         headers: await _auth(),
         body: jsonEncode(body),
-      );
+      ));
+      if (res == null) return null;
       if (res.statusCode == 200 || res.statusCode == 201) {
         return jsonDecode(res.body) as Map<String, dynamic>;
       }
@@ -298,7 +319,7 @@ class LearningService {
     int score = 0,
   }) async {
     try {
-      await http.post(
+      await ApiService.sendRequest(() async => http.post(
         Uri.parse('$_base/study-logs'),
         headers: await _auth(),
         body: jsonEncode({
@@ -307,7 +328,7 @@ class LearningService {
           'activityType': activityType,
           'score': score,
         }),
-      );
+      ));
     } catch (_) {}
   }
 

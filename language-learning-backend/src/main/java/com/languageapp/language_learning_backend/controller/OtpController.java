@@ -20,7 +20,7 @@ public class OtpController {
 
     @Operation(summary = "Xác thực email bằng OTP")
     @PostMapping("/verify-email")
-    public ResponseEntity<OtpResponse> verifyEmail(@Valid @RequestBody OtpRequest req) {
+    public ResponseEntity<OtpResponse> verifyEmail(@Valid @RequestBody OtpRequest req) throws Exception {
 
         userService.verifyEmail(req.getEmail(), req.getOtp());
 
@@ -47,7 +47,7 @@ public class OtpController {
 
     @Operation(summary = "Đặt lại mật khẩu bằng OTP")
     @PostMapping("/reset-password")
-    public ResponseEntity<OtpResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+    public ResponseEntity<OtpResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest req) throws Exception {
 
         userService.resetPassword(req.getEmail(), req.getOtp(), req.getNewPassword());
 
@@ -104,7 +104,7 @@ public class OtpController {
         private String email;
 
         @jakarta.validation.constraints.NotBlank
-        @jakarta.validation.constraints.Pattern(regexp = "VERIFICATION|RESET_PASSWORD")
+        @jakarta.validation.constraints.Pattern(regexp = "VERIFY_EMAIL|RESET_PASSWORD")
         private String type;
     }
 }

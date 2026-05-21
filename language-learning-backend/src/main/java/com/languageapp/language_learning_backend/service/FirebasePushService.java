@@ -29,17 +29,18 @@ public class FirebasePushService {
             FcmTokenDocument doc = FcmTokenDocument.builder()
                     .userId(userId)
                     .token(token)
-                    .deviceType(deviceType)
+                    .deviceType(deviceType != null ? deviceType : "ANDROID")
                     .createdAt(Instant.now())
                     .lastUsedAt(Instant.now())
                     .active(true)
                     .build();
 
             fcmRepo.save(doc);
-            log.info("✅ FCM token saved for user {}", userId);
+            log.info("✅ FCM token registered for user={} deviceType={}", userId, doc.getDeviceType());
 
         } catch (Exception e) {
-            log.error("❌ Failed to save FCM token: {}", e.getMessage());
+            log.error("❌ Failed to register FCM token for user {}: {}", userId, e.getMessage());
+            throw new RuntimeException("FCM token registration failed", e);
         }
     }
 

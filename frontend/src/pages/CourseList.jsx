@@ -5,46 +5,10 @@ import { FaBook, FaStar } from 'react-icons/fa6';
 import { getCourses, createCourse, updateCourse, publishCourse, deleteCourse } from '../services/courseService';
 import { getLanguages } from '../services/languageService';
 import { isAdmin } from '../utils/roleUtils';
-import { CourseThumbnailPlaceholder } from '../components/courses/CourseThumbnailPlaceholder';
 
-const LEVELS = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
+const LEVELS = ['BEGINNER', 'ELEMENTARY', 'INTERMEDIATE', 'UPPER_INTERMEDIATE', 'ADVANCED'];
 
-const EMPTY_FORM = { title: '', description: '', languageId: '', level: 'BEGINNER', thumbnailUrl: '', isPublished: false };
-
-/** Độ dài tối đa cho URL ảnh — chuỗi base64 trong ô URL sẽ vượt và làm request lỗi. */
-const THUMBNAIL_URL_MAX_LEN = 2048;
-
-/**
- * Chỉ chấp nhận link http(s) ngắn; từ chối data: (base64) và URL quá dài.
- * @returns {{ ok: true, value: string } | { ok: false, message: string }}
- */
-function validateThumbnailUrl(raw) {
-  const t = (raw || '').trim();
-  if (!t) return { ok: true, value: '' };
-  if (/^data:/i.test(t)) {
-    return {
-      ok: false,
-      message:
-        'Không dùng ảnh dạng base64 (data:image/…) trong ô này — chuỗi quá dài, server thường báo lỗi. Hãy tải ảnh lên host (Imgur, Cloudinary, …) rồi dán link https://…',
-    };
-  }
-  if (t.length > THUMBNAIL_URL_MAX_LEN) {
-    return {
-      ok: false,
-      message: `Link ảnh quá dài (tối đa ${THUMBNAIL_URL_MAX_LEN} ký tự). Base64 trong ô URL không phù hợp — chỉ dùng link https ngắn.`,
-    };
-  }
-  let parsed;
-  try {
-    parsed = new URL(t);
-  } catch {
-    return { ok: false, message: 'Thumbnail phải là URL hợp lệ, ví dụ https://example.com/image.jpg' };
-  }
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    return { ok: false, message: 'Chỉ chấp nhận link http hoặc https.' };
-  }
-  return { ok: true, value: t };
-}
+const EMPTY_FORM = { title: '', description: '', languageId: '', level: 'BEGINNER', isPublished: false };
 
 function formatSaveError(err) {
   const status = err.response?.status;
@@ -79,7 +43,7 @@ const CourseList = () => {
   const [languages, setLanguages] = useState([]);
   const [saving, setSaving] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
-  const [thumbnailFieldError, setThumbnailFieldError] = useState('');
+  const [formErrors, setFormErrors] = useState({});
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const canManage = isAdmin();
@@ -106,7 +70,7 @@ const CourseList = () => {
     try {
       const res = await getLanguages();
       setLanguages(res.data || []);
-    } catch {}
+    } catch { /* silent — language list is optional */ }
   };
 
   useEffect(() => {
@@ -118,22 +82,24 @@ const CourseList = () => {
   const openCreate = () => {
     setEditId(null);
     setForm(EMPTY_FORM);
-    setThumbnailFieldError('');
+    setFormErrors({});
     setShowModal(true);
   };
 
 
   const openEdit = (course) => {
     setEditId(course.id);
+    const matchedLang = languages.find(
+      (l) => l.code === course.languageCode || l.name === course.languageName
+    );
     setForm({
       title: course.title || '',
       description: course.description || '',
-      languageId: course.languageId || '',
+      languageId: matchedLang?.id || '',
       level: course.level || 'BEGINNER',
-      thumbnailUrl: course.thumbnailUrl || '',
       isPublished: course.isPublished ?? false,
     });
-    setThumbnailFieldError('');
+    setFormErrors({});
     setShowModal(true);
   };
 
@@ -164,17 +130,12 @@ const CourseList = () => {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.title.trim() || !form.languageId) {
-      alert('Vui lòng điền đầy đủ Title và chọn Language.');
-      return;
-    }
-    const thumb = validateThumbnailUrl(form.thumbnailUrl);
-    if (!thumb.ok) {
-      setThumbnailFieldError(thumb.message);
-      return;
-    }
-    setThumbnailFieldError('');
-    const payload = { ...form, thumbnailUrl: thumb.value };
+    const errs = {};
+    if (!form.title.trim()) errs.title = 'Title không được để trống.';
+    if (!form.languageId) errs.languageId = 'Vui lòng chọn ngôn ngữ.';
+    if (Object.keys(errs).length) { setFormErrors(errs); return; }
+    setFormErrors({});
+    const payload = { ...form };
     setSaving(true);
     try {
       if (editId) {
@@ -193,7 +154,7 @@ const CourseList = () => {
   };
 
 
-  const levelLabel = (l) => l ? l.charAt(0) + l.slice(1).toLowerCase() : 'Beginner';
+  const levelLabel = (l) => l ? l.replace(/_/g, ' ').replace(/\w+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()) : 'Beginner';
 
   return (
     <div className="cl-page py-4 px-3">
@@ -219,13 +180,6 @@ const CourseList = () => {
             <div className="cl-grid">
               {courses.map((course) => (
                 <div key={course.id} className="cl-card shadow-sm">
-                  <div className="cl-card-img">
-                    {course.thumbnailUrl ? (
-                      <img src={course.thumbnailUrl} alt={course.title} />
-                    ) : (
-                      <CourseThumbnailPlaceholder />
-                    )}
-                  </div>
                   <div className="cl-card-body">
                     <div className="d-flex justify-content-between align-items-start mb-2">
                       <div>
@@ -321,19 +275,21 @@ const CourseList = () => {
                 <div className="modal-header">
                   <h5 className="modal-title">{editId ? 'Edit Course' : 'New Course'}</h5>
                 </div>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
                   <div className="modal-body">
                     <div className="row">
                       <div className="col-md-8 mb-2">
                         <label className="form-label small fw-semibold">Title *</label>
-                        <input type="text" className="form-control" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={150} required />
+                        <input type="text" className={`form-control${formErrors.title ? ' is-invalid' : ''}`} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={150} />
+                        {formErrors.title && <div className="invalid-feedback">{formErrors.title}</div>}
                       </div>
                       <div className="col-md-4 mb-2">
                         <label className="form-label small fw-semibold">Language *</label>
-                        <select className="form-select" value={form.languageId} onChange={(e) => setForm({ ...form, languageId: e.target.value })} required>
+                        <select className={`form-select${formErrors.languageId ? ' is-invalid' : ''}`} value={form.languageId} onChange={(e) => setForm({ ...form, languageId: e.target.value })}>
                           <option value="">Select…</option>
                           {languages.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                         </select>
+                        {formErrors.languageId && <div className="invalid-feedback">{formErrors.languageId}</div>}
                       </div>
                     </div>
                     <div className="mb-2">
@@ -346,28 +302,6 @@ const CourseList = () => {
                         <select className="form-select" value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value })}>
                           {LEVELS.map((l) => <option key={l} value={l}>{levelLabel(l)}</option>)}
                         </select>
-                      </div>
-                      <div className="col-md-6 mb-2">
-                        <label className="form-label small fw-semibold">Thumbnail URL</label>
-                        <input
-                          type="text"
-                          inputMode="url"
-                          autoComplete="off"
-                          className={`form-control ${thumbnailFieldError ? 'is-invalid' : ''}`}
-                          value={form.thumbnailUrl}
-                          onChange={(e) => {
-                            setThumbnailFieldError('');
-                            setForm({ ...form, thumbnailUrl: e.target.value });
-                          }}
-                          placeholder="https://…"
-                        />
-                        {thumbnailFieldError ? (
-                          <div className="invalid-feedback d-block">{thumbnailFieldError}</div>
-                        ) : (
-                          <small className="text-muted">
-                            Chỉ dán link ảnh công khai (https). Không dán ảnh base64 (data:image/…) — sẽ quá dài và lỗi khi lưu.
-                          </small>
-                        )}
                       </div>
                     </div>
                     <div className="form-check">

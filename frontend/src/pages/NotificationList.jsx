@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import '../styles/notificationlist.css';
 import {
   FiSend, FiBell, FiUsers, FiCheckCircle, FiAlertCircle,
-  FiClock, FiActivity, FiMail, FiSearch, FiX
+  FiClock, FiActivity, FiSearch, FiX
 } from 'react-icons/fi';
 import {
   broadcastNotification,
@@ -42,11 +42,13 @@ const NotificationList = () => {
   const [bcForm, setBcForm] = useState({ title: '', body: '', type: 'ANNOUNCEMENT' });
   const [bcSending, setBcSending] = useState(false);
   const [bcResult, setBcResult] = useState(null);
+  const [bcErrors, setBcErrors] = useState({});
 
   // ── Personal send state ──────────────────────────────────
   const [ptForm, setPtForm] = useState({ userId: '', title: '', body: '', type: 'ANNOUNCEMENT' });
   const [ptSending, setPtSending] = useState(false);
   const [ptResult, setPtResult] = useState(null);
+  const [ptErrors, setPtErrors] = useState({});
 
   // ── User search state ───────────────────────────────────
   const [userQuery, setUserQuery] = useState('');
@@ -114,10 +116,11 @@ const NotificationList = () => {
   // ── Handlers ─────────────────────────────────────────────
   const handleBroadcast = async (e) => {
     e.preventDefault();
-    if (!bcForm.title.trim() || !bcForm.body.trim()) {
-      alert('Vui lòng nhập tiêu đề và nội dung.');
-      return;
-    }
+    const errs = {};
+    if (!bcForm.title.trim()) errs.title = 'Tiêu đề không được để trống.';
+    if (!bcForm.body.trim()) errs.body = 'Nội dung không được để trống.';
+    if (Object.keys(errs).length) { setBcErrors(errs); return; }
+    setBcErrors({});
     setBcSending(true);
     setBcResult(null);
     try {
@@ -138,14 +141,12 @@ const NotificationList = () => {
 
   const handleSendPersonal = async (e) => {
     e.preventDefault();
-    if (!ptForm.title.trim() || !ptForm.body.trim()) {
-      alert('Vui lòng nhập tiêu đề và nội dung.');
-      return;
-    }
-    if (!ptForm.userId.trim()) {
-      alert('Vui lòng chọn user.');
-      return;
-    }
+    const errs = {};
+    if (!ptForm.userId.trim()) errs.userId = 'Vui lòng chọn người nhận.';
+    if (!ptForm.title.trim()) errs.title = 'Tiêu đề không được để trống.';
+    if (!ptForm.body.trim()) errs.body = 'Nội dung không được để trống.';
+    if (Object.keys(errs).length) { setPtErrors(errs); return; }
+    setPtErrors({});
     setPtSending(true);
     setPtResult(null);
     try {
@@ -238,29 +239,29 @@ const NotificationList = () => {
                   </div>
                 )}
 
-                <form onSubmit={handleBroadcast}>
+                <form onSubmit={handleBroadcast} noValidate>
                   <div className="nl-card__body">
                     <div className="nl-field">
                       <label className="nl-label">Tiêu đề <span className="text-danger">*</span></label>
                       <input
-                        className="nl-input" type="text"
+                        className={`nl-input${bcErrors.title ? ' is-invalid' : ''}`} type="text"
                         placeholder="Ví dụ: Chào mừng bạn đến với LanguageApp!"
                         value={bcForm.title}
                         onChange={(e) => setBcForm({ ...bcForm, title: e.target.value })}
-                        maxLength={100} required
+                        maxLength={100}
                       />
-                      <small className="nl-hint">{bcForm.title.length}/100</small>
+                      {bcErrors.title ? <div className="invalid-feedback">{bcErrors.title}</div> : <small className="nl-hint">{bcForm.title.length}/100</small>}
                     </div>
                     <div className="nl-field">
                       <label className="nl-label">Nội dung <span className="text-danger">*</span></label>
                       <textarea
-                        className="nl-textarea" rows={3}
+                        className={`nl-textarea${bcErrors.body ? ' is-invalid' : ''}`} rows={3}
                         placeholder="Nhập nội dung thông báo..."
                         value={bcForm.body}
                         onChange={(e) => setBcForm({ ...bcForm, body: e.target.value })}
-                        maxLength={500} required
+                        maxLength={500}
                       />
-                      <small className="nl-hint">{bcForm.body.length}/500</small>
+                      {bcErrors.body ? <div className="invalid-feedback">{bcErrors.body}</div> : <small className="nl-hint">{bcForm.body.length}/500</small>}
                     </div>
                     <div className="nl-field">
                       <label className="nl-label">Loại thông báo</label>
@@ -325,7 +326,7 @@ const NotificationList = () => {
                   </div>
                 )}
 
-                <form onSubmit={handleSendPersonal}>
+                <form onSubmit={handleSendPersonal} noValidate>
                   <div className="nl-card__body">
                     {/* User search */}
                     <div className="nl-field">
@@ -384,32 +385,34 @@ const NotificationList = () => {
                         </div>
                       )}
 
-                      {ptForm.userId && (
-                        <small className="nl-hint nl-hint--success">
-                          ✓ Đã chọn: {ptForm.userId}
-                        </small>
-                      )}
+                      {ptForm.userId ? (
+                        <small className="nl-hint nl-hint--success">✓ Đã chọn: {ptForm.userId}</small>
+                      ) : ptErrors.userId ? (
+                        <div className="invalid-feedback">{ptErrors.userId}</div>
+                      ) : null}
                     </div>
 
                     <div className="nl-field">
                       <label className="nl-label">Tiêu đề <span className="text-danger">*</span></label>
                       <input
-                        className="nl-input" type="text"
+                        className={`nl-input${ptErrors.title ? ' is-invalid' : ''}`} type="text"
                         placeholder="Tiêu đề thông báo"
                         value={ptForm.title}
                         onChange={(e) => setPtForm({ ...ptForm, title: e.target.value })}
-                        maxLength={100} required
+                        maxLength={100}
                       />
+                      {ptErrors.title && <div className="invalid-feedback">{ptErrors.title}</div>}
                     </div>
                     <div className="nl-field">
                       <label className="nl-label">Nội dung <span className="text-danger">*</span></label>
                       <textarea
-                        className="nl-textarea" rows={2}
+                        className={`nl-textarea${ptErrors.body ? ' is-invalid' : ''}`} rows={2}
                         placeholder="Nội dung thông báo"
                         value={ptForm.body}
                         onChange={(e) => setPtForm({ ...ptForm, body: e.target.value })}
-                        maxLength={500} required
+                        maxLength={500}
                       />
+                      {ptErrors.body && <div className="invalid-feedback">{ptErrors.body}</div>}
                     </div>
                     <div className="nl-field">
                       <label className="nl-label">Loại thông báo</label>

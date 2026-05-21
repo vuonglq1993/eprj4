@@ -84,6 +84,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentFailed => 'Payment failed or cancelled';
 
   @override
+  String get paymentTimeout =>
+      'Payment is taking too long. Check history for status.';
+
+  @override
+  String get checkHistory => 'Check history';
+
+  @override
   String get language => 'Language';
 
   @override
@@ -478,6 +485,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get studyDays => 'Study days';
 
   @override
+  String get bestStreak => 'Best streak';
+
+  @override
   String get xpEarned => 'XP earned';
 
   @override
@@ -830,6 +840,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currentPasswordWrong => 'Current password is incorrect';
 
   @override
+  String get passwordRecentlyUsed =>
+      'New password must not match the last 2 passwords';
+
+  @override
   String get saving => 'Saving...';
 
   @override
@@ -877,9 +891,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingGoalSubtitle => 'AI will create the best path for you';
-
-  @override
-  String get goalToeic => 'TOEIC / IELTS Exam';
 
   @override
   String get goalCommunication => 'Daily conversation';
@@ -942,4 +953,195 @@ class AppLocalizationsEn extends AppLocalizations {
   String correctAnswers(int score, int total) {
     return '$score / $total correct';
   }
+
+  @override
+  String get free => 'Free';
+
+  @override
+  String get enabled => 'Enabled';
+
+  @override
+  String get disabled => 'Disabled';
+
+  @override
+  String get invalidPhone => 'Invalid phone number';
+
+  @override
+  String get minEightChars => 'Minimum 8 characters';
+
+  @override
+  String get takePhoto => 'Take Photo';
+
+  @override
+  String get selectFromLibrary => 'Select from Library';
+
+  @override
+  String get uploadPhotoFailed => 'Photo upload failed, please try again';
+
+  @override
+  String get basicInfo => 'Basic Information';
+
+  @override
+  String get contactLocation => 'Contact & Location';
+
+  @override
+  String get country => 'Country';
+
+  @override
+  String get timezone => 'Timezone';
+
+  @override
+  String get selectTimezone => 'Select timezone';
+
+  @override
+  String get personalInfo => 'Personal Information';
+
+  @override
+  String get gender => 'Gender';
+
+  @override
+  String get selectGender => 'Select gender';
+
+  @override
+  String get aboutYourself => 'About Yourself';
+
+  @override
+  String get bioHint => 'Write a few lines about yourself...';
+
+  @override
+  String get dateOfBirth => 'Date of Birth';
+
+  @override
+  String get selectDateOfBirth => 'Select date of birth';
+
+  @override
+  String get phoneHint => '+1 xxx xxx xxx';
+
+  @override
+  String get dailyReminder => 'Daily Study Reminder';
+
+  @override
+  String get reminderTime => 'Reminder Time';
+
+  @override
+  String get sendTestNotification => 'Send Test Notification';
+
+  @override
+  String get testNotificationSent => 'Test notification sent!';
+
+  @override
+  String get twoFactorAuth => 'Two-Factor Authentication (2FA)';
+
+  @override
+  String get twoFaComingSoon => '2FA feature coming in next update';
+
+  @override
+  String get proMember => 'Pro Member';
+
+  @override
+  String get pathAndLanguage => 'Learning Path & Language';
+
+  @override
+  String get badgesAchievements => 'Badges & Achievements';
+
+  @override
+  String get subscriptionBilling => 'Subscription & Billing';
+
+  @override
+  String get currentPlan => 'Current Plan';
+
+  @override
+  String get activeStatus => 'Active';
+
+  @override
+  String get startDate => 'Start Date';
+
+  @override
+  String get renewalDate => 'Renewal Date';
+
+  @override
+  String get paymentMethod => 'Payment Method';
+
+  @override
+  String get upgradeToYearly => 'Upgrade to Yearly';
+
+  @override
+  String get paymentHistory => 'Payment History';
+
+  @override
+  String get noPaymentHistory => 'No payment history yet';
+
+  @override
+  String get securePaymentNotice => 'Secure payment • Cancel anytime';
+
+  @override
+  String get waitingPaymentResult => 'Waiting for payment result';
+
+  @override
+  String get cancelWaiting => 'Cancel Wait';
+
+  @override
+  String get orderSummary => 'Order Summary';
+
+  @override
+  String get totalPayment => 'Total Payment';
+
+  @override
+  String get monthly => 'Monthly';
+
+  @override
+  String get yearly => 'Yearly';
+
+  @override
+  String get mostPopular => 'Most Popular';
+
+  @override
+  String get perMonth => '/mo';
+
+  @override
+  String get perYear => '/yr';
+
+  @override
+  String get cancelAnytime => 'Cancel anytime in Settings';
+
+  @override
+  String get seeResults => 'See Results';
+
+  @override
+  String get nextQuestion => 'Next Question';
+
+  @override
+  String get dailyXpGoal => 'Daily XP Goal';
+
+  @override
+  String get learningStyle => 'Learning Style';
+
+  @override
+  String get selectXpGoal => 'Select XP Goal';
+
+  @override
+  String get selectLearningStyle => 'Select Learning Style';
+
+  @override
+  String get secureLabel => 'Secure';
+
+  @override
+  String get paymentLabel => 'Payment';
+
+  @override
+  String get completePaymentInstruction =>
+      'Complete the payment in the window that opened, then return to the app.';
+
+  @override
+  String autoRenewal(String period) {
+    return 'Auto-renews every $period. Cancel anytime.';
+  }
+
+  @override
+  String subscribePlan(String plan) {
+    return 'Subscribe to $plan';
+  }
+
+  @override
+  String get currentPlanCheck => '✓ Current Plan';
 }

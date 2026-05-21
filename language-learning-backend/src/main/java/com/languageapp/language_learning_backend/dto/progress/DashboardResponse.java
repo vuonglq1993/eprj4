@@ -23,7 +23,6 @@ public class DashboardResponse {
         private UUID    courseId;
         private String  courseTitle;
         private String  languageName;
-        private String  thumbnailUrl;
         private int     totalLessons;
         private int     completedLessons;
         private int     progressPercent;

@@ -1,6 +1,20 @@
 const express = require('express');
 const cors = require('cors');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads', 'records');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+// Multer storage config
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename: (req, file, cb) => cb(null, `${Date.now()}_${file.originalname}`),
+});
+const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 
 const authRoutes = require('./routes/auth');
 const languagesRoutes = require('./routes/languages');
@@ -17,12 +31,17 @@ const paymentsRoutes = require('./routes/payments');
 const studyLogsRoutes = require('./routes/studyLogs');
 const progressRoutes = require('./routes/progress');
 const dashboardRoutes = require('./routes/dashboard');
+const recordsRoutes = require('./routes/records');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check
 app.get('/api/v1/health', (req, res) => {
@@ -45,6 +64,7 @@ app.use('/api/v1/payments', paymentsRoutes);
 app.use('/api/v1/study-logs', studyLogsRoutes);
 app.use('/api/v1/progress', progressRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/records', recordsRoutes);
 
 // 404 handler
 app.use((req, res) => {

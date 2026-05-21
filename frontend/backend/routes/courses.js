@@ -26,7 +26,7 @@ router.get('/:id', (req, res) => {
 
 // POST /courses - Admin/Teacher
 router.post('/', authenticate, requireRole(...MANAGER_ROLES), (req, res) => {
-  const { title, description, languageId, topicId, targetLevel, price, thumbnailUrl, durationMinutes } = req.body;
+  const { title, description, languageId, topicId, targetLevel, price, durationMinutes } = req.body;
   if (!title) return res.status(400).json({ message: 'Title is required' });
   const newCourse = {
     id: uuidv4(),
@@ -36,7 +36,6 @@ router.post('/', authenticate, requireRole(...MANAGER_ROLES), (req, res) => {
     topicId: topicId || null,
     targetLevel: targetLevel || 'BEGINNER',
     price: price || 0,
-    thumbnailUrl: thumbnailUrl || null,
     isPublished: false,
     durationMinutes: durationMinutes || 0,
     lessonsCount: 0,
@@ -52,7 +51,7 @@ router.post('/', authenticate, requireRole(...MANAGER_ROLES), (req, res) => {
 router.put('/:id', authenticate, requireRole(...MANAGER_ROLES), (req, res) => {
   const idx = store.courses.findIndex((c) => c.id === req.params.id);
   if (idx === -1) return res.status(404).json({ message: 'Course not found' });
-  const fields = ['title', 'description', 'languageId', 'topicId', 'targetLevel', 'price', 'thumbnailUrl', 'isPublished', 'durationMinutes'];
+  const fields = ['title', 'description', 'languageId', 'topicId', 'targetLevel', 'price', 'isPublished', 'durationMinutes'];
   fields.forEach((f) => {
     if (req.body[f] !== undefined) store.courses[idx][f] = req.body[f];
   });

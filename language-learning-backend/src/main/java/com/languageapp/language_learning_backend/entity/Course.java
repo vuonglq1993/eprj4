@@ -45,9 +45,6 @@ public class Course {
     @Column(nullable = false, length = 30)
     private Level level;
 
-    @Column(length = 500)
-    private String thumbnailUrl;
-
     @Column(nullable = false) @Builder.Default private Boolean isPublished  = false;
     @Column(nullable = false) @Builder.Default private Integer totalLessons = 0;
 

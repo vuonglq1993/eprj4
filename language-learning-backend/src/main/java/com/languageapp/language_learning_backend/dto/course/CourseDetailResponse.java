@@ -5,7 +5,6 @@ import com.languageapp.language_learning_backend.dto.lesson.LessonSummaryRespons
 import lombok.*;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -16,7 +15,6 @@ public class CourseDetailResponse {
     private String                     languageCode;
     private String                     languageName;
     private Level                      level;
-    private String                     thumbnailUrl;
     private Boolean                    isPublished;
     private Integer                    totalLessons;
     private String                     createdByName;

@@ -40,7 +40,6 @@ import TopicList from "./pages/TopicList"
 import SubscriptionPlansAdminPage from "./pages/SubscriptionPlansAdminPage"
 import AdminUserManagementPage from "./pages/AdminUserManagementPage"
 import ReviewMistakesPage from "./pages/ReviewMistakesPage"
-import WeeklyReportPage from "./pages/WeeklyReportPage"
 import GameProfilePage from "./pages/GameProfilePage"
 import LeaderboardPage from "./pages/LeaderboardPage"
 import LearningPathList from "./pages/LearningPathList"
@@ -398,16 +397,6 @@ function ReviewMistakesRoute() {
   )
 }
 
-function WeeklyReportRoute() {
-  return (
-    <ProtectedRoute>
-      <AppLayout>
-        <WeeklyReportPage />
-      </AppLayout>
-    </ProtectedRoute>
-  )
-}
-
 function GameProfileRoute() {
   return (
     <ProtectedRoute>
@@ -491,7 +480,6 @@ function App() {
 
           <Route path="/admin/subscription-plans" element={<SubscriptionPlansAdminRoute />} />
           <Route path="/reviews/mistakes" element={<ReviewMistakesRoute />} />
-          <Route path="/reports/weekly" element={<WeeklyReportRoute />} />
           <Route path="/game/profile" element={<GameProfileRoute />} />
           <Route path="/game/leaderboard" element={<LeaderboardRoute />} />
           <Route path="/admin/users" element={<AdminUserManagementRoute />} />

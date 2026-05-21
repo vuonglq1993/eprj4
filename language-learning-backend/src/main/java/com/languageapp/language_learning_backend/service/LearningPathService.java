@@ -5,7 +5,6 @@ import com.languageapp.language_learning_backend.dto.learningpath.*;
 import com.languageapp.language_learning_backend.entity.*;
 import com.languageapp.language_learning_backend.entity.LearningPath.TargetLevel;
 import com.languageapp.language_learning_backend.entity.UserLearningPath.PathStatus;
-import com.languageapp.language_learning_backend.entity.UserProgress.ProgressStatus;
 import com.languageapp.language_learning_backend.exception.GlobalExceptionHandler.*;
 import com.languageapp.language_learning_backend.repository.*;
 import com.languageapp.language_learning_backend.security.UserPrincipal;
@@ -112,7 +111,6 @@ public class LearningPathService {
                 .id(lp.getId())
                 .title(lp.getTitle())
                 .description(lp.getDescription())
-                .thumbnailUrl(lp.getThumbnailUrl())
                 .languageCode(lp.getLanguage().getCode())
                 .languageName(lp.getLanguage().getName())
                 .targetLevel(lp.getTargetLevel())
@@ -141,7 +139,6 @@ public class LearningPathService {
                 .language(lang)
                 .title(req.getTitle())
                 .description(req.getDescription())
-                .thumbnailUrl(req.getThumbnailUrl())
                 .targetLevel(req.getTargetLevel())
                 .goal(req.getGoal())
                 .estimatedHours(req.getEstimatedHours() != null ? req.getEstimatedHours() : 0)
@@ -169,7 +166,6 @@ public class LearningPathService {
         lp.setLanguage(lang);
         lp.setTitle(req.getTitle());
         lp.setDescription(req.getDescription());
-        lp.setThumbnailUrl(req.getThumbnailUrl());
         lp.setTargetLevel(req.getTargetLevel());
         lp.setGoal(req.getGoal());
         if (req.getEstimatedHours() != null) lp.setEstimatedHours(req.getEstimatedHours());
@@ -355,7 +351,6 @@ public class LearningPathService {
                     .courseId(c.getId())
                     .courseTitle(c.getTitle())
                     .courseLevel(c.getLevel().name())
-                    .thumbnailUrl(c.getThumbnailUrl())
                     .totalLessons(c.getTotalLessons())
                     .note(step.getNote())
                     .isRequired(step.getIsRequired())
@@ -378,7 +373,6 @@ public class LearningPathService {
                 .id(lp.getId())
                 .title(lp.getTitle())
                 .description(lp.getDescription())
-                .thumbnailUrl(lp.getThumbnailUrl())
                 .languageCode(lp.getLanguage().getCode())
                 .languageName(lp.getLanguage().getName())
                 .targetLevel(lp.getTargetLevel())
@@ -399,7 +393,6 @@ public class LearningPathService {
         List<LearningPathResponse.StepResponse> steps = buildStepResponses(lp, cp, userPath);
         return LearningPathResponse.builder()
                 .id(lp.getId()).title(lp.getTitle()).description(lp.getDescription())
-                .thumbnailUrl(lp.getThumbnailUrl())
                 .languageCode(lp.getLanguage().getCode()).languageName(lp.getLanguage().getName())
                 .targetLevel(lp.getTargetLevel()).goal(lp.getGoal())
                 .estimatedHours(lp.getEstimatedHours())

@@ -84,6 +84,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get paymentFailed => 'Thanh toán thất bại hoặc bị hủy';
 
   @override
+  String get paymentTimeout =>
+      'Thanh toán đang mất nhiều thời gian. Kiểm tra lịch sử để biết kết quả.';
+
+  @override
+  String get checkHistory => 'Xem lịch sử';
+
+  @override
   String get language => 'Ngôn ngữ';
 
   @override
@@ -478,6 +485,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get studyDays => 'Ngày học';
 
   @override
+  String get bestStreak => 'Streak cao nhất';
+
+  @override
   String get xpEarned => 'XP kiếm được';
 
   @override
@@ -829,6 +839,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get currentPasswordWrong => 'Mật khẩu hiện tại không đúng';
 
   @override
+  String get passwordRecentlyUsed =>
+      'Mật khẩu mới không được trùng với 2 mật khẩu gần nhất';
+
+  @override
   String get saving => 'Đang lưu...';
 
   @override
@@ -876,9 +890,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get onboardingGoalSubtitle => 'AI sẽ tạo lộ trình phù hợp nhất';
-
-  @override
-  String get goalToeic => 'Thi TOEIC / IELTS';
 
   @override
   String get goalCommunication => 'Giao tiếp hàng ngày';
@@ -941,4 +952,196 @@ class AppLocalizationsVi extends AppLocalizations {
   String correctAnswers(int score, int total) {
     return '$score / $total câu đúng';
   }
+
+  @override
+  String get free => 'Free';
+
+  @override
+  String get enabled => 'Đang bật';
+
+  @override
+  String get disabled => 'Đang tắt';
+
+  @override
+  String get invalidPhone => 'Số điện thoại không hợp lệ';
+
+  @override
+  String get minEightChars => 'Ít nhất 8 ký tự';
+
+  @override
+  String get takePhoto => 'Chụp ảnh';
+
+  @override
+  String get selectFromLibrary => 'Chọn từ thư viện';
+
+  @override
+  String get uploadPhotoFailed => 'Upload ảnh thất bại, thử lại nhé';
+
+  @override
+  String get basicInfo => 'Thông tin cơ bản';
+
+  @override
+  String get contactLocation => 'Liên hệ & Vị trí';
+
+  @override
+  String get country => 'Quốc gia';
+
+  @override
+  String get timezone => 'Múi giờ';
+
+  @override
+  String get selectTimezone => 'Chọn múi giờ';
+
+  @override
+  String get personalInfo => 'Thông tin cá nhân';
+
+  @override
+  String get gender => 'Giới tính';
+
+  @override
+  String get selectGender => 'Chọn giới tính';
+
+  @override
+  String get aboutYourself => 'Giới thiệu bản thân';
+
+  @override
+  String get bioHint => 'Viết vài dòng về bản thân...';
+
+  @override
+  String get dateOfBirth => 'Ngày sinh';
+
+  @override
+  String get selectDateOfBirth => 'Chọn ngày sinh';
+
+  @override
+  String get phoneHint => '+84 xxx xxx xxx';
+
+  @override
+  String get dailyReminder => 'Nhắc nhở học hàng ngày';
+
+  @override
+  String get reminderTime => 'Giờ nhắc nhở';
+
+  @override
+  String get sendTestNotification => 'Gửi thử notification';
+
+  @override
+  String get testNotificationSent => 'Đã gửi test notification!';
+
+  @override
+  String get twoFactorAuth => 'Xác thực 2 lớp (2FA)';
+
+  @override
+  String get twoFaComingSoon =>
+      'Tính năng 2FA sẽ ra mắt trong bản cập nhật tới';
+
+  @override
+  String get proMember => 'Pro Member';
+
+  @override
+  String get pathAndLanguage => 'Lộ trình & ngôn ngữ';
+
+  @override
+  String get badgesAchievements => 'Huy hiệu & thành tích';
+
+  @override
+  String get subscriptionBilling => 'Subscription & Billing';
+
+  @override
+  String get currentPlan => 'Gói hiện tại';
+
+  @override
+  String get activeStatus => 'Đang hoạt động';
+
+  @override
+  String get startDate => 'Bắt đầu';
+
+  @override
+  String get renewalDate => 'Gia hạn tiếp';
+
+  @override
+  String get paymentMethod => 'Phương thức thanh toán';
+
+  @override
+  String get upgradeToYearly => 'Nâng lên Yearly';
+
+  @override
+  String get paymentHistory => 'Lịch sử thanh toán';
+
+  @override
+  String get noPaymentHistory => 'Chưa có lịch sử thanh toán';
+
+  @override
+  String get securePaymentNotice => 'Thanh toán an toàn • Hủy bất kỳ lúc nào';
+
+  @override
+  String get waitingPaymentResult => 'Đang chờ kết quả thanh toán';
+
+  @override
+  String get cancelWaiting => 'Hủy chờ';
+
+  @override
+  String get orderSummary => 'Đơn hàng';
+
+  @override
+  String get totalPayment => 'Tổng thanh toán';
+
+  @override
+  String get monthly => 'Hàng tháng';
+
+  @override
+  String get yearly => 'Hàng năm';
+
+  @override
+  String get mostPopular => 'Phổ biến nhất';
+
+  @override
+  String get perMonth => '/tháng';
+
+  @override
+  String get perYear => '/năm';
+
+  @override
+  String get cancelAnytime => 'Hủy bất kỳ lúc nào trong Settings';
+
+  @override
+  String get seeResults => 'Xem kết quả';
+
+  @override
+  String get nextQuestion => 'Câu tiếp theo';
+
+  @override
+  String get dailyXpGoal => 'Mục tiêu XP mỗi ngày';
+
+  @override
+  String get learningStyle => 'Phong cách học';
+
+  @override
+  String get selectXpGoal => 'Chọn mục tiêu XP';
+
+  @override
+  String get selectLearningStyle => 'Chọn phong cách học';
+
+  @override
+  String get secureLabel => 'Bảo mật';
+
+  @override
+  String get paymentLabel => 'Thanh toán';
+
+  @override
+  String get completePaymentInstruction =>
+      'Hoàn tất thanh toán trong cửa sổ vừa mở, sau đó quay lại app.';
+
+  @override
+  String autoRenewal(String period) {
+    return 'Tự động gia hạn mỗi $period. Hủy bất kỳ lúc nào.';
+  }
+
+  @override
+  String subscribePlan(String plan) {
+    return 'Đăng ký $plan';
+  }
+
+  @override
+  String get currentPlanCheck => '✓ Gói hiện tại';
 }

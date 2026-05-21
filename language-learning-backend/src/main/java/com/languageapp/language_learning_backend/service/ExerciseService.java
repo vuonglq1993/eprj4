@@ -44,13 +44,14 @@ public class ExerciseService {
 
     // ───────────────────────── LIST
     @Transactional(readOnly = true)
-    public List<ExerciseResponse> list(UUID courseId, UUID lessonId, UserPrincipal p) {
+    public List<ExerciseResponse> list(UUID courseId, UUID lessonId, String lang, UserPrincipal p) {
         courseService.findOrThrow(courseId);
         lessonService.findOrThrow(lessonId, courseId);
 
+        String l = (lang != null && !lang.isBlank()) ? lang : "vi";
         return exerciseRepo.findByLessonIdOrderByOrderIndexAsc(lessonId)
                 .stream()
-                .map(this::toResponse)
+                .map(e -> toResponse(e, l))
                 .collect(Collectors.toList());
     }
 
@@ -115,7 +116,8 @@ public class ExerciseService {
 
         Exercise ex = findOrThrow(req.getExerciseId(), lessonId);
 
-        GradeResult grade = grade(ex, req);
+        String lang = (req.getLang() != null && !req.getLang().isBlank()) ? req.getLang() : "vi";
+        GradeResult grade = grade(ex, req, lang);
 
         boolean isTimeout = false;
         if (ex.getTimeLimitSeconds() > 0
@@ -126,9 +128,10 @@ public class ExerciseService {
             isTimeout = elapsed > ex.getTimeLimitSeconds();
         }
 
+        boolean effectivelyCorrect = grade.correct && !isTimeout;
         int pointsEarned = (ex.getType() == Exercise.ExerciseType.SPEAKING)
                 ? grade.points()
-                : (grade.correct ? ex.getPoints() : 0);
+                : (effectivelyCorrect ? ex.getPoints() : 0);
 
         UserProgress progress = progressRepo.findByUserIdAndLessonId(p.getUserId(), lessonId)
                 .orElse(UserProgress.builder()
@@ -170,11 +173,13 @@ public class ExerciseService {
             try {
                 User user = userRepo.getReferenceById(p.getUserId());
                 gamificationService.awardXp(user, pointsEarned);
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                log.warn("Failed to award XP to user {}: {}", p.getUserId(), e.getMessage());
+            }
         }
 
         return SubmitResponse.builder()
-                .correct(grade.correct && !isTimeout)
+                .correct(effectivelyCorrect)
                 .pointsEarned(pointsEarned)
                 .correctAnswer(grade.correctAnswer)
                 .explanation(grade.explanation)
@@ -183,7 +188,7 @@ public class ExerciseService {
     }
 
     // ───────────────────────── GRADING
-    private GradeResult grade(Exercise ex, SubmitRequest req) {
+    private GradeResult grade(Exercise ex, SubmitRequest req, String lang) {
 
         try {
             JsonNode q = mapper.readTree(ex.getQuestionData());
@@ -222,7 +227,7 @@ public class ExerciseService {
                             ok,
                             ex.getPoints(),
                             correctText,
-                            q.path("explanation").asText(null)
+                            resolveText(q.path("explanation"), lang)
                     );
                 }
 
@@ -235,16 +240,18 @@ public class ExerciseService {
                             ok,
                             ex.getPoints(),
                             correct,
-                            q.path("explanation").asText(null)
+                            resolveText(q.path("explanation"), lang)
                     );
                 }
 
                 case SPEAKING -> {
                     // Support both old format (targetText/sentence) and new format (question/sample_answer)
-                    String question     = q.path("question").asText(
-                            q.path("targetText").asText(
-                                    q.path("text").asText(
-                                            q.path("sentence").asText(""))));
+                    String question = resolveText(q.path("question"), lang);
+                    if (question == null || question.isBlank()) {
+                        question = q.path("targetText").asText(
+                                q.path("text").asText(
+                                        q.path("sentence").asText("")));
+                    }
                     String sampleAnswer = q.path("sample_answer").asText("");
                     String hint         = q.path("hint").asText("");
 
@@ -366,9 +373,11 @@ public class ExerciseService {
 
     // ───────────────────────── RESPONSE
     private ExerciseResponse toResponse(Exercise e) {
+        return toResponse(e, "vi");
+    }
 
+    private ExerciseResponse toResponse(Exercise e, String lang) {
         List<Record> records = recordRepo.findByExercise_Id(e.getId());
-
         String audioUrl = records.isEmpty() ? null : records.get(0).getAudioUrl();
 
         return ExerciseResponse.builder()
@@ -376,12 +385,51 @@ public class ExerciseService {
                 .lessonId(e.getLesson().getId())
                 .title(e.getTitle())
                 .type(e.getType())
-                .questionData(e.getQuestionData())
+                .questionData(resolveI18n(e.getQuestionData(), lang))
                 .audioUrl(audioUrl)
                 .orderIndex(e.getOrderIndex())
                 .points(e.getPoints())
                 .timeLimitSeconds(e.getTimeLimitSeconds())
                 .build();
+    }
+
+    // ───────────────────────── I18N RESOLVER
+    private String resolveText(JsonNode node, String lang) {
+        if (node == null || node.isMissingNode() || node.isNull()) return null;
+        if (node.isObject()) {
+            JsonNode v = node.path(lang);
+            if (v.isMissingNode() || v.isNull()) v = node.path("en");
+            if (v.isMissingNode() || v.isNull()) v = node.path("vi");
+            return (v.isMissingNode() || v.isNull()) ? null : v.asText();
+        }
+        return node.asText(null);
+    }
+
+    // Nếu question/explanation/hints là object {vi, en, ja} → lấy đúng lang.
+    // Nếu là plain string/array (format cũ) → giữ nguyên (backward compatible).
+    private String resolveI18n(String questionData, String lang) {
+        try {
+            JsonNode root = mapper.readTree(questionData);
+            if (!root.isObject()) return questionData;
+
+            com.fasterxml.jackson.databind.node.ObjectNode out =
+                    ((com.fasterxml.jackson.databind.node.ObjectNode) root).deepCopy();
+
+            for (String field : new String[]{"question", "explanation", "hints"}) {
+                JsonNode node = root.path(field);
+                if (!node.isObject()) continue; // plain string/array → không chạm
+
+                // Lấy lang → fallback en → fallback vi
+                JsonNode resolved = node.path(lang);
+                if (resolved.isMissingNode() || resolved.isNull()) resolved = node.path("en");
+                if (resolved.isMissingNode() || resolved.isNull()) resolved = node.path("vi");
+                if (!resolved.isMissingNode() && !resolved.isNull()) out.set(field, resolved);
+            }
+
+            return mapper.writeValueAsString(out);
+        } catch (Exception e) {
+            return questionData;
+        }
     }
 
     // ───────────────────────── INNER CLASS

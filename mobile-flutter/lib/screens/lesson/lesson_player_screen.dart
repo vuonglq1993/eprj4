@@ -81,6 +81,11 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
   String? _uploadedAudioUrl;
   bool _isUploading = false;
 
+  // Countdown timer
+  Timer? _countdownTimer;
+  int _remainingSeconds = 0;
+  int _totalSeconds = 0;
+
   @override
   void initState() {
     super.initState();
@@ -89,11 +94,37 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
 
   @override
   void dispose() {
+    _countdownTimer?.cancel();
     _fillCtrl.dispose();
     _scrollCtrl.dispose();
     _audioPlayer.dispose();
     _recorderCtrl.dispose();
     super.dispose();
+  }
+
+  void _startTimer() {
+    _countdownTimer?.cancel();
+    if (_exercises.isEmpty) return;
+    final limit = _exercises[_current]['timeLimitSeconds'] as int? ?? 0;
+    if (limit <= 0) {
+      if (mounted) setState(() { _remainingSeconds = 0; _totalSeconds = 0; });
+      return;
+    }
+    if (mounted) setState(() { _remainingSeconds = limit; _totalSeconds = limit; });
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) { t.cancel(); return; }
+      setState(() => _remainingSeconds--);
+      if (_remainingSeconds <= 0) {
+        t.cancel();
+        if (!_answered && !_submitting) _submitAnswer(forceSubmit: true);
+      }
+    });
+  }
+
+  void _stopTimer() {
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
+    if (mounted) setState(() { _remainingSeconds = 0; _totalSeconds = 0; });
   }
 
 
@@ -110,6 +141,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
         _exerciseStartTime = DateTime.now();
       }
     });
+    if (list.isNotEmpty) _startTimer();
   }
 
   // ── Pairs helpers ──────────────────────────────────────────────────────────
@@ -171,8 +203,11 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
 
   // ── Submit ─────────────────────────────────────────────────────────────────
 
-  Future<void> _submitAnswer() async {
+  Future<void> _submitAnswer({bool forceSubmit = false}) async {
     if (_submitting) return;
+    if (forceSubmit && _exType == 'SPEAKING') return;
+
+    _countdownTimer?.cancel();
 
     final attempt = _attempts[_current];
     dynamic answer;
@@ -180,9 +215,10 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
     // Pairs phải check trước switch vì pairs có thể ở bất kỳ type nào
     if (_qData.containsKey('pairs')) {
       final pairs = (_qData['pairs'] as List).cast<Map<String, dynamic>>();
-      if (_leftToRight.length < pairs.length) return;
+      if (!forceSubmit && _leftToRight.length < pairs.length) return;
       answer = List.generate(pairs.length, (i) {
-        final si = _leftToRight[i] ?? 0;
+        final si = _leftToRight[i];
+        if (si == null) return '';
         return si < _shuffledRights.length ? _shuffledRights[si] : '';
       }).join('|');
       attempt.userAnswer = answer;
@@ -190,15 +226,15 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
       switch (_exType) {
         case 'MULTIPLE_CHOICE':
         case 'LISTENING_CHOICE':
-          if (_selectedOption == null) return;
-          answer = _selectedOption.toString();
-          attempt.userAnswer = _selectedOption;
+          if (!forceSubmit && _selectedOption == null) return;
+          answer = (_selectedOption ?? -1).toString();
+          attempt.userAnswer = _selectedOption ?? -1;
         case 'FILL_IN_BLANK':
-          if (_fillAnswer.trim().isEmpty) return;
+          if (!forceSubmit && _fillAnswer.trim().isEmpty) return;
           answer = _fillAnswer.trim();
           attempt.userAnswer = _fillAnswer.trim();
         case 'TRANSLATION':
-          if (_fillAnswer.trim().isEmpty) return;
+          if (!forceSubmit && _fillAnswer.trim().isEmpty) return;
           answer = _fillAnswer.trim();
           attempt.userAnswer = _fillAnswer.trim();
         case 'SPEAKING':
@@ -264,6 +300,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
 
   void _next() {
     _audioPlayer.stop();
+    _stopTimer();
     if (_current < _exercises.length - 1) {
       setState(() {
         _current++;
@@ -283,6 +320,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
         _isUploading = false;
         _isPlaying = false;
       });
+      _startTimer();
       _scrollCtrl.animateTo(0,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic);
@@ -308,6 +346,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
           lessonTitle: widget.lessonTitle,
           lessonType: widget.lessonType,
           attempts: _attempts,
+          courseId: widget.courseId,
         ),
         transitionDuration: const Duration(milliseconds: 400),
         reverseTransitionDuration: const Duration(milliseconds: 250),
@@ -394,9 +433,20 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
 
   Widget _buildTopBar() {
     final progress = (_current + 1) / _exercises.length;
+    final showTimer = _totalSeconds > 0 && !_answered;
+    final timerRatio = _totalSeconds > 0 ? (_remainingSeconds / _totalSeconds).clamp(0.0, 1.0) : 0.0;
+    final isUrgent  = _remainingSeconds <= 5;
+    final isWarning = _remainingSeconds <= 10;
+    final timerColor = isUrgent
+        ? AppColors.error
+        : isWarning
+            ? AppColors.warning
+            : AppColors.success;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 20, 8),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -447,6 +497,36 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
               ),
             ],
           ),
+          if (showTimer) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: LinearProgressIndicator(
+                      value: timerRatio,
+                      backgroundColor: AppColors.surface,
+                      color: timerColor,
+                      minHeight: 3,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: timerColor,
+                  ),
+                  child: Text('${_remainingSeconds}s'),
+                ),
+                const SizedBox(width: 20),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -500,7 +580,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
   }
 
   Future<void> _playListeningAudio() async {
-    final audioUrl = _exercises[_current]['audioUrl'] as String?;
+    final audioUrl = _qData['audioUrl'] as String?;
     if (audioUrl == null || audioUrl.isEmpty) return;
 
     if (_isPlaying) {
@@ -526,7 +606,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
     final question = _qData['question'] as String? ?? '';
     final options = (_qData['options'] as List?)?.cast<String>() ?? [];
     final correctIndex = _resolveCorrectIndex(_qData);
-    final audioUrl = _exercises[_current]['audioUrl'] as String?;
+    final audioUrl = _qData['audioUrl'] as String?;
     final isListening = _exType == 'LISTENING_CHOICE';
 
     return Column(

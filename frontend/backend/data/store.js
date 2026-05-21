@@ -72,7 +72,6 @@ const learningPaths = [
     languageId: 'lang1',
     languageName: 'English',
     targetLevel: 'BEGINNER',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400',
     isPublished: true,
     totalCourses: 5,
     creatorId: 'u2',
@@ -83,7 +82,6 @@ const learningPaths = [
     languageId: 'lang2',
     languageName: 'Japanese',
     targetLevel: 'BEGINNER',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1528164344705-47542687000d?w=400',
     isPublished: true,
     totalCourses: 6,
     creatorId: 'u2',
@@ -94,7 +92,6 @@ const learningPaths = [
     languageId: 'lang3',
     languageName: 'Korean',
     targetLevel: 'INTERMEDIATE',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=400',
     isPublished: true,
     totalCourses: 4,
     creatorId: 'u2',
@@ -105,25 +102,24 @@ const learningPaths = [
     languageId: 'lang1',
     languageName: 'English',
     targetLevel: 'ADVANCED',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
     isPublished: true,
     totalCourses: 7,
     creatorId: 'u2',
   }),
-  m('lp5', { title: 'Spanish Travel Essentials', description: 'Essential Spanish phrases for traveling in Spanish-speaking countries.', languageId: 'lang6', languageName: 'Spanish', targetLevel: 'BEGINNER', thumbnailUrl: null, isPublished: false, totalCourses: 3, creatorId: 'u2' }),
+  m('lp5', { title: 'Spanish Travel Essentials', description: 'Essential Spanish phrases for traveling in Spanish-speaking countries.', languageId: 'lang6', languageName: 'Spanish', targetLevel: 'BEGINNER', isPublished: false, totalCourses: 3, creatorId: 'u2' }),
 ];
 
 // ======================
 // COURSES
 // ======================
 const courses = [
-  m('c1', { title: 'English Alphabet & Pronunciation', description: 'Learn the English alphabet and correct pronunciation of each letter.', languageId: 'lang1', topicId: 't4', targetLevel: 'BEGINNER', isPublished: true, price: 0, thumbnailUrl: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400', creatorId: 'u2', durationMinutes: 60, lessonsCount: 10 }),
-  m('c2', { title: 'Basic English Grammar', description: 'Understand sentence structure, tenses, and common grammar patterns.', languageId: 'lang1', topicId: 't1', targetLevel: 'BEGINNER', isPublished: true, price: 0, thumbnailUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400', creatorId: 'u2', durationMinutes: 120, lessonsCount: 15 }),
-  m('c3', { title: 'Everyday English Conversations', description: 'Practice common dialogues for daily situations.', languageId: 'lang1', topicId: 't3', targetLevel: 'BEGINNER', isPublished: true, price: 99000, thumbnailUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400', creatorId: 'u2', durationMinutes: 90, lessonsCount: 12 }),
-  m('c4', { title: 'Hiragana Master', description: 'Learn all 46 hiragana characters with writing practice.', languageId: 'lang2', topicId: 't1', targetLevel: 'BEGINNER', isPublished: true, price: 0, thumbnailUrl: 'https://images.unsplash.com/photo-1528164344705-47542687000d?w=400', creatorId: 'u2', durationMinutes: 90, lessonsCount: 10 }),
-  m('c5', { title: 'Katakana for Beginners', description: 'Master katakana for reading loanwords and foreign names.', languageId: 'lang2', topicId: 't1', targetLevel: 'BEGINNER', isPublished: true, price: 0, thumbnailUrl: null, creatorId: 'u2', durationMinutes: 75, lessonsCount: 8 }),
-  m('c6', { title: 'Korean K-Pop Vocabulary', description: 'Learn Korean through K-pop songs and idol interviews.', languageId: 'lang3', topicId: 't2', targetLevel: 'INTERMEDIATE', isPublished: true, price: 149000, thumbnailUrl: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=400', creatorId: 'u2', durationMinutes: 80, lessonsCount: 10 }),
-  m('c7', { title: 'Business Email Writing', description: 'Write professional emails in English with confidence.', languageId: 'lang1', topicId: 't6', targetLevel: 'ADVANCED', isPublished: true, price: 199000, thumbnailUrl: null, creatorId: 'u2', durationMinutes: 100, lessonsCount: 12 }),
+  m('c1', { title: 'English Alphabet & Pronunciation', description: 'Learn the English alphabet and correct pronunciation of each letter.', languageId: 'lang1', topicId: 't4', targetLevel: 'BEGINNER', isPublished: true, price: 0, creatorId: 'u2', durationMinutes: 60, lessonsCount: 10 }),
+  m('c2', { title: 'Basic English Grammar', description: 'Understand sentence structure, tenses, and common grammar patterns.', languageId: 'lang1', topicId: 't1', targetLevel: 'BEGINNER', isPublished: true, price: 0, creatorId: 'u2', durationMinutes: 120, lessonsCount: 15 }),
+  m('c3', { title: 'Everyday English Conversations', description: 'Practice common dialogues for daily situations.', languageId: 'lang1', topicId: 't3', targetLevel: 'BEGINNER', isPublished: true, price: 99000, creatorId: 'u2', durationMinutes: 90, lessonsCount: 12 }),
+  m('c4', { title: 'Hiragana Master', description: 'Learn all 46 hiragana characters with writing practice.', languageId: 'lang2', topicId: 't1', targetLevel: 'BEGINNER', isPublished: true, price: 0, creatorId: 'u2', durationMinutes: 90, lessonsCount: 10 }),
+  m('c5', { title: 'Katakana for Beginners', description: 'Master katakana for reading loanwords and foreign names.', languageId: 'lang2', topicId: 't1', targetLevel: 'BEGINNER', isPublished: true, price: 0, creatorId: 'u2', durationMinutes: 75, lessonsCount: 8 }),
+  m('c6', { title: 'Korean K-Pop Vocabulary', description: 'Learn Korean through K-pop songs and idol interviews.', languageId: 'lang3', topicId: 't2', targetLevel: 'INTERMEDIATE', isPublished: true, price: 149000, creatorId: 'u2', durationMinutes: 80, lessonsCount: 10 }),
+  m('c7', { title: 'Business Email Writing', description: 'Write professional emails in English with confidence.', languageId: 'lang1', topicId: 't6', targetLevel: 'ADVANCED', isPublished: true, price: 199000, creatorId: 'u2', durationMinutes: 100, lessonsCount: 12 }),
 ];
 
 // ======================
@@ -202,6 +198,39 @@ const enrollments = [
 ];
 
 // ======================
+// RECORDINGS (audio records for exercises)
+// ======================
+const recordings = [
+  m('rec1', {
+    audioUrl: '/uploads/records/sample_recording_1.mp3',
+    title: 'Alphabet Pronunciation Practice',
+    userId: 'u2',
+    exerciseId: 'ex1',
+    transcript: null,
+    score: 85,
+    isCorrect: true,
+  }),
+  m('rec2', {
+    audioUrl: '/uploads/records/sample_recording_2.mp3',
+    title: 'Fill in the Blank Attempt',
+    userId: 'u2',
+    exerciseId: 'ex2',
+    transcript: null,
+    score: 70,
+    isCorrect: false,
+  }),
+  m('rec3', {
+    audioUrl: '/uploads/records/sample_recording_3.mp3',
+    title: 'Vowel Sounds Practice',
+    userId: 'u2',
+    exerciseId: 'ex3',
+    transcript: null,
+    score: 90,
+    isCorrect: true,
+  }),
+];
+
+// ======================
 // STORE (in-memory)
 // ======================
 const store = {
@@ -219,6 +248,7 @@ const store = {
   progress: [...progress],
   onboardingData: { ...onboardingData },
   enrollments: [...enrollments],
+  recordings: [...recordings],
 };
 
 module.exports = store;

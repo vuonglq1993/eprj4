@@ -17,8 +17,8 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
   AiRecommendResult? _result;
   String? _error;
 
-  // Context fetched from dashboard
   Map<String, dynamic>? _dashboard;
+  List<Map<String, dynamic>> _learningPaths = [];
 
   @override
   void initState() {
@@ -33,12 +33,19 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
       _error = null;
     });
 
-    _dashboard = await LearningService.getDashboard();
+    final results = await Future.wait([
+      LearningService.getDashboard().then((v) => v as Object?),
+      LearningService.getMyLearningPaths().then((v) => v as Object?),
+    ]);
+
+    _dashboard = results[0] as Map<String, dynamic>?;
+    _learningPaths = (results[1] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
     if (!mounted) return;
 
     final res = await AiService.getRecommendations(
       dashboard: _dashboard,
+      learningPaths: _learningPaths,
     );
 
     if (!mounted) return;
@@ -237,11 +244,9 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
           const SizedBox(height: 16),
         ],
 
-        // Focus skills
-        if (r.focusSkills.isNotEmpty) ...[
-          _buildFocusSkillsCard(r.focusSkills),
-          const SizedBox(height: 16),
-        ],
+        // All skills overview
+        _buildAllSkillsCard(r.focusSkills),
+        const SizedBox(height: 16),
 
         // Recommended lessons
         if (r.lessons.isNotEmpty) ...[
@@ -370,15 +375,24 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
     );
   }
 
-  Widget _buildFocusSkillsCard(List<String> skills) {
+  Widget _buildAllSkillsCard(List<String> focusSkills) {
+    final skillOrder = ['Listening', 'Speaking', 'Reading', 'Writing', 'Vocabulary', 'Grammar'];
     final skillMeta = {
-      'Listening': (Icons.headphones_rounded, AppColors.listening),
-      'Speaking': (Icons.mic_rounded, AppColors.success),
-      'Reading': (Icons.chrome_reader_mode_rounded, AppColors.reading),
-      'Writing': (Icons.draw_rounded, AppColors.warning),
-      'Vocabulary': (Icons.menu_book_rounded, AppColors.vocabulary),
-      'Grammar': (Icons.spellcheck_rounded, AppColors.grammar),
+      'Listening':  (Icons.headphones_rounded,          AppColors.listening),
+      'Speaking':   (Icons.mic_rounded,                 AppColors.success),
+      'Reading':    (Icons.chrome_reader_mode_rounded,  AppColors.reading),
+      'Writing':    (Icons.draw_rounded,                AppColors.warning),
+      'Vocabulary': (Icons.menu_book_rounded,           AppColors.vocabulary),
+      'Grammar':    (Icons.spellcheck_rounded,          AppColors.grammar),
     };
+
+    final skillsRaw = _dashboard?['skills'] as Map<String, dynamic>?;
+
+    double _score(String skill) {
+      final key = skill.toLowerCase();
+      final val = skillsRaw?[key] as Map<String, dynamic>?;
+      return (val?['averageScore'] as num?)?.toDouble() ?? 0.0;
+    }
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -392,47 +406,92 @@ class _AiRecommendScreenState extends State<AiRecommendScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.track_changes_rounded,
-                  size: 13, color: AppColors.error),
+              const Icon(Icons.bar_chart_rounded, size: 13, color: AppColors.primary),
               const SizedBox(width: 6),
               Text(context.l10n.skillsToFocus,
                   style: const TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.error)),
+                      color: AppColors.textPrimary)),
+              const Spacer(),
+              if (focusSkills.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.track_changes_rounded, size: 10, color: AppColors.error),
+                      const SizedBox(width: 4),
+                      Text(context.l10n.skillsToFocus,
+                          style: const TextStyle(fontSize: 10, color: AppColors.error)),
+                    ],
+                  ),
+                ),
             ],
           ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: skills.map((s) {
-              final meta = skillMeta[s] ??
-                  (Icons.school_rounded, AppColors.primaryLight);
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: meta.$2.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                      color: meta.$2.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(meta.$1, size: 13, color: meta.$2),
-                    const SizedBox(width: 5),
-                    Text(s,
+          const SizedBox(height: 12),
+          ...skillOrder.map((skill) {
+            final meta = skillMeta[skill]!;
+            final score = _score(skill);
+            final isFocus = focusSkills.contains(skill);
+            final color = isFocus ? AppColors.error : meta.$2;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28, height: 28,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(meta.$1, size: 14, color: color),
+                  ),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    width: 72,
+                    child: Text(skill,
                         style: TextStyle(
                             fontSize: 12,
-                            color: meta.$2,
-                            fontWeight: FontWeight.w500)),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
+                            fontWeight: isFocus ? FontWeight.w700 : FontWeight.w500,
+                            color: isFocus ? AppColors.error : AppColors.textPrimary)),
+                  ),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: score / 100,
+                        minHeight: 6,
+                        backgroundColor: AppColors.border,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          isFocus ? AppColors.error : color,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 36,
+                    child: Text('${score.toStringAsFixed(0)}%',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isFocus ? AppColors.error : AppColors.textSecondary)),
+                  ),
+                  if (isFocus)
+                    const Padding(
+                      padding: EdgeInsets.only(left: 4),
+                      child: Icon(Icons.flag_rounded, size: 12, color: AppColors.error),
+                    ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );

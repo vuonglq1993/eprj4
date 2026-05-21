@@ -33,17 +33,17 @@ class _ProfileTabState extends State<ProfileTab> {
 
   Future<void> _load() async {
     final results = await Future.wait([
-      ApiService.getProfile(),
-      GameService.getProfile(),
-      GameService.getStreak(),
-      ApiService.getOnboardingMe(),
+      ApiService.getProfile().catchError((_) => null),
+      GameService.getProfile().catchError((_) => null),
+      GameService.getStreak().catchError((_) => null),
+      ApiService.getOnboardingMe().catchError((_) => null),
     ]);
     if (mounted) {
       setState(() {
-        _user = results[0];
-        _gameProfile = results[1];
-        _streak = results[2];
-        _onboarding = results[3];
+        _user        = results[0] as Map<String, dynamic>?;
+        _gameProfile = results[1] as Map<String, dynamic>?;
+        _streak      = results[2] as Map<String, dynamic>?;
+        _onboarding  = results[3] as Map<String, dynamic>?;
         _loading = false;
       });
     }
@@ -83,7 +83,7 @@ class _ProfileTabState extends State<ProfileTab> {
   bool get _isPremium => _user?['isPremium'] == true;
   String get _plan => _user?['subscriptionPlan'] as String? ?? 'FREE';
 
-  int get _currentStreak => _streak?['currentStreak'] as int? ?? 0;
+  int get _longestStreak => _streak?['longestStreak'] as int? ?? 0;
   int get _totalDays => (_streak?['studyDates'] as List?)?.length ?? 0;
   int get _badgeCount => (_gameProfile?['badges'] as List?)?.length ?? 0;
 
@@ -199,15 +199,14 @@ class _ProfileTabState extends State<ProfileTab> {
                 child: TappableScale(
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditProfileScreen(user: _user ?? {}))).then((updated) { if (updated == true) _load(); }),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.border),
-                      boxShadow: AppShadows.subtle,
+                      boxShadow: AppShadows.primaryGlowSoft,
                     ),
-                    child: const Text('Sửa hồ sơ',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                    child: Text(context.l10n.editProfile,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
                   ),
                 ),
               ),
@@ -232,19 +231,18 @@ class _ProfileTabState extends State<ProfileTab> {
           ],
           const SizedBox(height: 10),
           // Badges row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
             children: [
               if (_isPremium)
-                _badge('Pro Member', AppGradients.primaryIcon, Colors.white),
-              if (_isPremium) const SizedBox(width: 8),
+                _badge(context.l10n.proMember, AppGradients.primaryIcon, Colors.white),
               _badgeSolid('Level $level', AppColors.warning.withValues(alpha: 0.2),
                   AppColors.warning),
-              if (_langDisplay.isNotEmpty) ...[
-                const SizedBox(width: 8),
+              if (_langDisplay.isNotEmpty)
                 _badgeSolid(_langDisplay, AppColors.surface, AppColors.textSecondary,
                     border: AppColors.border),
-              ],
             ],
           ),
         ],
@@ -278,9 +276,9 @@ class _ProfileTabState extends State<ProfileTab> {
 
     return Row(
       children: [
-        _statBox('$_totalDays', 'Ngày học', null),
+        _statBox('$_totalDays', context.l10n.studyDays, null),
         _divider(),
-        _statBox('🔥 $_currentStreak', 'Streak', null),
+        _statBox('🏆 $_longestStreak', context.l10n.bestStreak, null),
         _divider(),
         _statBox(_fmtXp(totalXp), 'Tổng XP', AppColors.primary),
       ],
@@ -316,20 +314,20 @@ class _ProfileTabState extends State<ProfileTab> {
       child: Column(
         children: [
           _menuItem(Icons.person_rounded, const Color(0xFF7C5CBF),
-              'Chỉnh sửa hồ sơ', null,
+              context.l10n.editProfile, null,
               () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditProfileScreen(user: _user ?? {}))).then((updated) { if (updated == true) _load(); })),
           _menuDivider(),
           _menuItem(Icons.route_rounded, AppColors.primary,
-              'Lộ trình & ngôn ngữ', null,
+              context.l10n.pathAndLanguage, null,
               () => _push(const StreakScreen())),
           _menuDivider(),
           _menuItem(Icons.star_rounded, AppColors.warning,
-              'Huy hiệu & thành tích', '$_badgeCount huy hiệu',
+              context.l10n.badgesAchievements, '${context.l10n.badges}: $_badgeCount',
               () => _push(const BadgesScreen())),
           _menuDivider(),
           _menuItem(Icons.card_membership_rounded, const Color(0xFF2563EB),
-              'Subscription & Billing',
-              _isPremium ? _plan.replaceAll('_', ' ').toLowerCase().capitalize() : 'Free',
+              context.l10n.subscriptionBilling,
+              _isPremium ? _plan.replaceAll('_', ' ').toLowerCase().capitalize() : context.l10n.free,
               () => _push(_isPremium ? const SubscriptionScreen() : const PlanSelectionScreen())),
         ],
       ),

@@ -1,131 +1,50 @@
-import { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import {
-  MdHome,
-  MdPages,
-  MdExpandMore,
-  MdExpandLess,
-  MdLogout,
+  MdDashboard,
   MdLanguage,
-  MdSchool,
-  MdStorage,
   MdRoute,
   MdCategory,
-  MdConfirmationNumber,
-  MdAssessment,
-  MdEmojiEvents,
+  MdSchool,
+  MdMenuBook,
+  MdAssignment,
+  MdPeople,
+  MdCardMembership,
+  MdPayment,
+  MdLeaderboard,
   MdNotifications,
+  MdSettings,
+  MdLogout,
 } from 'react-icons/md'
 import { useAuth } from '../../contexts/AuthContext'
 
 const menuConfig = [
-  {
-    id: 'home',
-    label: 'Home',
-    icon: MdHome,
-    children: [
-      { id: 'dashboard', label: 'Dashboard', path: '/' },
-    ],
-  },
-  {
-    id: 'languages',
-    label: 'Languages',
-    icon: MdLanguage,
-    children: [
-      { id: 'language-list', label: 'Languages', path: '/languages' },
-    ],
-  },
-  {
-    id: 'courses',
-    label: 'Courses',
-    icon: MdSchool,
-    children: [
-      { id: 'course-list', label: 'Courses', path: '/courses' },
-      { id: 'lesson-list', label: 'Lessons', path: '/lessons' },
-      { id: 'exercise-list', label: 'Exercises', path: '/exercises' },
-    ],
-  },
-  {
-    id: 'db-tables',
-    label: 'Data Tables',
-    icon: MdStorage,
-    children: [
-      { id: 'tbl-payment-transactions', label: 'payment_transactions', path: '/data/payment-transactions' },
-    ],
-  },
-  {
-    id: 'learning-paths',
-    label: 'Learning Paths',
-    icon: MdRoute,
-    children: [
-      { id: 'learning-paths-list', label: 'All Paths', path: '/learning-paths' },
-    ],
-  },
-  {
-    id: 'topics',
-    label: 'Topics',
-    icon: MdCategory,
-    children: [
-      { id: 'topics-list', label: 'All Topics', path: '/topics' },
-    ],
-  },
-  {
-    id: 'admin-plans',
-    label: 'Subscription Plans',
-    icon: MdConfirmationNumber,
-    children: [
-      { id: 'admin-plans-list', label: 'Manage Plans', path: '/admin/subscription-plans' },
-    ],
-  },
-  {
-    id: 'admin-users',
-    label: 'User Management',
-    icon: MdAssessment,
-    children: [
-      { id: 'admin-users-list', label: 'User Management', path: '/admin/users' },
-    ],
-  },
-  {
-    id: 'notifications',
-    label: 'Notifications',
-    icon: MdNotifications,
-    children: [
-      { id: 'notification-list', label: 'Send Notifications', path: '/admin/notifications' },
-    ],
-  },
-  {
-    id: 'reports',
-    label: 'Reports',
-    icon: MdAssessment,
-    children: [
-      { id: 'weekly-report', label: 'Weekly Report', path: '/reports/weekly' },
-      { id: 'review-mistakes', label: 'Review Mistakes', path: '/reviews/mistakes' },
-    ],
-  },
-  {
-    id: 'gamification',
-    label: 'Achievements',
-    icon: MdEmojiEvents,
-    children: [
-      { id: 'game-profile', label: 'My Profile', path: '/game/profile' },
-      { id: 'leaderboard', label: 'Leaderboard', path: '/game/leaderboard' },
-    ],
-  },
-  {
-    id: 'pages',
-    label: 'Pages',
-    icon: MdPages,
-    children: [
-      { id: 'setting', label: 'Setting', path: '/setting' },
-    ],
-  },
+  { id: 'dashboard',      label: 'Dashboard',      icon: MdDashboard,      path: '/' },
+
+  { id: 'div-content',    label: 'Nội dung',        type: 'divider' },
+  { id: 'languages',      label: 'Ngôn ngữ',        icon: MdLanguage,       path: '/languages' },
+  { id: 'learning-paths', label: 'Lộ trình học',    icon: MdRoute,          path: '/learning-paths' },
+  { id: 'topics',         label: 'Chủ đề',          icon: MdCategory,       path: '/topics' },
+  { id: 'courses',        label: 'Khoá học',        icon: MdSchool,         path: '/courses' },
+  { id: 'lessons',        label: 'Bài học',         icon: MdMenuBook,       path: '/lessons' },
+  { id: 'exercises',      label: 'Bài tập',         icon: MdAssignment,     path: '/exercises' },
+
+  { id: 'div-admin',      label: 'Quản lý',         type: 'divider' },
+  { id: 'users',          label: 'Người dùng',      icon: MdPeople,         path: '/admin/users' },
+  { id: 'subscriptions',  label: 'Gói đăng ký',     icon: MdCardMembership, path: '/admin/subscription-plans' },
+  { id: 'transactions',   label: 'Giao dịch',       icon: MdPayment,        path: '/data/payment-transactions' },
+
+  { id: 'div-community',  label: 'Cộng đồng',       type: 'divider' },
+  { id: 'leaderboard',    label: 'Bảng xếp hạng',   icon: MdLeaderboard,    path: '/game/leaderboard' },
+
+  { id: 'div-system',     label: 'Hệ thống',        type: 'divider' },
+  { id: 'notifications',  label: 'Thông báo',       icon: MdNotifications,  path: '/admin/notifications' },
+  { id: 'settings',       label: 'Cài đặt',         icon: MdSettings,       path: '/setting' },
 ]
 
 function Sidebar({ onNavigate }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { logout } = useAuth()
-  const [expandedIds, setExpandedIds] = useState(new Set(['home', 'languages', 'courses', 'db-tables', 'pages', 'learning-paths', 'topics', 'admin-plans', 'gamification', 'reports', 'notifications']))
 
   const handleLogout = () => {
     onNavigate?.()
@@ -133,77 +52,38 @@ function Sidebar({ onNavigate }) {
     navigate('/login', { replace: true })
   }
 
-  const toggle = (id) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
-  const hasChildren = (item) => item.children && item.children.length > 0
-  const isExpanded = (id) => expandedIds.has(id)
-
-  const renderItem = (item, depth = 0) => {
-    const Icon = item.icon
-    const isParent = hasChildren(item)
-    const expanded = isParent && isExpanded(item.id)
-    const hasPath = !!item.path
-    const isActive = hasPath && location.pathname === item.path
-
-    const depthClass = depth === 1 ? 'sidebar__nav-item--depth-1' : depth === 2 ? 'sidebar__nav-item--depth-2' : depth >= 3 ? 'sidebar__nav-item--depth-3' : ''
-    const baseClass = `sidebar__nav-item ${depth > 0 ? 'sidebar__nav-item--child' : ''} ${depthClass} ${isActive ? 'sidebar__nav-item--active' : ''}`
-
-    const content = (
-      <>
-        {Icon && <Icon className="sidebar__nav-icon" aria-hidden />}
-        <span className="sidebar__nav-label">{item.label}</span>
-        {isParent && (
-          <span className="sidebar__nav-chevron" aria-hidden>
-            {expanded ? <MdExpandLess /> : <MdExpandMore />}
-          </span>
-        )}
-      </>
-    )
-
-    return (
-      <div key={item.id} className="sidebar__group">
-        {hasPath ? (
-          <Link to={item.path} className={baseClass} onClick={() => { window.scrollTo(0, 0); onNavigate?.() }}>
-            {content}
-          </Link>
-        ) : (
-          <button
-            type="button"
-            className={baseClass}
-            onClick={() => isParent && toggle(item.id)}
-            data-depth={depth}
-            aria-expanded={isParent ? expanded : undefined}
-            aria-haspopup={isParent ? 'menu' : undefined}
-          >
-            {content}
-          </button>
-        )}
-
-        {isParent && expanded && (
-          <div className="sidebar__children">
-            {item.children.map((child) => renderItem(child, depth + 1))}
-          </div>
-        )}
-      </div>
-    )
-  }
-
   return (
     <aside className="sidebar">
       <div className="sidebar__logo">
         <div className="sidebar__logo-mark">M</div>
-        <span className="sidebar__logo-text">Dashboard</span>
+        <span className="sidebar__logo-text">Admin</span>
       </div>
 
       <nav className="sidebar__nav" aria-label="Main navigation">
-        {menuConfig.map((item) => renderItem(item))}
+        {menuConfig.map((item) => {
+          if (item.type === 'divider') {
+            return (
+              <div key={item.id} className="sidebar__section-label">
+                {item.label}
+              </div>
+            )
+          }
+
+          const Icon = item.icon
+          const isActive = location.pathname === item.path
+
+          return (
+            <Link
+              key={item.id}
+              to={item.path}
+              className={`sidebar__nav-item ${isActive ? 'sidebar__nav-item--active' : ''}`}
+              onClick={() => { window.scrollTo(0, 0); onNavigate?.() }}
+            >
+              <Icon className="sidebar__nav-icon" aria-hidden />
+              <span className="sidebar__nav-label">{item.label}</span>
+            </Link>
+          )
+        })}
       </nav>
 
       <div className="sidebar__footer">

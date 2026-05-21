@@ -31,6 +31,7 @@ public class ProgressService {
     private final CourseRepository courseRepo;
     private final UserRepository userRepo;
     private final LessonRepository lessonRepo;
+    private final ExerciseRepository exerciseRepo;
 
     // ================= PLAN =================
     private Subscription.Plan getPlan(UserPrincipal p) {
@@ -101,7 +102,7 @@ public class ProgressService {
                     int pct = calcProgress(uid, c, plan);
 
                     double avg = e.getValue().stream()
-                            .mapToInt(UserProgress::getBestScore).average().orElse(0);
+                            .mapToDouble(this::normalizedScore).average().orElse(0);
                     System.out.println(">>> USER: " + uid);
                     System.out.println(">>> TIERS: " + tiers);
                     Page<Lesson> np = progressRepo.nextAccessibleLesson(
@@ -114,7 +115,6 @@ public class ProgressService {
                             .courseId(e.getKey())
                             .courseTitle(c.getTitle())
                             .languageName(c.getLanguage().getName())
-                            .thumbnailUrl(c.getThumbnailUrl())
                             .totalLessons(c.getTotalLessons())
                             .completedLessons((int) e.getValue().stream()
                                     .filter(pr -> pr.getStatus() == ProgressStatus.COMPLETED).count())
@@ -124,6 +124,7 @@ public class ProgressService {
                             .nextLessonTitle(next != null ? next.getTitle() : null)
                             .build();
                 })
+                .filter(s -> s.getProgressPercent() < 100)
                 .sorted(Comparator.comparingInt(CourseProgressSummary::getProgressPercent).reversed())
                 .limit(5)
                 .collect(Collectors.toList());
@@ -198,7 +199,7 @@ public class ProgressService {
         User user = userRepo.findById(uid).orElseThrow(() -> new NotFoundException("User not found"));
 
         double avg = progressRepo.findByUserIdAndCourseId(uid, courseId)
-                .stream().mapToInt(UserProgress::getBestScore).average().orElse(0);
+                .stream().mapToDouble(this::normalizedScore).average().orElse(0);
 
         Instant completedAt = progressRepo.findByUserIdAndCourseId(uid, courseId)
                 .stream().map(UserProgress::getCompletedAt)
@@ -212,7 +213,7 @@ public class ProgressService {
                 .languageName(c.getLanguage().getName())
                 .userName(user.getFullName())
                 .finalScore(round(avg))
-                .cefrLevel(toCefr((int) avg))
+                .cefrLevel(courseToCefr(c.getLevel()))
                 .completedAt(completedAt)
                 .certificateCode("LN-" + uid.toString().substring(0, 6).toUpperCase())
                 .build();
@@ -303,7 +304,20 @@ public class ProgressService {
         return Math.round(v * 10.0) / 10.0;
     }
 
-    private String toCefr(int s) {
-        return s >= 90 ? "C1" : s >= 75 ? "B2" : s >= 60 ? "B1" : s >= 45 ? "A2" : "A1";
+    private double normalizedScore(UserProgress pr) {
+        int total = exerciseRepo.sumPointsByLessonId(pr.getLesson().getId());
+        return total > 0 ? pr.getBestScore() * 100.0 / total : 0;
     }
+
+    private String courseToCefr(Course.Level level) {
+        if (level == null) return "A1";
+        return switch (level) {
+            case BEGINNER -> "A1";
+            case ELEMENTARY -> "A2";
+            case INTERMEDIATE -> "B1";
+            case UPPER_INTERMEDIATE -> "B2";
+            case ADVANCED -> "C1";
+        };
+    }
+
 }
