@@ -5,46 +5,10 @@ import { FaBook, FaStar } from 'react-icons/fa6';
 import { getCourses, createCourse, updateCourse, publishCourse, deleteCourse } from '../services/courseService';
 import { getLanguages } from '../services/languageService';
 import { isAdmin } from '../utils/roleUtils';
-import { CourseThumbnailPlaceholder } from '../components/courses/CourseThumbnailPlaceholder';
 
 const LEVELS = ['BEGINNER', 'ELEMENTARY', 'INTERMEDIATE', 'UPPER_INTERMEDIATE', 'ADVANCED'];
 
-const EMPTY_FORM = { title: '', description: '', languageId: '', level: 'BEGINNER', thumbnailUrl: '', isPublished: false };
-
-/** Độ dài tối đa cho URL ảnh — chuỗi base64 trong ô URL sẽ vượt và làm request lỗi. */
-const THUMBNAIL_URL_MAX_LEN = 2048;
-
-/**
- * Chỉ chấp nhận link http(s) ngắn; từ chối data: (base64) và URL quá dài.
- * @returns {{ ok: true, value: string } | { ok: false, message: string }}
- */
-function validateThumbnailUrl(raw) {
-  const t = (raw || '').trim();
-  if (!t) return { ok: true, value: '' };
-  if (/^data:/i.test(t)) {
-    return {
-      ok: false,
-      message:
-        'Không dùng ảnh dạng base64 (data:image/…) trong ô này — chuỗi quá dài, server thường báo lỗi. Hãy tải ảnh lên host (Imgur, Cloudinary, …) rồi dán link https://…',
-    };
-  }
-  if (t.length > THUMBNAIL_URL_MAX_LEN) {
-    return {
-      ok: false,
-      message: `Link ảnh quá dài (tối đa ${THUMBNAIL_URL_MAX_LEN} ký tự). Base64 trong ô URL không phù hợp — chỉ dùng link https ngắn.`,
-    };
-  }
-  let parsed;
-  try {
-    parsed = new URL(t);
-  } catch {
-    return { ok: false, message: 'Thumbnail phải là URL hợp lệ, ví dụ https://example.com/image.jpg' };
-  }
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    return { ok: false, message: 'Chỉ chấp nhận link http hoặc https.' };
-  }
-  return { ok: true, value: t };
-}
+const EMPTY_FORM = { title: '', description: '', languageId: '', level: 'BEGINNER', isPublished: false };
 
 function formatSaveError(err) {
   const status = err.response?.status;
@@ -79,7 +43,6 @@ const CourseList = () => {
   const [languages, setLanguages] = useState([]);
   const [saving, setSaving] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
-  const [thumbnailFieldError, setThumbnailFieldError] = useState('');
   const [formErrors, setFormErrors] = useState({});
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -119,7 +82,6 @@ const CourseList = () => {
   const openCreate = () => {
     setEditId(null);
     setForm(EMPTY_FORM);
-    setThumbnailFieldError('');
     setFormErrors({});
     setShowModal(true);
   };
@@ -135,10 +97,8 @@ const CourseList = () => {
       description: course.description || '',
       languageId: matchedLang?.id || '',
       level: course.level || 'BEGINNER',
-      thumbnailUrl: course.thumbnailUrl || '',
       isPublished: course.isPublished ?? false,
     });
-    setThumbnailFieldError('');
     setFormErrors({});
     setShowModal(true);
   };
@@ -175,13 +135,7 @@ const CourseList = () => {
     if (!form.languageId) errs.languageId = 'Vui lòng chọn ngôn ngữ.';
     if (Object.keys(errs).length) { setFormErrors(errs); return; }
     setFormErrors({});
-    const thumb = validateThumbnailUrl(form.thumbnailUrl);
-    if (!thumb.ok) {
-      setThumbnailFieldError(thumb.message);
-      return;
-    }
-    setThumbnailFieldError('');
-    const payload = { ...form, thumbnailUrl: thumb.value };
+    const payload = { ...form };
     setSaving(true);
     try {
       if (editId) {
@@ -226,13 +180,6 @@ const CourseList = () => {
             <div className="cl-grid">
               {courses.map((course) => (
                 <div key={course.id} className="cl-card shadow-sm">
-                  <div className="cl-card-img">
-                    {course.thumbnailUrl ? (
-                      <img src={course.thumbnailUrl} alt={course.title} />
-                    ) : (
-                      <CourseThumbnailPlaceholder />
-                    )}
-                  </div>
                   <div className="cl-card-body">
                     <div className="d-flex justify-content-between align-items-start mb-2">
                       <div>
@@ -355,28 +302,6 @@ const CourseList = () => {
                         <select className="form-select" value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value })}>
                           {LEVELS.map((l) => <option key={l} value={l}>{levelLabel(l)}</option>)}
                         </select>
-                      </div>
-                      <div className="col-md-6 mb-2">
-                        <label className="form-label small fw-semibold">Thumbnail URL</label>
-                        <input
-                          type="text"
-                          inputMode="url"
-                          autoComplete="off"
-                          className={`form-control ${thumbnailFieldError ? 'is-invalid' : ''}`}
-                          value={form.thumbnailUrl}
-                          onChange={(e) => {
-                            setThumbnailFieldError('');
-                            setForm({ ...form, thumbnailUrl: e.target.value });
-                          }}
-                          placeholder="https://…"
-                        />
-                        {thumbnailFieldError ? (
-                          <div className="invalid-feedback d-block">{thumbnailFieldError}</div>
-                        ) : (
-                          <small className="text-muted">
-                            Chỉ dán link ảnh công khai (https). Không dán ảnh base64 (data:image/…) — sẽ quá dài và lỗi khi lưu.
-                          </small>
-                        )}
                       </div>
                     </div>
                     <div className="form-check">

@@ -115,7 +115,6 @@ public class ProgressService {
                             .courseId(e.getKey())
                             .courseTitle(c.getTitle())
                             .languageName(c.getLanguage().getName())
-                            .thumbnailUrl(c.getThumbnailUrl())
                             .totalLessons(c.getTotalLessons())
                             .completedLessons((int) e.getValue().stream()
                                     .filter(pr -> pr.getStatus() == ProgressStatus.COMPLETED).count())
@@ -321,7 +320,4 @@ public class ProgressService {
         };
     }
 
-    private String toCefr(int s) {
-        return s >= 90 ? "C1" : s >= 75 ? "B2" : s >= 60 ? "B1" : s >= 45 ? "A2" : "A1";
-    }
 }

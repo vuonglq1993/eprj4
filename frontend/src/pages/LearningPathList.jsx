@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/learningpathlist.css';
 import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
-import { FaRoute } from 'react-icons/fa6';
 import {
   getLearningPaths,
   getLearningPath,
@@ -23,7 +22,6 @@ const EMPTY_FORM = {
   targetLevel: 'BEGINNER',
   estimatedDays: 0,
   goal: '',
-  thumbnailUrl: '',
   isPublished: false,
   courseIds: [],
 };
@@ -32,7 +30,7 @@ function levelLabel(l) {
   return l ? l.charAt(0) + l.slice(1).toLowerCase() : 'Beginner';
 }
 function getLevelClass(l) {
-  const m = { BEGINNER: 'beginner', INTERMEDIATE: 'intermediate', ADVANCED: 'advanced' };
+  const m = { BEGINNER: 'beginner', ELEMENTARY: 'beginner', INTERMEDIATE: 'intermediate', UPPER_INTERMEDIATE: 'intermediate', ADVANCED: 'advanced' };
   return m[l] || 'beginner';
 }
 
@@ -174,7 +172,6 @@ const LearningPathList = () => {
       targetLevel: p.targetLevel || 'BEGINNER',
       estimatedDays: p.estimatedHours || p.estimatedDays || 0,
       goal: p.goal || '',
-      thumbnailUrl: p.thumbnailUrl || '',
       isPublished: p.isPublished ?? false,
       courseIds,
     });
@@ -249,7 +246,6 @@ const LearningPathList = () => {
       targetLevel: form.targetLevel,
       estimatedHours: Number(form.estimatedDays),
       goal: form.goal,
-      thumbnailUrl: form.thumbnailUrl,
       isPublished: form.isPublished,
       isOfficial: false,
       steps: form.courseIds.map((courseId) => ({ courseId, note: '', isRequired: true })),
@@ -300,15 +296,6 @@ const LearningPathList = () => {
           <div className="lp-grid">
             {paths.map((p) => (
                 <div key={p.id} className="lp-card shadow-sm">
-                  <div className="lp-card-img">
-                    {p.thumbnailUrl ? (
-                      <img src={p.thumbnailUrl} alt={p.title} />
-                    ) : (
-                      <div className="lp-card-thumb-placeholder">
-                        <FaRoute size={36} style={{ color: '#94a3b8' }} />
-                      </div>
-                    )}
-                  </div>
                   <span className={`lp-badge lp-badge--${getLevelClass(p.targetLevel)}`}>
                     {levelLabel(p.targetLevel)}
                   </span>
@@ -426,7 +413,9 @@ const LearningPathList = () => {
                         <select className="form-select" value={form.targetLevel}
                           onChange={(e) => setForm({ ...form, targetLevel: e.target.value })}>
                           <option value="BEGINNER">Beginner</option>
+                          <option value="ELEMENTARY">Elementary</option>
                           <option value="INTERMEDIATE">Intermediate</option>
+                          <option value="UPPER_INTERMEDIATE">Upper Intermediate</option>
                           <option value="ADVANCED">Advanced</option>
                         </select>
                       </div>
@@ -444,11 +433,6 @@ const LearningPathList = () => {
                           onChange={(e) => setForm({ ...form, goal: e.target.value })} maxLength={300}
                           placeholder="e.g. Pass JLPT N5" />
                       </div>
-                    </div>
-                    <div className="mb-2">
-                      <label className="form-label small fw-semibold">Thumbnail URL</label>
-                      <input type="text" className="form-control" value={form.thumbnailUrl}
-                        onChange={(e) => setForm({ ...form, thumbnailUrl: e.target.value })} placeholder="https://…" />
                     </div>
                     <div className="mb-2">
                       <label className="form-label small fw-semibold">Courses ({form.courseIds.length} selected)</label>

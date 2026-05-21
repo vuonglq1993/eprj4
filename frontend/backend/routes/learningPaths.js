@@ -37,7 +37,7 @@ router.get('/:id', (req, res) => {
 
 // POST /learning-paths - Admin/Teacher
 router.post('/', authenticate, requireRole(...MANAGER_ROLES), (req, res) => {
-  const { title, description, languageId, targetLevel, thumbnailUrl, isPublished } = req.body;
+  const { title, description, languageId, targetLevel, isPublished } = req.body;
   if (!title) return res.status(400).json({ message: 'Title is required' });
   const lang = store.languages.find((l) => l.id === languageId);
   const newPath = {
@@ -47,7 +47,6 @@ router.post('/', authenticate, requireRole(...MANAGER_ROLES), (req, res) => {
     languageId: languageId || null,
     languageName: lang ? lang.name : null,
     targetLevel: targetLevel || 'BEGINNER',
-    thumbnailUrl: thumbnailUrl || null,
     isPublished: isPublished || false,
     totalCourses: 0,
     creatorId: req.user.id,
@@ -62,7 +61,7 @@ router.post('/', authenticate, requireRole(...MANAGER_ROLES), (req, res) => {
 router.put('/:id', authenticate, requireRole(...MANAGER_ROLES), (req, res) => {
   const idx = store.learningPaths.findIndex((p) => p.id === req.params.id);
   if (idx === -1) return res.status(404).json({ message: 'Learning path not found' });
-  const { title, description, languageId, targetLevel, thumbnailUrl, isPublished } = req.body;
+  const { title, description, languageId, targetLevel, isPublished } = req.body;
   const lang = store.languages.find((l) => l.id === (languageId || store.learningPaths[idx].languageId));
   store.learningPaths[idx] = {
     ...store.learningPaths[idx],
@@ -71,7 +70,6 @@ router.put('/:id', authenticate, requireRole(...MANAGER_ROLES), (req, res) => {
     languageId: languageId !== undefined ? languageId : store.learningPaths[idx].languageId,
     languageName: lang ? lang.name : (store.learningPaths[idx].languageName || null),
     targetLevel: targetLevel !== undefined ? targetLevel : store.learningPaths[idx].targetLevel,
-    thumbnailUrl: thumbnailUrl !== undefined ? thumbnailUrl : store.learningPaths[idx].thumbnailUrl,
     isPublished: isPublished !== undefined ? isPublished : store.learningPaths[idx].isPublished,
     updatedAt: new Date().toISOString(),
   };
