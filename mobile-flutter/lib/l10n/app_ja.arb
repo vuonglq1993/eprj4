@@ -410,5 +410,43 @@
   "@autoRenewal": { "placeholders": { "period": { "type": "String" } } },
   "subscribePlan": "{plan}に登録",
   "@subscribePlan": { "placeholders": { "plan": { "type": "String" } } },
-  "currentPlanCheck": "✓ 現在のプラン"
+  "currentPlanCheck": "✓ 現在のプラン",
+
+  "loadMore": "もっと見る",
+  "skip": "スキップ",
+
+  "onboardingTopicsTitle": "興味のあるトピックは？",
+  "onboardingTopicsSubtitle": "1〜3つ選んでおすすめ精度を上げましょう",
+
+  "onboardingLevelTitle": "現在のレベルは？",
+  "onboardingLevelSubtitle": "あなたに合ったパスをおすすめします",
+  "selfLevelCompleteBeginner": "完全な初心者",
+  "selfLevelCompleteBeginnerSub": "この言語を全く知りません",
+  "selfLevelBeginner": "少し知っている",
+  "selfLevelBeginnerSub": "基本的な単語を少し知っています",
+  "selfLevelIntermediate": "基本的なコミュニケーション",
+  "selfLevelIntermediateSub": "簡単な文が話せます",
+  "selfLevelAdvanced": "かなり流暢",
+  "selfLevelAdvancedSub": "うまく意思疎通ができます",
+
+  "onboardingHeardFromTitle": "どこで知りましたか？",
+  "onboardingHeardFromSubtitle": "サービス向上にご協力ください",
+  "heardFromGoogle": "Google検索",
+  "heardFromSocial": "SNS",
+  "heardFromFriend": "友人・家族",
+  "heardFromAppStore": "App Store",
+  "heardFromAd": "広告",
+  "heardFromOther": "その他",
+  "startLearning": "学習を始める",
+
+  "recommendedForYou": "あなたのためのパス！",
+  "recommendedForYouSub": "目標とレベルをもとにおすすめします：",
+  "viewLearningPath": "パスを見る",
+  "exploreLater": "後で探す",
+
+  "filterBeginner": "初級",
+  "filterElementary": "初歩",
+  "filterIntermediate": "中級",
+  "filterUpperIntermediate": "中上級",
+  "filterAdvanced": "上級"
 }

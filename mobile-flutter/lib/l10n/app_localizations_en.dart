@@ -1144,4 +1144,104 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get currentPlanCheck => '✓ Current Plan';
+
+  @override
+  String get loadMore => 'Load more';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
+  String get onboardingTopicsTitle => 'What topics interest you?';
+
+  @override
+  String get onboardingTopicsSubtitle =>
+      'Choose 1–3 topics for a better recommendation';
+
+  @override
+  String get onboardingLevelTitle => 'What\'s your current level?';
+
+  @override
+  String get onboardingLevelSubtitle =>
+      'We\'ll recommend a path that suits you';
+
+  @override
+  String get selfLevelCompleteBeginner => 'Complete Beginner';
+
+  @override
+  String get selfLevelCompleteBeginnerSub =>
+      'I don\'t know anything about this language';
+
+  @override
+  String get selfLevelBeginner => 'Know a little';
+
+  @override
+  String get selfLevelBeginnerSub => 'I know some basic words';
+
+  @override
+  String get selfLevelIntermediate => 'Basic Communication';
+
+  @override
+  String get selfLevelIntermediateSub => 'I can speak simple sentences';
+
+  @override
+  String get selfLevelAdvanced => 'Quite Fluent';
+
+  @override
+  String get selfLevelAdvancedSub => 'I can communicate well';
+
+  @override
+  String get onboardingHeardFromTitle => 'How did you hear about us?';
+
+  @override
+  String get onboardingHeardFromSubtitle => 'Help us improve our service';
+
+  @override
+  String get heardFromGoogle => 'Google Search';
+
+  @override
+  String get heardFromSocial => 'Social Media';
+
+  @override
+  String get heardFromFriend => 'Friends / Family';
+
+  @override
+  String get heardFromAppStore => 'App Store';
+
+  @override
+  String get heardFromAd => 'Advertisement';
+
+  @override
+  String get heardFromOther => 'Other';
+
+  @override
+  String get startLearning => 'Start Learning';
+
+  @override
+  String get recommendedForYou => 'A path made for you!';
+
+  @override
+  String get recommendedForYouSub =>
+      'Based on your goals and level, we suggest:';
+
+  @override
+  String get viewLearningPath => 'View Path';
+
+  @override
+  String get exploreLater => 'Explore later';
+
+  @override
+  String get filterBeginner => 'Beginner';
+
+  @override
+  String get filterElementary => 'Elementary';
+
+  @override
+  String get filterIntermediate => 'Intermediate';
+
+  @override
+  String get filterUpperIntermediate => 'Upper-Int.';
+
+  @override
+  String get filterAdvanced => 'Advanced';
 }

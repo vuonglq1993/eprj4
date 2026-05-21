@@ -1144,4 +1144,104 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get currentPlanCheck => '✓ Gói hiện tại';
+
+  @override
+  String get loadMore => 'Xem thêm';
+
+  @override
+  String get skip => 'Bỏ qua';
+
+  @override
+  String get onboardingTopicsTitle => 'Bạn quan tâm chủ đề nào?';
+
+  @override
+  String get onboardingTopicsSubtitle =>
+      'Chọn 1–3 chủ đề để gợi ý lộ trình phù hợp hơn';
+
+  @override
+  String get onboardingLevelTitle => 'Trình độ hiện tại của bạn?';
+
+  @override
+  String get onboardingLevelSubtitle =>
+      'Chúng tôi sẽ gợi ý lộ trình phù hợp với bạn';
+
+  @override
+  String get selfLevelCompleteBeginner => 'Hoàn toàn mới bắt đầu';
+
+  @override
+  String get selfLevelCompleteBeginnerSub => 'Tôi chưa biết gì về ngôn ngữ này';
+
+  @override
+  String get selfLevelBeginner => 'Biết một chút';
+
+  @override
+  String get selfLevelBeginnerSub => 'Tôi biết vài từ cơ bản';
+
+  @override
+  String get selfLevelIntermediate => 'Giao tiếp cơ bản';
+
+  @override
+  String get selfLevelIntermediateSub => 'Tôi có thể nói những câu đơn giản';
+
+  @override
+  String get selfLevelAdvanced => 'Khá thành thạo';
+
+  @override
+  String get selfLevelAdvancedSub => 'Tôi có thể giao tiếp tốt';
+
+  @override
+  String get onboardingHeardFromTitle => 'Bạn biết đến chúng tôi qua đâu?';
+
+  @override
+  String get onboardingHeardFromSubtitle =>
+      'Giúp chúng tôi cải thiện dịch vụ tốt hơn';
+
+  @override
+  String get heardFromGoogle => 'Tìm kiếm Google';
+
+  @override
+  String get heardFromSocial => 'Mạng xã hội';
+
+  @override
+  String get heardFromFriend => 'Bạn bè / Gia đình';
+
+  @override
+  String get heardFromAppStore => 'App Store';
+
+  @override
+  String get heardFromAd => 'Quảng cáo';
+
+  @override
+  String get heardFromOther => 'Khác';
+
+  @override
+  String get startLearning => 'Bắt đầu học';
+
+  @override
+  String get recommendedForYou => 'Lộ trình dành cho bạn!';
+
+  @override
+  String get recommendedForYouSub =>
+      'Dựa trên mục tiêu và trình độ của bạn, chúng tôi gợi ý:';
+
+  @override
+  String get viewLearningPath => 'Xem lộ trình';
+
+  @override
+  String get exploreLater => 'Khám phá sau';
+
+  @override
+  String get filterBeginner => 'Cơ bản';
+
+  @override
+  String get filterElementary => 'Sơ cấp';
+
+  @override
+  String get filterIntermediate => 'Trung cấp';
+
+  @override
+  String get filterUpperIntermediate => 'Khá';
+
+  @override
+  String get filterAdvanced => 'Nâng cao';
 }
