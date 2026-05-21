@@ -42,7 +42,7 @@ class Step2Goal extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          OnboardingHeader(step: 2, total: 3, onBack: onBack),
+          OnboardingHeader(step: 2, total: 6, onBack: onBack),
 
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
