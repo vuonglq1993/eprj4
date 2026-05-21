@@ -73,7 +73,6 @@ public class TopicController {
                         .languageCode(c.getLanguage().getCode())
                         .languageName(c.getLanguage().getName())
                         .level(c.getLevel())
-                        .thumbnailUrl(c.getThumbnailUrl())
                         .isPublished(c.getIsPublished())
                         .totalLessons(c.getTotalLessons())
                         .build())

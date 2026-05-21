@@ -41,9 +41,6 @@ public class LearningPath {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(length = 500)
-    private String thumbnailUrl;
-
     /** BEGINNER / INTERMEDIATE / ADVANCED */
     @Enumerated(EnumType.STRING)
     @Column(length = 30)

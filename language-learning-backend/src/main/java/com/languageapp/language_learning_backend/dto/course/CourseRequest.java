@@ -11,6 +11,5 @@ public class CourseRequest {
     @Size(max=5000)                 private String  description;
     @NotNull                        private UUID    languageId;
     @NotNull                        private Level   level;
-    private String  thumbnailUrl;
     private Boolean isPublished = false;
 }

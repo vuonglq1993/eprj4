@@ -4,8 +4,6 @@ import com.languageapp.language_learning_backend.entity.Course.Level;
 import lombok.*;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -16,7 +14,6 @@ public class CourseResponse {
     private String        languageCode;
     private String        languageName;
     private Level         level;
-    private String        thumbnailUrl;
     private Boolean       isPublished;
     private Integer       totalLessons;
     private String        createdByName;

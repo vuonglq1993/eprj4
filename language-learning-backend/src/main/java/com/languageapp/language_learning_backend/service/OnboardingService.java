@@ -226,7 +226,6 @@ public class OnboardingService {
                 .id(lp.getId())
                 .title(lp.getTitle())
                 .description(lp.getDescription())
-                .thumbnailUrl(lp.getThumbnailUrl())
                 .languageCode(lp.getLanguage().getCode())
                 .languageName(lp.getLanguage().getName())
                 .targetLevel(lp.getTargetLevel())
