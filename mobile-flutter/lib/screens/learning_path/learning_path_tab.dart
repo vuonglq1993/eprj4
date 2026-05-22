@@ -16,6 +16,37 @@ class _LearningPathTabState extends State<LearningPathTab> {
   List<Map<String, dynamic>> _myPaths = [];
   List<Map<String, dynamic>> _publicPaths = [];
   bool _loading = true;
+  bool _loadingMore = false;
+  bool _hasMore = false;
+  int _page = 0;
+
+  String? _filterLanguage;
+  String? _filterLevel;
+
+  List<Map<String, dynamic>> get _filtered {
+    return _publicPaths.where((p) {
+      final lang = p['languageName'] as String? ?? '';
+      final level = p['targetLevel'] as String? ?? '';
+      if (_filterLanguage != null && lang != _filterLanguage) return false;
+      if (_filterLevel != null && level != _filterLevel) return false;
+      return true;
+    }).toList();
+  }
+
+  List<String> get _languages => _publicPaths
+      .map((p) => p['languageName'] as String? ?? '')
+      .where((s) => s.isNotEmpty)
+      .toSet()
+      .toList()
+    ..sort();
+
+  List<(String, String)> _levelFilters(BuildContext context) => [
+    ('BEGINNER', context.l10n.filterBeginner),
+    ('ELEMENTARY', context.l10n.filterElementary),
+    ('INTERMEDIATE', context.l10n.filterIntermediate),
+    ('UPPER_INTERMEDIATE', context.l10n.filterUpperIntermediate),
+    ('ADVANCED', context.l10n.filterAdvanced),
+  ];
 
   @override
   void initState() {
@@ -24,16 +55,30 @@ class _LearningPathTabState extends State<LearningPathTab> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
-    final results = await Future.wait([
-      LearningService.getMyLearningPaths(),
-      LearningService.getPublicLearningPaths(),
-    ]);
+    setState(() { _loading = true; _page = 0; });
+    final myFuture  = LearningService.getMyLearningPaths();
+    final pubFuture = LearningService.getPublicLearningPaths(page: 0);
+    final my  = await myFuture;
+    final pub = await pubFuture;
     if (!mounted) return;
     setState(() {
-      _myPaths = results[0];
-      _publicPaths = results[1];
-      _loading = false;
+      _myPaths    = my;
+      _publicPaths = pub.items;
+      _hasMore    = pub.hasMore;
+      _loading    = false;
+    });
+  }
+
+  Future<void> _loadMore() async {
+    if (_loadingMore || !_hasMore) return;
+    setState(() => _loadingMore = true);
+    final next = await LearningService.getPublicLearningPaths(page: _page + 1);
+    if (!mounted) return;
+    setState(() {
+      _page++;
+      _publicPaths = [..._publicPaths, ...next.items];
+      _hasMore = next.hasMore;
+      _loadingMore = false;
     });
   }
 
@@ -103,6 +148,10 @@ class _LearningPathTabState extends State<LearningPathTab> {
                           ),
                         ],
 
+                        // Filter bar
+                        if (_publicPaths.isNotEmpty)
+                          SliverToBoxAdapter(child: _filterBar()),
+
                         // Public paths
                         SliverToBoxAdapter(
                           child: _sectionHeader(
@@ -112,21 +161,23 @@ class _LearningPathTabState extends State<LearningPathTab> {
                           ),
                         ),
 
-                        if (_publicPaths.isEmpty)
-                          SliverToBoxAdapter(
-                            child: _emptyCard(),
-                          )
+                        if (_filtered.isEmpty)
+                          SliverToBoxAdapter(child: _emptyCard())
                         else
                           SliverPadding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             sliver: SliverList(
                               delegate: SliverChildBuilderDelegate(
-                                (_, i) => _pathCard(_publicPaths[i],
-                                    enrolled: false),
-                                childCount: _publicPaths.length,
+                                (_, i) => _pathCard(_filtered[i], enrolled: false),
+                                childCount: _filtered.length,
                               ),
                             ),
                           ),
+
+                        // Load more button — ẩn khi đang filter (filter là client-side)
+                        if ((_hasMore || _loadingMore) &&
+                            _filterLanguage == null && _filterLevel == null)
+                          SliverToBoxAdapter(child: _loadMoreButton()),
 
                         const SliverToBoxAdapter(
                             child: SizedBox(height: 32)),
@@ -135,6 +186,81 @@ class _LearningPathTabState extends State<LearningPathTab> {
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _filterBar() {
+    return Column(
+      children: [
+        SizedBox(
+          height: 36,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            children: _languages.map((lang) => _chip(
+                  label: lang,
+                  selected: _filterLanguage == lang,
+                  onTap: () => setState(() =>
+                      _filterLanguage = _filterLanguage == lang ? null : lang),
+                )).toList(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 36,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            children: _levelFilters(context).map((entry) {
+              final (value, label) = entry;
+              return _chip(
+                label: label,
+                selected: _filterLevel == value,
+                onTap: () => setState(
+                    () => _filterLevel = _filterLevel == value ? null : value),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 4),
+      ],
+    );
+  }
+
+  Widget _chip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.primary.withValues(alpha: 0.18)
+              : AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? AppColors.primary : AppColors.border,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: selected ? AppColors.primaryLight : AppColors.textSecondary,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -150,6 +276,34 @@ class _LearningPathTabState extends State<LearningPathTab> {
           color: AppColors.textPrimary,
         ),
       ),
+    );
+  }
+
+  Widget _loadMoreButton() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+      child: _loadingMore
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: CircularProgressIndicator(
+                    color: AppColors.primary, strokeWidth: 2),
+              ),
+            )
+          : TextButton(
+              onPressed: _loadMore,
+              style: TextButton.styleFrom(
+                backgroundColor: AppColors.surface,
+                foregroundColor: AppColors.primaryLight,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: AppColors.border),
+                ),
+                minimumSize: const Size(double.infinity, 44),
+              ),
+              child: Text(context.l10n.loadMore,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            ),
     );
   }
 

@@ -15,4 +15,5 @@ public class SubmitRequest {
     private String audioUrl;
     private String transcript;
     private String lang;
+    @Builder.Default private Boolean resetSession = false;
 }

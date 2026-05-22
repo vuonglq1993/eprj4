@@ -264,6 +264,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
       clientStartMs: startMs,
       clientSubmitMs: now.millisecondsSinceEpoch,
       audioUrl: _exType == 'SPEAKING' ? _uploadedAudioUrl : null,
+      resetSession: _current == 0,
     );
 
     if (!mounted) return;

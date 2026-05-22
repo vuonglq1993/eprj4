@@ -300,7 +300,7 @@ class _CourseLessonsScreenState extends State<CourseLessonsScreen> {
 
     final progress = _progressMap[lessonId];
     final status = progress?['status'] as String? ?? 'NOT_STARTED';
-    final score = (progress?['bestScore'] as int? ?? progress?['score'] as int? ?? 0);
+    final score = (progress?['scorePercent'] as int? ?? 0);
 
     final isCompleted = status == 'COMPLETED';
     final isInProgress = status == 'IN_PROGRESS';

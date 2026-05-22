@@ -1131,4 +1131,100 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get currentPlanCheck => '✓ 現在のプラン';
+
+  @override
+  String get loadMore => 'もっと見る';
+
+  @override
+  String get skip => 'スキップ';
+
+  @override
+  String get onboardingTopicsTitle => '興味のあるトピックは？';
+
+  @override
+  String get onboardingTopicsSubtitle => '1〜3つ選んでおすすめ精度を上げましょう';
+
+  @override
+  String get onboardingLevelTitle => '現在のレベルは？';
+
+  @override
+  String get onboardingLevelSubtitle => 'あなたに合ったパスをおすすめします';
+
+  @override
+  String get selfLevelCompleteBeginner => '完全な初心者';
+
+  @override
+  String get selfLevelCompleteBeginnerSub => 'この言語を全く知りません';
+
+  @override
+  String get selfLevelBeginner => '少し知っている';
+
+  @override
+  String get selfLevelBeginnerSub => '基本的な単語を少し知っています';
+
+  @override
+  String get selfLevelIntermediate => '基本的なコミュニケーション';
+
+  @override
+  String get selfLevelIntermediateSub => '簡単な文が話せます';
+
+  @override
+  String get selfLevelAdvanced => 'かなり流暢';
+
+  @override
+  String get selfLevelAdvancedSub => 'うまく意思疎通ができます';
+
+  @override
+  String get onboardingHeardFromTitle => 'どこで知りましたか？';
+
+  @override
+  String get onboardingHeardFromSubtitle => 'サービス向上にご協力ください';
+
+  @override
+  String get heardFromGoogle => 'Google検索';
+
+  @override
+  String get heardFromSocial => 'SNS';
+
+  @override
+  String get heardFromFriend => '友人・家族';
+
+  @override
+  String get heardFromAppStore => 'App Store';
+
+  @override
+  String get heardFromAd => '広告';
+
+  @override
+  String get heardFromOther => 'その他';
+
+  @override
+  String get startLearning => '学習を始める';
+
+  @override
+  String get recommendedForYou => 'あなたのためのパス！';
+
+  @override
+  String get recommendedForYouSub => '目標とレベルをもとにおすすめします：';
+
+  @override
+  String get viewLearningPath => 'パスを見る';
+
+  @override
+  String get exploreLater => '後で探す';
+
+  @override
+  String get filterBeginner => '初級';
+
+  @override
+  String get filterElementary => '初歩';
+
+  @override
+  String get filterIntermediate => '中級';
+
+  @override
+  String get filterUpperIntermediate => '中上級';
+
+  @override
+  String get filterAdvanced => '上級';
 }

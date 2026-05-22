@@ -28,6 +28,7 @@ public class LearningPathService {
     private final UserRepository             userRepo;
     private final UserProgressRepository     progressRepo;
     private final LessonRepository           lessonRepo;
+    private final UserOnboardingRepository   onboardingRepo;
     private Subscription.Plan getPlan(UUID userId) {
         return userRepo.findById(userId)
                 .map(u -> u.getSubscription() != null ? u.getSubscription().getPlan() : Subscription.Plan.FREE)
@@ -207,6 +208,17 @@ public class LearningPathService {
 
         if (userPathRepo.existsByUserIdAndLearningPathId(p.getUserId(), pathId))
             throw new ConflictException("Already enrolled in this learning path");
+
+        // Hard lock: check user's self-reported level vs path target level
+        if (lp.getTargetLevel() != null) {
+            onboardingRepo.findByUserId(p.getUserId()).ifPresent(ob -> {
+                if (ob.getSelfLevel() != null && levelRank(ob.getSelfLevel()) < pathLevelRank(lp.getTargetLevel())) {
+                    throw new BadRequestException(
+                        "Trình độ của bạn chưa phù hợp với lộ trình này. " +
+                        "Lộ trình yêu cầu: " + lp.getTargetLevel().name());
+                }
+            });
+        }
 
         userPathRepo.save(UserLearningPath.builder()
                 .user(userRepo.getReferenceById(p.getUserId()))
@@ -401,5 +413,22 @@ public class LearningPathService {
                 .totalCourses(lp.getSteps().size())
                 .createdByName(lp.getCreatedBy() != null ? lp.getCreatedBy().getFullName() : "LinguaNext")
                 .createdAt(lp.getCreatedAt()).steps(steps).build();
+    }
+
+    private int levelRank(UserOnboarding.SelfLevel level) {
+        return switch (level) {
+            case COMPLETE_BEGINNER -> 0;
+            case BEGINNER          -> 1;
+            case INTERMEDIATE      -> 2;
+            case ADVANCED          -> 3;
+        };
+    }
+
+    private int pathLevelRank(LearningPath.TargetLevel level) {
+        return switch (level) {
+            case BEGINNER     -> 1;
+            case INTERMEDIATE -> 2;
+            case ADVANCED     -> 3;
+        };
     }
 }

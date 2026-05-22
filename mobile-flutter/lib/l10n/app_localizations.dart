@@ -2265,6 +2265,198 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'✓ Gói hiện tại'**
   String get currentPlanCheck;
+
+  /// No description provided for @loadMore.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem thêm'**
+  String get loadMore;
+
+  /// No description provided for @skip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ qua'**
+  String get skip;
+
+  /// No description provided for @onboardingTopicsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn quan tâm chủ đề nào?'**
+  String get onboardingTopicsTitle;
+
+  /// No description provided for @onboardingTopicsSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn 1–3 chủ đề để gợi ý lộ trình phù hợp hơn'**
+  String get onboardingTopicsSubtitle;
+
+  /// No description provided for @onboardingLevelTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trình độ hiện tại của bạn?'**
+  String get onboardingLevelTitle;
+
+  /// No description provided for @onboardingLevelSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chúng tôi sẽ gợi ý lộ trình phù hợp với bạn'**
+  String get onboardingLevelSubtitle;
+
+  /// No description provided for @selfLevelCompleteBeginner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn toàn mới bắt đầu'**
+  String get selfLevelCompleteBeginner;
+
+  /// No description provided for @selfLevelCompleteBeginnerSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tôi chưa biết gì về ngôn ngữ này'**
+  String get selfLevelCompleteBeginnerSub;
+
+  /// No description provided for @selfLevelBeginner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Biết một chút'**
+  String get selfLevelBeginner;
+
+  /// No description provided for @selfLevelBeginnerSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tôi biết vài từ cơ bản'**
+  String get selfLevelBeginnerSub;
+
+  /// No description provided for @selfLevelIntermediate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giao tiếp cơ bản'**
+  String get selfLevelIntermediate;
+
+  /// No description provided for @selfLevelIntermediateSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tôi có thể nói những câu đơn giản'**
+  String get selfLevelIntermediateSub;
+
+  /// No description provided for @selfLevelAdvanced.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khá thành thạo'**
+  String get selfLevelAdvanced;
+
+  /// No description provided for @selfLevelAdvancedSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tôi có thể giao tiếp tốt'**
+  String get selfLevelAdvancedSub;
+
+  /// No description provided for @onboardingHeardFromTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn biết đến chúng tôi qua đâu?'**
+  String get onboardingHeardFromTitle;
+
+  /// No description provided for @onboardingHeardFromSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giúp chúng tôi cải thiện dịch vụ tốt hơn'**
+  String get onboardingHeardFromSubtitle;
+
+  /// No description provided for @heardFromGoogle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm kiếm Google'**
+  String get heardFromGoogle;
+
+  /// No description provided for @heardFromSocial.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mạng xã hội'**
+  String get heardFromSocial;
+
+  /// No description provided for @heardFromFriend.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn bè / Gia đình'**
+  String get heardFromFriend;
+
+  /// No description provided for @heardFromAppStore.
+  ///
+  /// In vi, this message translates to:
+  /// **'App Store'**
+  String get heardFromAppStore;
+
+  /// No description provided for @heardFromAd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quảng cáo'**
+  String get heardFromAd;
+
+  /// No description provided for @heardFromOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khác'**
+  String get heardFromOther;
+
+  /// No description provided for @startLearning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu học'**
+  String get startLearning;
+
+  /// No description provided for @recommendedForYou.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lộ trình dành cho bạn!'**
+  String get recommendedForYou;
+
+  /// No description provided for @recommendedForYouSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dựa trên mục tiêu và trình độ của bạn, chúng tôi gợi ý:'**
+  String get recommendedForYouSub;
+
+  /// No description provided for @viewLearningPath.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem lộ trình'**
+  String get viewLearningPath;
+
+  /// No description provided for @exploreLater.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khám phá sau'**
+  String get exploreLater;
+
+  /// No description provided for @filterBeginner.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cơ bản'**
+  String get filterBeginner;
+
+  /// No description provided for @filterElementary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sơ cấp'**
+  String get filterElementary;
+
+  /// No description provided for @filterIntermediate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trung cấp'**
+  String get filterIntermediate;
+
+  /// No description provided for @filterUpperIntermediate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khá'**
+  String get filterUpperIntermediate;
+
+  /// No description provided for @filterAdvanced.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nâng cao'**
+  String get filterAdvanced;
 }
 
 class _AppLocalizationsDelegate

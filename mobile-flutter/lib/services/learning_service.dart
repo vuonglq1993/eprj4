@@ -59,27 +59,34 @@ class LearningService {
     }
   }
 
-  static Future<List<Map<String, dynamic>>> getPublicLearningPaths({
+  static Future<({List<Map<String, dynamic>> items, bool hasMore})>
+      getPublicLearningPaths({
     String? languageCode,
+    int page = 0,
+    int size = 10,
   }) async {
     try {
-      final query = languageCode != null
-          ? '?languageCode=${Uri.encodeComponent(languageCode)}'
-          : '';
+      final params = <String, String>{'page': '$page', 'size': '$size'};
+      if (languageCode != null) params['languageCode'] = languageCode;
+      final query = '?${params.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}';
       final res = await http.get(
         Uri.parse('$_base/learning-paths$query'),
         headers: await _auth(),
       );
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
-        if (body is List) return body.cast<Map<String, dynamic>>();
         if (body is Map && body['content'] is List) {
-          return (body['content'] as List).cast<Map<String, dynamic>>();
+          final items = (body['content'] as List).cast<Map<String, dynamic>>();
+          final last = body['last'] as bool? ?? true;
+          return (items: items, hasMore: !last);
+        }
+        if (body is List) {
+          return (items: body.cast<Map<String, dynamic>>(), hasMore: false);
         }
       }
-      return [];
+      return (items: <Map<String, dynamic>>[], hasMore: false);
     } catch (_) {
-      return [];
+      return (items: <Map<String, dynamic>>[], hasMore: false);
     }
   }
 
@@ -212,6 +219,7 @@ class LearningService {
     required int clientStartMs,
     required int clientSubmitMs,
     String? audioUrl,
+    bool resetSession = false,
   }) async {
     try {
       final body = {
@@ -221,6 +229,7 @@ class LearningService {
         'clientSubmitTime': clientSubmitMs,
         'lang': _uiLang,
         if (audioUrl != null) 'audioUrl': audioUrl,
+        if (resetSession) 'resetSession': true,
       };
       final res = await ApiService.sendRequest(() async => http.post(
         Uri.parse(

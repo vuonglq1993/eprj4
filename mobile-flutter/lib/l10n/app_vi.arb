@@ -19,6 +19,8 @@
   "learn": "Học",
   "leaderboard": "Xếp hạng",
   "path": "Lộ trình",
+  "courses": "Khoá học",
+  "allTopics": "Tất cả",
 
   "continueLesson": "Tiếp tục học",
   "todayGoal": "Mục tiêu hôm nay",
@@ -412,5 +414,43 @@
   "@autoRenewal": { "placeholders": { "period": { "type": "String" } } },
   "subscribePlan": "Đăng ký {plan}",
   "@subscribePlan": { "placeholders": { "plan": { "type": "String" } } },
-  "currentPlanCheck": "✓ Gói hiện tại"
+  "currentPlanCheck": "✓ Gói hiện tại",
+
+  "loadMore": "Xem thêm",
+  "skip": "Bỏ qua",
+
+  "onboardingTopicsTitle": "Bạn quan tâm chủ đề nào?",
+  "onboardingTopicsSubtitle": "Chọn 1–3 chủ đề để gợi ý lộ trình phù hợp hơn",
+
+  "onboardingLevelTitle": "Trình độ hiện tại của bạn?",
+  "onboardingLevelSubtitle": "Chúng tôi sẽ gợi ý lộ trình phù hợp với bạn",
+  "selfLevelCompleteBeginner": "Hoàn toàn mới bắt đầu",
+  "selfLevelCompleteBeginnerSub": "Tôi chưa biết gì về ngôn ngữ này",
+  "selfLevelBeginner": "Biết một chút",
+  "selfLevelBeginnerSub": "Tôi biết vài từ cơ bản",
+  "selfLevelIntermediate": "Giao tiếp cơ bản",
+  "selfLevelIntermediateSub": "Tôi có thể nói những câu đơn giản",
+  "selfLevelAdvanced": "Khá thành thạo",
+  "selfLevelAdvancedSub": "Tôi có thể giao tiếp tốt",
+
+  "onboardingHeardFromTitle": "Bạn biết đến chúng tôi qua đâu?",
+  "onboardingHeardFromSubtitle": "Giúp chúng tôi cải thiện dịch vụ tốt hơn",
+  "heardFromGoogle": "Tìm kiếm Google",
+  "heardFromSocial": "Mạng xã hội",
+  "heardFromFriend": "Bạn bè / Gia đình",
+  "heardFromAppStore": "App Store",
+  "heardFromAd": "Quảng cáo",
+  "heardFromOther": "Khác",
+  "startLearning": "Bắt đầu học",
+
+  "recommendedForYou": "Lộ trình dành cho bạn!",
+  "recommendedForYouSub": "Dựa trên mục tiêu và trình độ của bạn, chúng tôi gợi ý:",
+  "viewLearningPath": "Xem lộ trình",
+  "exploreLater": "Khám phá sau",
+
+  "filterBeginner": "Cơ bản",
+  "filterElementary": "Sơ cấp",
+  "filterIntermediate": "Trung cấp",
+  "filterUpperIntermediate": "Khá",
+  "filterAdvanced": "Nâng cao"
 }

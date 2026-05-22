@@ -4,13 +4,13 @@ import '../../core/app_widgets.dart';
 import '../../l10n/l10n_ext.dart';
 import '_onboarding_widgets.dart';
 
-class Step2Goal extends StatelessWidget {
+class Step3Level extends StatelessWidget {
   final String? selected;
   final ValueChanged<String> onSelect;
   final VoidCallback onNext;
   final VoidCallback onBack;
 
-  const Step2Goal({
+  const Step3Level({
     super.key,
     required this.selected,
     required this.onSelect,
@@ -18,22 +18,11 @@ class Step2Goal extends StatelessWidget {
     required this.onBack,
   });
 
-  // Values match backend LearningGoal enum exactly
-  static const _goalKeys = [
-    ('SKILL_IMPROVEMENT', Icons.workspace_premium_rounded),
-    ('FAMILY_FRIENDS', Icons.chat_bubble_outline_rounded),
-    ('SCHOOL', Icons.flight_takeoff_rounded),
-    ('WORK', Icons.business_center_rounded),
-    ('TRAVEL', Icons.explore_rounded),
-    ('OTHERS', Icons.more_horiz_rounded),
-  ];
-
-  List<(String, String, IconData)> _goals(BuildContext context) => [
-    (_goalKeys[1].$1, context.l10n.goalCommunication, _goalKeys[1].$2),
-    (_goalKeys[2].$1, context.l10n.goalStudyAbroad, _goalKeys[2].$2),
-    (_goalKeys[3].$1, context.l10n.goalWork, _goalKeys[3].$2),
-    (_goalKeys[4].$1, context.l10n.goalTravel, _goalKeys[4].$2),
-    (_goalKeys[5].$1, context.l10n.goalOther, _goalKeys[5].$2),
+  List<(String, String, String, IconData)> _levels(BuildContext context) => [
+    ('COMPLETE_BEGINNER', context.l10n.selfLevelCompleteBeginner, context.l10n.selfLevelCompleteBeginnerSub, Icons.sentiment_very_dissatisfied_rounded),
+    ('BEGINNER',          context.l10n.selfLevelBeginner,          context.l10n.selfLevelBeginnerSub,          Icons.sentiment_neutral_rounded),
+    ('INTERMEDIATE',      context.l10n.selfLevelIntermediate,      context.l10n.selfLevelIntermediateSub,      Icons.sentiment_satisfied_rounded),
+    ('ADVANCED',          context.l10n.selfLevelAdvanced,          context.l10n.selfLevelAdvancedSub,          Icons.sentiment_very_satisfied_rounded),
   ];
 
   @override
@@ -42,15 +31,14 @@ class Step2Goal extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          OnboardingHeader(step: 2, total: 6, onBack: onBack),
-
+          OnboardingHeader(step: 3, total: 5, onBack: onBack),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  context.l10n.onboardingGoalTitle,
+                  context.l10n.onboardingLevelTitle,
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -60,41 +48,34 @@ class Step2Goal extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  context.l10n.onboardingGoalSubtitle,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
+                  context.l10n.onboardingLevelSubtitle,
+                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                 ),
               ],
             ),
           ),
-
           Expanded(
             child: ListView.separated(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: _goals(context).length,
+              itemCount: _levels(context).length,
               separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (_, i) {
-                final (value, label, icon) = _goals(context)[i];
+                final (value, label, subtitle, icon) = _levels(context)[i];
                 final isSelected = value == selected;
                 return TappableScale(
                   onTap: () => onSelect(value),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 18),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.primary.withValues(alpha: 0.15)
                           : AppColors.surface,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: isSelected
-                            ? AppColors.primary
-                            : AppColors.border,
+                        color: isSelected ? AppColors.primary : AppColors.border,
                         width: isSelected ? 1.5 : 1,
                       ),
                       boxShadow: isSelected ? AppShadows.subtle : null,
@@ -105,41 +86,39 @@ class Step2Goal extends StatelessWidget {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.primary
-                                : AppColors.inputBg,
+                            color: isSelected ? AppColors.primary : AppColors.inputBg,
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Icon(
-                            icon,
-                            size: 20,
-                            color: isSelected
-                                ? Colors.white
-                                : AppColors.textSecondary,
-                          ),
+                          child: Icon(icon, size: 22,
+                              color: isSelected ? Colors.white : AppColors.textSecondary),
                         ),
                         const SizedBox(width: 14),
-                        Text(
-                          label,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: isSelected
-                                ? AppColors.primaryLight
-                                : AppColors.textPrimary,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(label,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected
+                                        ? AppColors.primaryLight
+                                        : AppColors.textPrimary,
+                                  )),
+                              const SizedBox(height: 2),
+                              Text(subtitle,
+                                  style: const TextStyle(
+                                      fontSize: 12, color: AppColors.textSecondary)),
+                            ],
                           ),
                         ),
-                        const Spacer(),
                         if (isSelected)
                           Container(
                             width: 22,
                             height: 22,
                             decoration: const BoxDecoration(
-                              color: AppColors.primary,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.check,
-                                size: 14, color: Colors.white),
+                                color: AppColors.primary, shape: BoxShape.circle),
+                            child: const Icon(Icons.check, size: 14, color: Colors.white),
                           ),
                       ],
                     ),
@@ -148,7 +127,6 @@ class Step2Goal extends StatelessWidget {
               },
             ),
           ),
-
           OnboardingNextButton(
             label: context.l10n.next,
             enabled: selected != null,

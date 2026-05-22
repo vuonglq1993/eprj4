@@ -309,6 +309,7 @@ Future<void> _signInWithGoogle() async {
       serverClientId: dotenv.env['GOOGLE_WEB_CLIENT_ID'],
     );
 
+    await googleSignIn.signOut();
     final account = await googleSignIn.signIn();
 
     if (account == null) {

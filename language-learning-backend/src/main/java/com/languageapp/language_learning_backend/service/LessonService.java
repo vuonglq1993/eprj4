@@ -9,9 +9,13 @@ import com.languageapp.language_learning_backend.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Locale;
-import java.util.UUID;
+import com.languageapp.language_learning_backend.entity.UserProgress.ProgressStatus;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -151,16 +155,38 @@ public class LessonService {
     public List<LessonDetailResponse> getLessons(UUID courseId, UserPrincipal p) {
         Course course = courseService.findOrThrow(courseId);
         var lessons = lessonRepo.findByCourseIdOrderByOrderIndexAsc(courseId);
+        boolean isOwnerOrAdmin = courseService.isAdminOrOwner(p, course);
 
-        return lessons.stream().map(l -> {
-            UserProgress pr = (p != null)
-                    ? progressRepo.findByUserIdAndLessonId(p.getUserId(), l.getId()).orElse(null)
-                    : null;
-            boolean accessible = canAccess(l, p) || courseService.isAdminOrOwner(p, course);
+        // Fetch tất cả progress trong 1 query thay vì N queries
+        Map<UUID, UserProgress> progressMap = (p != null)
+                ? progressRepo.findByUserIdAndCourseId(p.getUserId(), courseId)
+                    .stream().collect(Collectors.toMap(pr -> pr.getLesson().getId(), pr -> pr))
+                : Map.of();
+
+        List<LessonDetailResponse> result = new ArrayList<>();
+        for (int i = 0; i < lessons.size(); i++) {
+            Lesson l = lessons.get(i);
+            UserProgress pr = progressMap.get(l.getId());
+
+            boolean accessible;
+            if (isOwnerOrAdmin) {
+                accessible = true;
+            } else if (!canAccess(l, p)) {
+                // Khóa subscription — không đủ gói
+                accessible = false;
+            } else if (i == 0) {
+                // Bài đầu tiên luôn mở nếu đủ subscription
+                accessible = true;
+            } else {
+                // Khóa tuần tự — bài trước phải COMPLETED mới mở được bài này
+                UserProgress prevPr = progressMap.get(lessons.get(i - 1).getId());
+                accessible = prevPr != null && prevPr.getStatus() == ProgressStatus.COMPLETED;
+            }
+
             LessonDetailResponse r = toDetailResponse(l, pr, accessible);
-            // Nếu bị khóa thì không trả content
             if (!accessible) r.setContent(null);
-            return r;
-        }).toList();
+            result.add(r);
+        }
+        return result;
     }
 }

@@ -140,11 +140,12 @@ public class ExerciseService {
                         .lesson(lessonRepo.getReferenceById(lessonId))
                         .build());
 
-        // Track whether lesson was already completed (replay = no new XP)
-        boolean wasAlreadyCompleted = progress.getStatus() == ProgressStatus.COMPLETED;
+        // Track whether lesson was already completed before this session (replay = no new XP)
+        boolean wasAlreadyCompleted = progress.getStatus() == ProgressStatus.COMPLETED
+                && Boolean.TRUE.equals(req.getResetSession());
 
-        // Nếu lesson đã COMPLETED và user làm lại → reset session score
-        if (wasAlreadyCompleted) {
+        // Reset only when user explicitly starts a new session (resetSession=true on first exercise)
+        if (Boolean.TRUE.equals(req.getResetSession())) {
             progress.setScore(0);
             progress.setStatus(ProgressStatus.IN_PROGRESS);
             progress.setCompletedAt(null);
@@ -153,9 +154,10 @@ public class ExerciseService {
         progress.setAttempts(progress.getAttempts() + 1);
         progress.setScore(progress.getScore() + pointsEarned);
 
-        int totalPoints = exerciseRepo.sumPointsByLessonId(lessonId);
+        Integer rawTotal = exerciseRepo.sumPointsByLessonId(lessonId);
+        int totalPoints = (rawTotal != null) ? rawTotal : 0;
 
-        if (progress.getScore() >= totalPoints * 0.8) {
+        if (totalPoints > 0 && progress.getScore() >= totalPoints * 0.8) {
             progress.setStatus(ProgressStatus.COMPLETED);
             progress.setCompletedAt(Instant.now());
         } else {
@@ -178,12 +180,15 @@ public class ExerciseService {
             }
         }
 
+        boolean isLessonCompleted = progress.getStatus() == ProgressStatus.COMPLETED;
         return SubmitResponse.builder()
                 .correct(effectivelyCorrect)
                 .pointsEarned(pointsEarned)
                 .correctAnswer(grade.correctAnswer)
                 .explanation(grade.explanation)
                 .totalLessonScore(progress.getScore())
+                .isLessonCompleted(isLessonCompleted)
+                .lessonStatus(progress.getStatus().name())
                 .build();
     }
 

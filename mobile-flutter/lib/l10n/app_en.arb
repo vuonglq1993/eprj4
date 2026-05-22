@@ -17,6 +17,8 @@
   "learn": "Learn",
   "leaderboard": "Leaderboard",
   "path": "Path",
+  "courses": "Courses",
+  "allTopics": "All",
 
   "continueLesson": "Continue Learning",
   "todayGoal": "Today's Goal",
@@ -410,5 +412,43 @@
   "@autoRenewal": { "placeholders": { "period": { "type": "String" } } },
   "subscribePlan": "Subscribe to {plan}",
   "@subscribePlan": { "placeholders": { "plan": { "type": "String" } } },
-  "currentPlanCheck": "✓ Current Plan"
+  "currentPlanCheck": "✓ Current Plan",
+
+  "loadMore": "Load more",
+  "skip": "Skip",
+
+  "onboardingTopicsTitle": "What topics interest you?",
+  "onboardingTopicsSubtitle": "Choose 1–3 topics for a better recommendation",
+
+  "onboardingLevelTitle": "What's your current level?",
+  "onboardingLevelSubtitle": "We'll recommend a path that suits you",
+  "selfLevelCompleteBeginner": "Complete Beginner",
+  "selfLevelCompleteBeginnerSub": "I don't know anything about this language",
+  "selfLevelBeginner": "Know a little",
+  "selfLevelBeginnerSub": "I know some basic words",
+  "selfLevelIntermediate": "Basic Communication",
+  "selfLevelIntermediateSub": "I can speak simple sentences",
+  "selfLevelAdvanced": "Quite Fluent",
+  "selfLevelAdvancedSub": "I can communicate well",
+
+  "onboardingHeardFromTitle": "How did you hear about us?",
+  "onboardingHeardFromSubtitle": "Help us improve our service",
+  "heardFromGoogle": "Google Search",
+  "heardFromSocial": "Social Media",
+  "heardFromFriend": "Friends / Family",
+  "heardFromAppStore": "App Store",
+  "heardFromAd": "Advertisement",
+  "heardFromOther": "Other",
+  "startLearning": "Start Learning",
+
+  "recommendedForYou": "A path made for you!",
+  "recommendedForYouSub": "Based on your goals and level, we suggest:",
+  "viewLearningPath": "View Path",
+  "exploreLater": "Explore later",
+
+  "filterBeginner": "Beginner",
+  "filterElementary": "Elementary",
+  "filterIntermediate": "Intermediate",
+  "filterUpperIntermediate": "Upper-Int.",
+  "filterAdvanced": "Advanced"
 }
