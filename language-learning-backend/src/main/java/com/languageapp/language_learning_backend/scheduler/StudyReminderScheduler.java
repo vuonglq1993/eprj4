@@ -39,13 +39,19 @@ public class StudyReminderScheduler {
                     try {
                         ZoneId userZone = parseZone(settings.getTimezone());
                         ZonedDateTime userNow = utcNow.withZoneSameInstant(userZone);
+                        String today = userNow.toLocalDate().toString(); // yyyy-MM-dd
 
-                        if (userNow.getHour() == settings.getHour()
-                                && userNow.getMinute() == settings.getMinute()) {
+                        boolean alreadySentToday = today.equals(settings.getLastSentDate());
+                        boolean timeReached = userNow.getHour() > settings.getHour()
+                                || (userNow.getHour() == settings.getHour()
+                                    && userNow.getMinute() >= settings.getMinute());
+
+                        if (!alreadySentToday && timeReached) {
                             log.info("Sending reminder → userId={} tz={} localTime={}:{}",
                                     settings.getUserId(), userZone,
                                     settings.getHour(), settings.getMinute());
                             sendReminderToUser(settings.getUserId());
+                            reminderRepo.updateLastSentDate(settings.getUserId(), today);
                         }
                     } catch (Exception e) {
                         log.warn("Failed reminder for user {}: {}", settings.getUserId(), e.getMessage());

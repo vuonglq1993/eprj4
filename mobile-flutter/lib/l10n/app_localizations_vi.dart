@@ -54,6 +54,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get path => 'Lộ trình';
 
   @override
+  String get courses => 'Khoá học';
+
+  @override
+  String get allTopics => 'Tất cả';
+
+  @override
   String get continueLesson => 'Tiếp tục học';
 
   @override

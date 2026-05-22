@@ -12,6 +12,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @Tag(name = "13 · Gamification")
 @RestController
 @RequestMapping("/api/v1/game")
@@ -34,5 +37,20 @@ public class GamificationController {
     public ResponseEntity<LeaderboardResponse> getLeaderboard(
             @AuthenticationPrincipal UserPrincipal p) {
         return ResponseEntity.ok(service.getLeaderboard(p));
+    }
+
+    @Operation(summary = "Danh sách câu sai gần nhất")
+    @GetMapping("/mistakes")
+    public ResponseEntity<List<MistakeResponse>> getMistakes(
+            @AuthenticationPrincipal UserPrincipal p,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(service.getMistakes(p, size));
+    }
+
+    @Operation(summary = "AI phân tích điểm yếu dựa trên câu sai")
+    @PostMapping("/mistakes/ai-review")
+    public ResponseEntity<Map<String, String>> getAiReview(
+            @AuthenticationPrincipal UserPrincipal p) {
+        return ResponseEntity.ok(Map.of("review", service.getAiReview(p)));
     }
 }

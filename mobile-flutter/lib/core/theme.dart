@@ -156,6 +156,16 @@ class AppTheme {
           onPrimary: Colors.white,
           onSurface: AppColors.textPrimary,
           outline: AppColors.border,
+          // Explicitly set all M3 surface variants so nothing defaults to grey
+          surfaceTint: Colors.transparent,
+          surfaceContainerLowest: Color(0xFF071628),
+          surfaceContainerLow: Color(0xFF071628),
+          surfaceContainer: Color(0xFF0A1F3A),
+          surfaceContainerHigh: Color(0xFF0A1B2E),
+          surfaceContainerHighest: Color(0xFF0D2540),
+          surfaceDim: Color(0xFF071628),
+          surfaceBright: Color(0xFF0D2540),
+          onSurfaceVariant: Color(0xBFFFFFFF),
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: AppColors.bg,

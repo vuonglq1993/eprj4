@@ -24,6 +24,7 @@ public class StudyLogService {
     private final UserRepository     userRepo;
     private final UserProgressRepository progressRepo;
     private final UserGameProfileRepository gameRepo;
+    private final GamificationService gamificationService;
 
     // ── LOG PHIÊN HỌC ─────────────────────────────────────────
     @Transactional
@@ -121,10 +122,17 @@ public class StudyLogService {
         if (last != null && last.equals(today)) return;
 
         // ✅ streak logic
-        if (last != null && last.plusDays(1).equals(today)) {
+        boolean maintained = last != null && last.plusDays(1).equals(today);
+        if (maintained) {
             gp.setCurrentStreak(gp.getCurrentStreak() + 1);
+            // Award streak XP for keeping the streak going
+            try {
+                gamificationService.awardXp(user, GamificationService.XP_DAILY_STREAK);
+            } catch (Exception e) {
+                // non-fatal
+            }
         } else {
-            gp.setCurrentStreak(1);
+            gp.setCurrentStreak(1); // reset, no streak XP
         }
 
         if (gp.getCurrentStreak() > gp.getLongestStreak()) {

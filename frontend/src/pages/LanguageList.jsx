@@ -70,8 +70,8 @@ function LanguageList() {
     try {
       await deleteLanguage(id);
       setLanguages((prev) => prev.filter((l) => l.id !== id));
-    } catch {
-      alert('Xóa thất bại.');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Xóa thất bại.');
     } finally {
       setDeletingId(null);
     }
@@ -107,12 +107,12 @@ function LanguageList() {
       <div className="ll-inner mx-auto">
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div>
-            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Languages</h2>
-            <p className="text-muted small mb-0">Manage available learning languages</p>
+            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Ngôn ngữ</h2>
+            <p className="text-muted small mb-0">Quản lý các ngôn ngữ học tập</p>
           </div>
           {admin && (
             <button type="button" className="btn btn-primary-purple px-4 d-flex align-items-center gap-2" onClick={openCreate}>
-              <FiPlus size={16} /> Add Language
+              <FiPlus size={16} /> Thêm ngôn ngữ
             </button>
           )}
         </div>
@@ -154,8 +154,8 @@ function LanguageList() {
                       <td style={{ color: '#475569', fontWeight: 500 }}>{lang.totalPublishedCourses ?? 0}</td>
                       {admin && (
                         <td className="text-center">
-                          <button className="ll-btn-action me-1" title="Edit" onClick={() => openEdit(lang)}><FiEdit2 size={14} /></button>
-                          <button className="ll-btn-action" title="Delete" onClick={() => handleDelete(lang.id)} disabled={deletingId === lang.id}><FiTrash2 size={14} /></button>
+                          <button className="ll-btn-action me-1" title="Sửa" onClick={() => openEdit(lang)}><FiEdit2 size={14} /></button>
+                          <button className="ll-btn-action" title="Xóa" onClick={() => handleDelete(lang.id)} disabled={deletingId === lang.id}><FiTrash2 size={14} /></button>
                         </td>
                       )}
                     </tr>
@@ -180,7 +180,7 @@ function LanguageList() {
           />
           <div className="ll-modal-panel" role="dialog" aria-modal="true" aria-labelledby="ll-modal-title">
             <div className="ll-modal-panel__header">
-              <h5 id="ll-modal-title" className="ll-modal-panel__title">{editId ? 'Edit Language' : 'Add Language'}</h5>
+              <h5 id="ll-modal-title" className="ll-modal-panel__title">{editId ? 'Sửa ngôn ngữ' : 'Thêm ngôn ngữ'}</h5>
               <button type="button" className="ll-modal-panel__close" onClick={() => setShowModal(false)} aria-label="Đóng">
                 <FiX size={22} />
               </button>

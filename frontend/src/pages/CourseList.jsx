@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import '../styles/courselist.css';
 import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
 import { FaBook, FaStar } from 'react-icons/fa6';
-import { getCourses, createCourse, updateCourse, publishCourse, deleteCourse } from '../services/courseService';
+import { getCourses, createCourse, updateCourse, publishCourse, deleteCourse, getCourseTopics, addCourseTopic, removeCourseTopic } from '../services/courseService';
 import { getLanguages } from '../services/languageService';
+import { getTopics } from '../services/topicService';
 import { isAdmin } from '../utils/roleUtils';
 
 const LEVELS = ['BEGINNER', 'ELEMENTARY', 'INTERMEDIATE', 'UPPER_INTERMEDIATE', 'ADVANCED'];
 
-const EMPTY_FORM = { title: '', description: '', languageId: '', level: 'BEGINNER', isPublished: false };
+const EMPTY_FORM = { title: '', description: '', languageId: '', level: 'BEGINNER', isPublished: false, topicIds: [] };
 
 function formatSaveError(err) {
   const status = err.response?.status;
@@ -41,6 +42,7 @@ const CourseList = () => {
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [languages, setLanguages] = useState([]);
+  const [allTopics, setAllTopics] = useState([]);
   const [saving, setSaving] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
   const [formErrors, setFormErrors] = useState({});
@@ -70,12 +72,19 @@ const CourseList = () => {
     try {
       const res = await getLanguages();
       setLanguages(res.data || []);
-    } catch { /* silent — language list is optional */ }
+    } catch { /* silent */ }
+  };
+
+  const fetchAllTopics = async () => {
+    try {
+      const res = await getTopics();
+      setAllTopics(res.data || []);
+    } catch { /* silent */ }
   };
 
   useEffect(() => {
     fetchCourses(currentPage);
-    if (canManage) fetchLanguages();
+    if (canManage) { fetchLanguages(); fetchAllTopics(); }
   }, []);
 
  
@@ -87,17 +96,23 @@ const CourseList = () => {
   };
 
 
-  const openEdit = (course) => {
+  const openEdit = async (course) => {
     setEditId(course.id);
     const matchedLang = languages.find(
       (l) => l.code === course.languageCode || l.name === course.languageName
     );
+    let topicIds = [];
+    try {
+      const res = await getCourseTopics(course.id);
+      topicIds = (res.data || []).map((t) => t.id);
+    } catch { /* silent */ }
     setForm({
       title: course.title || '',
       description: course.description || '',
       languageId: matchedLang?.id || '',
       level: course.level || 'BEGINNER',
       isPublished: course.isPublished ?? false,
+      topicIds,
     });
     setFormErrors({});
     setShowModal(true);
@@ -109,21 +124,21 @@ const CourseList = () => {
     try {
       const res = await publishCourse(id);
       setCourses((prev) => prev.map((c) => c.id === id ? res.data : c));
-    } catch {
-      alert('Xuất bản thất bại.');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Xuất bản thất bại.');
     } finally {
       setPublishingId(null);
     }
   };
 
-  
+
   const handleDelete = async (id) => {
     if (!window.confirm('Xóa khóa học này?')) return;
     try {
       await deleteCourse(id);
       setCourses((prev) => prev.filter((c) => c.id !== id));
-    } catch {
-      alert('Xóa thất bại.');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Xóa thất bại.');
     }
   };
 
@@ -138,12 +153,25 @@ const CourseList = () => {
     const payload = { ...form };
     setSaving(true);
     try {
+      let savedId = editId;
       if (editId) {
         const res = await updateCourse(editId, payload);
         setCourses((prev) => prev.map((c) => c.id === editId ? res.data : c));
       } else {
         const res = await createCourse(payload);
+        savedId = res.data.id;
         setCourses((prev) => [res.data, ...prev]);
+      }
+      // Sync topics: fetch current, add new, remove deleted
+      if (savedId) {
+        const currentRes = await getCourseTopics(savedId).catch(() => ({ data: [] }));
+        const currentIds = (currentRes.data || []).map((t) => t.id);
+        const toAdd = form.topicIds.filter((id) => !currentIds.includes(id));
+        const toRemove = currentIds.filter((id) => !form.topicIds.includes(id));
+        await Promise.all([
+          ...toAdd.map((tid) => addCourseTopic(savedId, tid).catch(() => {})),
+          ...toRemove.map((tid) => removeCourseTopic(savedId, tid).catch(() => {})),
+        ]);
       }
       setShowModal(false);
     } catch (err) {
@@ -161,12 +189,12 @@ const CourseList = () => {
       <div className="cl-inner mx-auto">
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div>
-            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Courses</h2>
-            <p className="text-muted small mb-0">Manage learning courses and curricula</p>
+            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Khoá học</h2>
+            <p className="text-muted small mb-0">Quản lý khoá học và chương trình giảng dạy</p>
           </div>
           {canManage && (
             <button type="button" className="btn btn-primary-purple px-4 d-flex align-items-center gap-2" onClick={openCreate}>
-              <FiPlus size={16} /> New Course
+              <FiPlus size={16} /> Khoá học mới
             </button>
           )}
         </div>
@@ -197,25 +225,25 @@ const CourseList = () => {
                       <div className="cl-actions">
                         {canManage && (
                           <>
-                            <button type="button" className="cl-action-btn" title="Edit" onClick={() => openEdit(course)}>
+                            <button type="button" className="cl-action-btn" title="Sửa" onClick={() => openEdit(course)}>
                               <FiEdit2 size={14} aria-hidden />
-                              <span>Edit</span>
+                              <span>Sửa</span>
                             </button>
                             {!course.isPublished && (
                               <button
                                 type="button"
                                 className="cl-action-btn"
-                                title="Publish"
+                                title="Xuất bản"
                                 onClick={() => handlePublish(course.id)}
                                 disabled={publishingId === course.id}
                               >
                                 <span className="cl-action-btn__emoji" aria-hidden>{publishingId === course.id ? '…' : '📢'}</span>
-                                <span>Publish</span>
+                                <span>Xuất bản</span>
                               </button>
                             )}
-                            <button type="button" className="cl-action-btn cl-action-btn--del" title="Delete" onClick={() => handleDelete(course.id)}>
+                            <button type="button" className="cl-action-btn cl-action-btn--del" title="Xóa" onClick={() => handleDelete(course.id)}>
                               <FiTrash2 size={14} aria-hidden />
-                              <span>Delete</span>
+                              <span>Xóa</span>
                             </button>
                           </>
                         )}
@@ -224,7 +252,7 @@ const CourseList = () => {
                     <div className="d-flex align-items-center justify-content-between">
                       <span className="cl-meta">
                         <FaBook size={13} className="me-1" style={{ color: '#6366f1' }} />
-                        {course.totalLessons ?? 0} lessons
+                        {course.totalLessons ?? 0} bài học
                       </span>
                       {course.rating != null && (
                         <div className="d-flex align-items-center gap-1">
@@ -273,7 +301,7 @@ const CourseList = () => {
             <div className="modal-dialog modal-lg">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">{editId ? 'Edit Course' : 'New Course'}</h5>
+                  <h5 className="modal-title">{editId ? 'Sửa khoá học' : 'Khoá học mới'}</h5>
                 </div>
                 <form onSubmit={handleSubmit} noValidate>
                   <div className="modal-body">
@@ -304,6 +332,41 @@ const CourseList = () => {
                         </select>
                       </div>
                     </div>
+                    {allTopics.length > 0 && (
+                      <div className="mb-2">
+                        <label className="form-label small fw-semibold">Topics</label>
+                        <div className="d-flex flex-wrap gap-2">
+                          {allTopics.map((t) => {
+                            const checked = form.topicIds.includes(t.id);
+                            return (
+                              <button
+                                key={t.id}
+                                type="button"
+                                onClick={() => setForm((f) => ({
+                                  ...f,
+                                  topicIds: checked
+                                    ? f.topicIds.filter((id) => id !== t.id)
+                                    : [...f.topicIds, t.id],
+                                }))}
+                                style={{
+                                  padding: '4px 12px',
+                                  borderRadius: 20,
+                                  border: `1.5px solid ${checked ? '#6366f1' : '#e2e8f0'}`,
+                                  background: checked ? '#eef2ff' : '#f8fafc',
+                                  color: checked ? '#4f46e5' : '#64748b',
+                                  fontWeight: checked ? 600 : 400,
+                                  fontSize: 13,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                {t.iconUrl && <span style={{ marginRight: 4 }}>{t.iconUrl}</span>}
+                                {t.name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                     <div className="form-check">
                       <input type="checkbox" className="form-check-input" id="coursePub" checked={form.isPublished} onChange={(e) => setForm({ ...form, isPublished: e.target.checked })} />
                       <label className="form-check-label" htmlFor="coursePub">Published immediately</label>

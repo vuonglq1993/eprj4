@@ -156,11 +156,11 @@ const AdminUserManagementPage = () => {
       <div className="au-inner mx-auto">
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div>
-            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>User Management</h2>
-            <p className="text-muted small mb-0">Manage all registered users — Admin only</p>
+            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Người dùng</h2>
+            <p className="text-muted small mb-0">Quản lý tất cả tài khoản đã đăng ký</p>
           </div>
           <div className="d-flex align-items-center gap-2">
-            <span className="au-total-badge">{filtered.length} user{filtered.length !== 1 ? 's' : ''}</span>
+            <span className="au-total-badge">{filtered.length} người dùng</span>
           </div>
         </div>
 
@@ -175,7 +175,7 @@ const AdminUserManagementPage = () => {
             <input
               type="text"
               className="form-control au-search"
-              placeholder="Search by name or email…"
+              placeholder="Tìm theo tên hoặc email…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{ maxWidth: 280 }}
@@ -186,7 +186,7 @@ const AdminUserManagementPage = () => {
               onChange={(e) => setFilterRole(e.target.value)}
               style={{ maxWidth: 160 }}
             >
-              <option value="">All Roles</option>
+              <option value="">Tất cả vai trò</option>
               {ROLES.map((r) => <option key={r} value={r}>{ROLE_CONFIG[r].label}</option>)}
             </select>
           </div>
@@ -278,7 +278,7 @@ const AdminUserManagementPage = () => {
                           <button
                             type="button"
                             className="au-btn-action me-1"
-                            title="Change Role"
+                            title="Đổi vai trò"
                             onClick={() => openEditRole(u)}
                             disabled={editingId === u.id || deletingId === u.id}
                           >
@@ -287,7 +287,7 @@ const AdminUserManagementPage = () => {
                           <button
                             type="button"
                             className="au-btn-action au-btn-action--del"
-                            title="Delete User"
+                            title="Xóa người dùng"
                             onClick={() => handleDelete(u.id)}
                             disabled={deletingId === u.id}
                           >

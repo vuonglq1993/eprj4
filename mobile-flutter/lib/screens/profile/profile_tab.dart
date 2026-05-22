@@ -85,7 +85,24 @@ class _ProfileTabState extends State<ProfileTab> {
 
   int get _longestStreak => _streak?['longestStreak'] as int? ?? 0;
   int get _totalDays => (_streak?['studyDates'] as List?)?.length ?? 0;
-  int get _badgeCount => (_gameProfile?['badges'] as List?)?.length ?? 0;
+
+  static const _badgeEmoji = {
+    'STREAK_7': '🔥', 'STREAK_30': '🔥🔥', 'STREAK_100': '💯',
+    'FIRST_LESSON': '⭐', 'LESSONS_10': '📚', 'LESSONS_50': '🎓', 'LESSONS_100': '🏆',
+    'FIRST_COURSE': '🎯', 'COURSES_5': '🌟',
+    'PERFECT_SCORE': '💎', 'HIGH_SCORER': '🥇',
+    'XP_1000': '⚡', 'XP_5000': '⚡⚡', 'XP_10000': '👑',
+    'EARLY_BIRD': '🌅', 'NIGHT_OWL': '🦉', 'POLYGLOT': '🌍',
+  };
+
+  List<String> get _earnedBadgeEmojis {
+    final list = _gameProfile?['badges'] as List?;
+    if (list == null) return [];
+    return list
+        .map((b) => _badgeEmoji[b['badgeType'] as String? ?? ''] ?? '')
+        .where((e) => e.isNotEmpty)
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -230,7 +247,6 @@ class _ProfileTabState extends State<ProfileTab> {
             ),
           ],
           const SizedBox(height: 10),
-          // Badges row
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 8,
@@ -240,6 +256,9 @@ class _ProfileTabState extends State<ProfileTab> {
                 _badge(context.l10n.proMember, AppGradients.primaryIcon, Colors.white),
               _badgeSolid('Level $level', AppColors.warning.withValues(alpha: 0.2),
                   AppColors.warning),
+              if (_earnedBadgeEmojis.isNotEmpty)
+                _badgeSolid('🏅 ${_earnedBadgeEmojis.length}',
+                    AppColors.primary.withValues(alpha: 0.1), AppColors.primary),
               if (_langDisplay.isNotEmpty)
                 _badgeSolid(_langDisplay, AppColors.surface, AppColors.textSecondary,
                     border: AppColors.border),
@@ -322,8 +341,17 @@ class _ProfileTabState extends State<ProfileTab> {
               () => _push(const StreakScreen())),
           _menuDivider(),
           _menuItem(Icons.star_rounded, AppColors.warning,
-              context.l10n.badgesAchievements, '${context.l10n.badges}: $_badgeCount',
-              () => _push(const BadgesScreen())),
+              context.l10n.badgesAchievements,
+              '${_earnedBadgeEmojis.length} / ${17}',
+              () => Navigator.push(context, PageRouteBuilder(
+                pageBuilder: (_, __, ___) => const BadgesScreen(),
+                opaque: true,
+                transitionDuration: const Duration(milliseconds: 260),
+                transitionsBuilder: (_, anim, __, child) => FadeTransition(
+                  opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
+                  child: child,
+                ),
+              ))),
           _menuDivider(),
           _menuItem(Icons.card_membership_rounded, const Color(0xFF2563EB),
               context.l10n.subscriptionBilling,

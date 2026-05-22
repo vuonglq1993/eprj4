@@ -190,6 +190,18 @@ abstract class AppLocalizations {
   /// **'Lộ trình'**
   String get path;
 
+  /// No description provided for @courses.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoá học'**
+  String get courses;
+
+  /// No description provided for @allTopics.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả'**
+  String get allTopics;
+
   /// No description provided for @continueLesson.
   ///
   /// In vi, this message translates to:

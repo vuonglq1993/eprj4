@@ -21,19 +21,20 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GamificationService {
 
-    private final UserGameProfileRepository gameRepo;
-    private final UserBadgeRepository       badgeRepo;
-    private final UserRepository            userRepo;
-    private final UserProgressRepository    progressRepo;
-    private final StudyLogRepository        studyLogRepo;
-    private final LeaderboardService        leaderboardService;
+    private final UserGameProfileRepository  gameRepo;
+    private final UserBadgeRepository        badgeRepo;
+    private final UserRepository             userRepo;
+    private final UserProgressRepository     progressRepo;
+    private final StudyLogRepository         studyLogRepo;
+    private final LeaderboardService         leaderboardService;
+    private final ExerciseAttemptRepository  attemptRepo;
+    private final com.languageapp.language_learning_backend.ai.client.AiClient aiClient;
 
     // ── XP TABLE ─────────────────────────────────────────────
-    // XP nhận được cho từng hành động
-    private static final int XP_COMPLETE_LESSON   = 20;
-    private static final int XP_CORRECT_EXERCISE  = 5;
-    private static final int XP_PERFECT_LESSON    = 15;  // bonus nếu 100%
-    private static final int XP_DAILY_STREAK      = 10;  // bonus mỗi ngày có streak
+    public static final int XP_COMPLETE_LESSON   = 20;
+    public static final int XP_CORRECT_EXERCISE  = 5;
+    public static final int XP_PERFECT_LESSON    = 15;
+    public static final int XP_DAILY_STREAK      = 10;
 
     // ── LEVEL TABLE ───────────────────────────────────────────
     // Level = floor(sqrt(totalXp / 100)) + 1  (công thức đơn giản)
@@ -41,15 +42,15 @@ public class GamificationService {
     private static final String[] LEVEL_TITLES = {
             "",           // 0 (không dùng)
             "Beginner",   // 1
-            "Explorer",   // 2
-            "Learner",    // 3
-            "Scholar",    // 4
-            "Achiever",   // 5
-            "Expert",     // 6
-            "Master",     // 7
-            "Champion",   // 8
-            "Legend",     // 9
-            "Grandmaster" // 10+
+            "Explorer\",   // 2\n" +
+                    "            \"Learner\",    // 3\n" +
+                    "            \"Scholar\",    // 4\n" +
+                    "            \"Achiever\",   // 5\n" +
+                    "            \"Expert\",     // 6\n" +
+                    "            \"Master\",     // 7\n" +
+                    "            \"Champion\",   // 8\n" +
+                    "            \"Legend\",     // 9\n" +
+                    "            \"Grandmaster" // 10+
     };
 
     // ── GET PROFILE ───────────────────────────────────────────
@@ -62,6 +63,11 @@ public class GamificationService {
         // Auto-sync XP from existing progress if profile has no XP yet
         if (g.getTotalXp() == 0) {
             syncXpFromProgress(user, g);
+        }
+        try {
+            checkAndAwardBadges(user, g);
+        } catch (Exception e) {
+            log.warn("Retroactive badge check failed: {}", e.getMessage());
         }
         List<UserBadge> badges = badgeRepo.findByUserIdOrderByEarnedAtDesc(p.getUserId());
 
@@ -327,6 +333,55 @@ public class GamificationService {
                     .build());
         }
         return result;
+    }
+
+    @Transactional
+    public void awardPerfectScoreBadge(User user) {
+        List<UserBadge> earned = new ArrayList<>();
+        tryAward(user, BadgeType.PERFECT_SCORE, earned);
+    }
+
+    // ── MISTAKES ──────────────────────────────────────────────
+    @Transactional(readOnly = true)
+    public List<MistakeResponse> getMistakes(UserPrincipal p, int size) {
+        return attemptRepo.findMistakesByUser(p.getUserId(), PageRequest.of(0, size))
+                .stream()
+                .map(a -> MistakeResponse.builder()
+                        .exerciseId(a.getExercise().getId())
+                        .exerciseTitle(a.getExercise().getTitle())
+                        .exerciseType(a.getExercise().getType())
+                        .lessonTitle(a.getLesson().getTitle())
+                        .questionData(a.getExercise().getQuestionData())
+                        .selectedAnswer(a.getSelectedAnswer())
+                        .submittedAt(a.getSubmittedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public String getAiReview(UserPrincipal p) {
+        List<ExerciseAttempt> mistakes = attemptRepo.findMistakesByUser(
+                p.getUserId(), PageRequest.of(0, 20));
+        if (mistakes.isEmpty()) return "Bạn chưa có câu sai nào. Tiếp tục học thôi!";
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < mistakes.size(); i++) {
+            ExerciseAttempt a = mistakes.get(i);
+            sb.append(i + 1).append(". [").append(a.getExercise().getType()).append("] ")
+              .append(a.getExercise().getTitle()).append('\n')
+              .append("   Câu hỏi: ").append(a.getExercise().getQuestionData()).append('\n')
+              .append("   Đáp án chọn: ").append(a.getSelectedAnswer()).append('\n');
+        }
+
+        String system = """
+                Bạn là giáo viên ngôn ngữ. Phân tích danh sách câu sai của học viên và đưa ra nhận xét ngắn gọn:
+                1. Điểm yếu chính (tối đa 3 điểm)
+                2. Lý do hay nhầm lẫn
+                3. Gợi ý ôn luyện cụ thể
+                Trả lời bằng tiếng Việt, thân thiện, dưới 200 từ.""";
+
+        var result = aiClient.chat(system, "Các câu sai của tôi:\n" + sb);
+        return result.getText();
     }
 
     // ── BADGE META ────────────────────────────────────────────

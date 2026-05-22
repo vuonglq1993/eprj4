@@ -355,4 +355,38 @@ class LearningService {
       return null;
     }
   }
+
+  // ─── Mistakes / AI Review ────────────────────────────────────────────────
+
+  static Future<List<Map<String, dynamic>>> getMistakes({int size = 20}) async {
+    try {
+      final res = await http.get(
+        Uri.parse('$_base/game/mistakes?size=$size'),
+        headers: await _auth(),
+      );
+      if (res.statusCode == 200) {
+        final list = jsonDecode(res.body) as List;
+        return list.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<String?> getAiReview() async {
+    try {
+      final res = await http.post(
+        Uri.parse('$_base/game/mistakes/ai-review'),
+        headers: await _auth(),
+      );
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
+        return body['review'] as String?;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
 }

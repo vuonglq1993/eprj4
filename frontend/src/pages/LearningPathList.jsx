@@ -189,8 +189,8 @@ const LearningPathList = () => {
     try {
       const res = await togglePublishLearningPath(id);
       setPaths((prev) => prev.map((p) => (p.id === id ? res.data : p)));
-    } catch {
-      alert('Xuất bản thất bại.');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Xuất bản thất bại.');
     } finally {
       setPublishingId(null);
     }
@@ -206,8 +206,8 @@ const LearningPathList = () => {
     try {
       await deleteLearningPath(id);
       setPaths((prev) => prev.filter((p) => p.id !== id));
-    } catch {
-      alert('Xóa thất bại.');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Xóa thất bại.');
     } finally {
       setDeletingId(null);
     }
@@ -273,12 +273,12 @@ const LearningPathList = () => {
       <div className="lp-inner mx-auto">
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div>
-            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Learning Paths</h2>
-            <p className="text-muted small mb-0">Structured learning roadmaps</p>
+            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Lộ trình học</h2>
+            <p className="text-muted small mb-0">Quản lý lộ trình học có cấu trúc</p>
           </div>
           {canManage && (
             <button type="button" className="btn btn-primary-purple px-4 d-flex align-items-center gap-2" onClick={openCreate}>
-              <FiPlus size={16} /> New Learning Path
+              <FiPlus size={16} /> Lộ trình mới
             </button>
           )}
         </div>
@@ -312,23 +312,23 @@ const LearningPathList = () => {
                     </div>
                     <div className="d-flex align-items-center justify-content-between">
                       <span className="lp-meta">
-                        {p.totalCourses ?? p.courses?.length ?? 0} courses
+                        {p.totalCourses ?? p.courses?.length ?? 0} khoá học
                       </span>
                       <div className="lp-actions">
                         {canManage && (
                           <>
                             <button type="button" className="lp-action-btn" onClick={() => openEdit(p)}>
-                              <FiEdit2 size={13} /><span>Edit</span>
+                              <FiEdit2 size={13} /><span>Sửa</span>
                             </button>
                             {!p.isPublished && (
                               <button
                                 type="button"
                                 className="lp-action-btn"
-                                title="Publish"
+                                title="Xuất bản"
                                 onClick={() => handlePublish(p.id)}
                                 disabled={publishingId === p.id}
                               >
-                                {publishingId === p.id ? '…' : 'Pub'}
+                                {publishingId === p.id ? '…' : 'Xuất bản'}
                               </button>
                             )}
                             <button
@@ -337,7 +337,7 @@ const LearningPathList = () => {
                               onClick={() => handleDelete(p.id)}
                               disabled={deletingId === p.id}
                             >
-                              <FiTrash2 size={13} /><span>Delete</span>
+                              <FiTrash2 size={13} /><span>Xóa</span>
                             </button>
                           </>
                         )}
@@ -383,7 +383,7 @@ const LearningPathList = () => {
             <div className="modal-dialog modal-lg">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">{editId ? 'Edit Learning Path' : 'New Learning Path'}</h5>
+                  <h5 className="modal-title">{editId ? 'Sửa lộ trình' : 'Lộ trình mới'}</h5>
                 </div>
                 <form onSubmit={handleSubmit} noValidate>
                   <div className="modal-body" style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 220px)' }}>

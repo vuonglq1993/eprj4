@@ -40,14 +40,35 @@ class _BadgesScreenState extends State<BadgesScreen> {
   void initState() { super.initState(); _load(); }
 
   Future<void> _load() async {
-    final p = await GameService.getProfile();
-    if (mounted) setState(() { _profile = p; _loading = false; });
+    try {
+      final p = await GameService.getProfile()
+          .timeout(const Duration(seconds: 10));
+
+      if (mounted) {
+        setState(() {
+          _profile = p;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("BADGES ERROR: $e");
+
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
   }
+
 
   Set<String> get _earnedTypes {
     final badges = _profile?['badges'] as List?;
     if (badges == null) return {};
-    return badges.map((b) => (b['badgeType'] as String? ?? '')).toSet();
+    return badges
+        .whereType<Map<String, dynamic>>()
+        .map((b) => b['badgeType']?.toString() ?? '')
+        .toSet();
   }
 
   @override
@@ -170,7 +191,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
+            color: AppColors.primary..withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(count,
@@ -188,7 +209,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
         crossAxisCount: 3,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
-        childAspectRatio: 0.85,
+        childAspectRatio: 0.72,
       ),
       itemCount: badges.length,
       itemBuilder: (_, i) => _badgeCard(badges[i], isEarned),
@@ -202,12 +223,12 @@ class _BadgesScreenState extends State<BadgesScreen> {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isEarned
-              ? AppColors.primary.withValues(alpha: 0.08)
+              ? AppColors.primary.withOpacity(0.08)
               : AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isEarned
-                ? AppColors.primary.withValues(alpha: 0.25)
+                ? AppColors.primary.withOpacity(0.25)
                 : AppColors.border,
           ),
           boxShadow: isEarned ? AppShadows.subtle : null,
@@ -245,6 +266,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
 
   void _showBadgeDetail(_BadgeDef b, bool isEarned) {
     showModalBottomSheet(
+      isScrollControlled: true,
       context: context,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
@@ -270,7 +292,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: isEarned
-                    ? AppColors.success.withValues(alpha: 0.12)
+                    ? AppColors.success.withOpacity(0.12)
                     : AppColors.inputBg,
                 borderRadius: BorderRadius.circular(20),
               ),
