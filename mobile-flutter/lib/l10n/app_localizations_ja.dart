@@ -1033,7 +1033,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get proMember => 'Proメンバー';
 
   @override
-  String get pathAndLanguage => '学習パス・言語';
+  String get pathAndLanguage => '学習進捗';
 
   @override
   String get badgesAchievements => 'バッジ・実績';

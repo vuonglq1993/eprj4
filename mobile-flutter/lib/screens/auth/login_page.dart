@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (user != null && user['_error'] == 'email_not_verified') {
       setState(() => _isLoading = false);
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => OtpVerificationPage(
@@ -261,7 +261,7 @@ class _LoginPageState extends State<LoginPage> {
                 // Register link
                 Center(
                   child: GestureDetector(
-                    onTap: () => Navigator.pushReplacement(
+                    onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const RegisterPage()),
                     ),
@@ -379,7 +379,7 @@ Future<void> _signInWithGoogle() async {
       child: OutlinedButton.icon(
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: AppColors.border),
-          backgroundColor: AppColors.surface,
+          backgroundColor: const Color(0xFF0D2540),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

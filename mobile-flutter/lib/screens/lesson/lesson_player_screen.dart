@@ -478,7 +478,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
                         tween: Tween(begin: 0, end: progress),
                         builder: (_, v, __) => LinearProgressIndicator(
                           value: v,
-                          backgroundColor: AppColors.surface,
+                          backgroundColor: const Color(0xFF0D2540),
                           color: AppColors.primary,
                           minHeight: 5,
                         ),
@@ -508,7 +508,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
                     borderRadius: BorderRadius.circular(2),
                     child: LinearProgressIndicator(
                       value: timerRatio,
-                      backgroundColor: AppColors.surface,
+                      backgroundColor: const Color(0xFF0D2540),
                       color: timerColor,
                       minHeight: 3,
                     ),
@@ -1699,7 +1699,7 @@ class _LessonPlayerScreenState extends State<LessonPlayerScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: const Color(0xFF0D2540),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16)),
         title: const Text(

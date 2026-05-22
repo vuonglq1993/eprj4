@@ -144,7 +144,7 @@ class _CourseLessonsScreenState extends State<CourseLessonsScreen> {
                               color: AppColors.primary))
                       : RefreshIndicator(
                           color: AppColors.primary,
-                          backgroundColor: AppColors.surface,
+                          backgroundColor: const Color(0xFF0D2540),
                           onRefresh: _load,
                           child: _buildLessonList(),
                         ),

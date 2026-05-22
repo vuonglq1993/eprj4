@@ -55,12 +55,9 @@ public class ProgressService {
     }
 
     private int calcProgress(UUID userId, Course c, Subscription.Plan plan) {
-        var tiers = getAccessibleTiers(plan);
-
-        long total = lessonRepo.countAccessible(c.getId(), tiers);
+        int total = c.getTotalLessons();
         if (total == 0) return 0;
-
-        long done = progressRepo.countCompletedAccessible(userId, c.getId(), tiers);
+        long done = progressRepo.countCompleted(userId, c.getId(), ProgressStatus.COMPLETED);
         return (int) (done * 100 / total);
     }
 
@@ -192,15 +189,18 @@ public class ProgressService {
         UUID uid = p.getUserId();
         Course c = courseRepo.findById(courseId).orElseThrow(() -> new NotFoundException("Course not found"));
 
-        int pct = calcProgress(uid, c, getPlan(p)); // FIXED
-
-        if (pct < 100)
-            throw new BadRequestException("Course not completed yet. Progress: " + pct + "%");
+        long totalLessons = lessonRepo.countByCourseId(courseId);
+        long doneLessons  = progressRepo.countCompleted(uid, courseId, ProgressStatus.COMPLETED);
+        if (totalLessons == 0 || doneLessons < totalLessons)
+            throw new BadRequestException("Course not fully completed. " + doneLessons + "/" + totalLessons);
 
         User user = userRepo.findById(uid).orElseThrow(() -> new NotFoundException("User not found"));
 
         double avg = progressRepo.findByUserIdAndCourseId(uid, courseId)
                 .stream().mapToDouble(this::normalizedScore).average().orElse(0);
+
+        if (avg < 40.0)
+            throw new BadRequestException("Score too low for certificate. Average: " + round(avg) + "%");
 
         Instant completedAt = progressRepo.findByUserIdAndCourseId(uid, courseId)
                 .stream().map(UserProgress::getCompletedAt)

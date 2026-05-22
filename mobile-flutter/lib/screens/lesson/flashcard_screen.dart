@@ -262,7 +262,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
                     tween: Tween(begin: 0, end: progress),
                     builder: (_, v, __) => LinearProgressIndicator(
                       value: v,
-                      backgroundColor: AppColors.surface,
+                      backgroundColor: const Color(0xFF0D2540),
                       color: AppColors.vocabulary,
                       minHeight: 5,
                     ),

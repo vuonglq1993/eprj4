@@ -75,34 +75,160 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _pickReminderTime() async {
-    final picked = await showTimePicker(
+    int hour   = _reminderHour;
+    int minute = _reminderMinute;
+
+    final hourCtrl   = FixedExtentScrollController(initialItem: hour);
+    final minuteCtrl = FixedExtentScrollController(initialItem: minute);
+
+    await showModalBottomSheet(
       context: context,
-      initialTime: TimeOfDay(hour: _reminderHour, minute: _reminderMinute),
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: AppColors.primary,
-            onSurface: AppColors.textPrimary,
-            surface: AppColors.surface,
+      backgroundColor: const Color(0xFF0D2540),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setLocal) => SizedBox(
+          height: 300,
+          child: Column(
+            children: [
+              // drag handle
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2)),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Giờ nhắc học',
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary)),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _reminderHour   = hour;
+                          _reminderMinute = minute;
+                        });
+                        Navigator.pop(context);
+                        _saveReminder();
+                      },
+                      child: const Text('Xong',
+                          style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // selection highlight
+                    Center(
+                      child: Container(
+                        height: 48,
+                        margin: const EdgeInsets.symmetric(horizontal: 40),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.3)),
+                        ),
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Hours
+                        SizedBox(
+                          width: 100,
+                          child: ListWheelScrollView.useDelegate(
+                            controller: hourCtrl,
+                            itemExtent: 48,
+                            perspective: 0.003,
+                            diameterRatio: 1.6,
+                            physics: const FixedExtentScrollPhysics(),
+                            onSelectedItemChanged: (i) => setLocal(() => hour = i),
+                            childDelegate: ListWheelChildBuilderDelegate(
+                              childCount: 24,
+                              builder: (_, i) => Center(
+                                child: Text(
+                                  i.toString().padLeft(2, '0'),
+                                  style: TextStyle(
+                                    fontSize: i == hour ? 22 : 17,
+                                    fontWeight: i == hour
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: i == hour
+                                        ? AppColors.primary
+                                        : AppColors.textMuted,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const Text(':',
+                            style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary)),
+                        // Minutes
+                        SizedBox(
+                          width: 100,
+                          child: ListWheelScrollView.useDelegate(
+                            controller: minuteCtrl,
+                            itemExtent: 48,
+                            perspective: 0.003,
+                            diameterRatio: 1.6,
+                            physics: const FixedExtentScrollPhysics(),
+                            onSelectedItemChanged: (i) => setLocal(() => minute = i),
+                            childDelegate: ListWheelChildBuilderDelegate(
+                              childCount: 60,
+                              builder: (_, i) => Center(
+                                child: Text(
+                                  i.toString().padLeft(2, '0'),
+                                  style: TextStyle(
+                                    fontSize: i == minute ? 22 : 17,
+                                    fontWeight: i == minute
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: i == minute
+                                        ? AppColors.primary
+                                        : AppColors.textMuted,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
         ),
-        child: child!,
       ),
     );
-    if (picked != null && mounted) {
-      setState(() {
-        _reminderHour = picked.hour;
-        _reminderMinute = picked.minute;
-      });
-      await _saveReminder();
-    }
+
+    hourCtrl.dispose();
+    minuteCtrl.dispose();
   }
 
   Future<void> _logout() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: const Color(0xFF0D2540),
         title: Text(context.l10n.logout, style: const TextStyle(color: AppColors.textPrimary)),
         content: Text(context.l10n.logoutConfirm,
             style: const TextStyle(color: AppColors.textSecondary)),
@@ -367,7 +493,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _pickLanguage() async {
     final chosen = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: const Color(0xFF0D2540),
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => Column(
@@ -409,7 +535,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final options = [50, 100, 200, 300, 500];
     final chosen = await showModalBottomSheet<int>(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: const Color(0xFF0D2540),
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => Column(
@@ -441,7 +567,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final styles = ['Visual', 'Auditory', 'Reading', 'Kinesthetic'];
     final chosen = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: const Color(0xFF0D2540),
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => Column(

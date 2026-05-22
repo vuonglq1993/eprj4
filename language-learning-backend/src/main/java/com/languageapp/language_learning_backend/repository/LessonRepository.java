@@ -19,6 +19,8 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
         """)
     long countAccessible(UUID cid, Collection<AccessTier> tiers);
 
+    long countByCourseId(UUID courseId);
+
     @Query("SELECT COALESCE(MAX(l.orderIndex), -1) FROM Lesson l WHERE l.course.id = :courseId")
     Integer maxOrderIndex(@Param("courseId") UUID courseId);
 

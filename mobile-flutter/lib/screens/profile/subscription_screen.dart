@@ -46,7 +46,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: const Color(0xFF0D2540),
         title: Text(context.l10n.cancelAutoRenew, style: const TextStyle(color: AppColors.textPrimary)),
         content: Text(
             context.l10n.cancelAutoRenewDesc,

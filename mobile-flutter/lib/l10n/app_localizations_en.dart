@@ -1045,7 +1045,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get proMember => 'Pro Member';
 
   @override
-  String get pathAndLanguage => 'Learning Path & Language';
+  String get pathAndLanguage => 'Learning Progress';
 
   @override
   String get badgesAchievements => 'Badges & Achievements';

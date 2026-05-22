@@ -432,10 +432,14 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 Center(
                   child: GestureDetector(
-                    onTap: () => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const LoginPage()),
-                    ),
+                    onTap: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      } else {
+                        Navigator.pushReplacement(context,
+                            MaterialPageRoute(builder: (_) => const LoginPage()));
+                      }
+                    },
                     child: Text.rich(
                       TextSpan(
                         text: context.l10n.alreadyHaveAccount,
@@ -474,7 +478,7 @@ class _RegisterPageState extends State<RegisterPage> {
       child: OutlinedButton.icon(
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: AppColors.border),
-          backgroundColor: AppColors.surface,
+          backgroundColor: const Color(0xFF0D2540),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         icon: _isGoogleLoading

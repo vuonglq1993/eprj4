@@ -230,7 +230,7 @@ class Step3Personalize extends StatelessWidget {
           ),
 
           OnboardingNextButton(
-            label: 'Bắt đầu kiểm tra trình độ',
+            label: 'Tiếp theo',
             enabled: ageGroup != null, // require age group before proceeding
             onTap: onNext,
           ),

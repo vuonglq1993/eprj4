@@ -2077,7 +2077,7 @@ abstract class AppLocalizations {
   /// No description provided for @pathAndLanguage.
   ///
   /// In vi, this message translates to:
-  /// **'Lộ trình & ngôn ngữ'**
+  /// **'Tiến trình học'**
   String get pathAndLanguage;
 
   /// No description provided for @badgesAchievements.

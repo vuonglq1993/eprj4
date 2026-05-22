@@ -83,7 +83,7 @@ class _DashboardTabState extends State<DashboardTab> {
           'courseTitle': step['courseTitle'] as String? ?? '',
           'languageName': languageName,
           'totalLessons': step['totalLessons'] as int? ?? 0,
-          'completedLessons': 0,
+          'completedLessons': step['completedLessons'] as int? ?? 0,
           'progressPercent': step['courseProgressPercent'] as int? ?? 0,
           'nextLessonId': null,
           'nextLessonTitle': null,
@@ -234,7 +234,7 @@ class _DashboardTabState extends State<DashboardTab> {
                         color: AppColors.primary))
                 : RefreshIndicator(
                     color: AppColors.primary,
-                    backgroundColor: AppColors.surface,
+                    backgroundColor: const Color(0xFF0D2540),
                     onRefresh: _load,
                     child: CustomScrollView(
                       physics: const BouncingScrollPhysics(),

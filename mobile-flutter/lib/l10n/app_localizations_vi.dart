@@ -1045,7 +1045,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get proMember => 'Pro Member';
 
   @override
-  String get pathAndLanguage => 'Lộ trình & ngôn ngữ';
+  String get pathAndLanguage => 'Tiến trình học';
 
   @override
   String get badgesAchievements => 'Huy hiệu & thành tích';

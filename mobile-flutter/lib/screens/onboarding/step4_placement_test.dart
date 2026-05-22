@@ -259,7 +259,7 @@ class _Step4PlacementTestState extends State<Step4PlacementTest> {
                       const SizedBox(height: 6),
                       LinearProgressIndicator(
                         value: (_current + 1) / _questions.length,
-                        backgroundColor: AppColors.surface,
+                        backgroundColor: const Color(0xFF0D2540),
                         color: AppColors.primary,
                         minHeight: 4,
                         borderRadius: BorderRadius.circular(2),

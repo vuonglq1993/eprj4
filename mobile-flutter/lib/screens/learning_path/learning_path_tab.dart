@@ -101,7 +101,7 @@ class _LearningPathTabState extends State<LearningPathTab> {
                         color: AppColors.primary))
                 : RefreshIndicator(
                     color: AppColors.primary,
-                    backgroundColor: AppColors.surface,
+                    backgroundColor: const Color(0xFF0D2540),
                     onRefresh: _load,
                     child: CustomScrollView(
                       physics: const BouncingScrollPhysics(),
@@ -293,7 +293,7 @@ class _LearningPathTabState extends State<LearningPathTab> {
           : TextButton(
               onPressed: _loadMore,
               style: TextButton.styleFrom(
-                backgroundColor: AppColors.surface,
+                backgroundColor: const Color(0xFF0D2540),
                 foregroundColor: AppColors.primaryLight,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

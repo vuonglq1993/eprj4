@@ -33,7 +33,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   String? heardFrom;
 
   // Result after submit
-  Map<String, dynamic>? _recommendedPath;
+  List<Map<String, dynamic>> _recommendedPaths = [];
   bool _submitting = false;
 
   @override
@@ -59,24 +59,32 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   Future<void> _submit() async {
     if (_submitting) return;
     setState(() => _submitting = true);
-    final result = await ApiService.submitOnboarding(
-      targetLanguageId: selectedLanguageIds.isNotEmpty
-          ? selectedLanguageIds.first
-          : (_languages.isNotEmpty ? _languages.first['id'] as String : ''),
-      selfLevel: selfLevel ?? 'BEGINNER',
-      goal: goal ?? 'OTHERS',
-      dailyTime: dailyTime,
-      ageGroup: ageGroup,
-      heardFrom: heardFrom,
-    );
+
+    final ids = selectedLanguageIds.isNotEmpty
+        ? selectedLanguageIds
+        : (_languages.isNotEmpty ? [_languages.first['id'] as String] : <String>[]);
+
+    final paths = <Map<String, dynamic>>[];
+    for (int i = 0; i < ids.length; i++) {
+      final result = await ApiService.submitOnboarding(
+        targetLanguageId: ids[i],
+        selfLevel: selfLevel ?? 'BEGINNER',
+        goal: goal ?? 'OTHERS',
+        dailyTime: dailyTime,
+        ageGroup: ageGroup,
+        heardFrom: i == 0 ? heardFrom : null, // chỉ gửi heardFrom lần đầu
+      );
+      final p = result?['recommendedPath'] as Map<String, dynamic>?;
+      if (p != null) paths.add(p);
+    }
+
     if (!mounted) return;
     setState(() => _submitting = false);
 
-    final recommended = result?['recommendedPath'] as Map<String, dynamic>?;
-    if (recommended != null) {
+    if (paths.isNotEmpty) {
       setState(() {
-        _recommendedPath = recommended;
-        _step = 5; // show recommended path screen
+        _recommendedPaths = paths;
+        _step = 5;
       });
     } else {
       Navigator.pushAndRemoveUntil(
@@ -181,7 +189,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       case 5:
         return Step6Recommended(
           key: const ValueKey(5),
-          recommendedPath: _recommendedPath!,
+          recommendedPaths: _recommendedPaths,
         );
       default:
         return const SizedBox.shrink();

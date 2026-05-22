@@ -5,6 +5,7 @@ import com.languageapp.language_learning_backend.dto.learningpath.*;
 import com.languageapp.language_learning_backend.entity.*;
 import com.languageapp.language_learning_backend.entity.LearningPath.TargetLevel;
 import com.languageapp.language_learning_backend.entity.UserLearningPath.PathStatus;
+import com.languageapp.language_learning_backend.entity.UserProgress.ProgressStatus;
 import com.languageapp.language_learning_backend.exception.GlobalExceptionHandler.*;
 import com.languageapp.language_learning_backend.repository.*;
 import com.languageapp.language_learning_backend.security.UserPrincipal;
@@ -36,16 +37,9 @@ public class LearningPathService {
     }
 
     private int calcAccessibleCourseProgressPercent(UUID userId, Course c, Subscription.Plan plan) {
-        if (c.getTotalLessons() == 0) return 0;
-        if (plan == Subscription.Plan.THREE_MONTHS || plan == Subscription.Plan.YEARLY) {
-            return progressRepo.calculateProgress(userId, c.getId(), c.getTotalLessons());
-        }
-        var tiers = (plan == Subscription.Plan.MONTHLY)
-                ? List.of(Lesson.AccessTier.PREVIEW, Lesson.AccessTier.MONTHLY)
-                : List.of(Lesson.AccessTier.PREVIEW);
-        long total = lessonRepo.countAccessible(c.getId(), tiers);
+        int total = c.getTotalLessons();
         if (total == 0) return 0;
-        long done = progressRepo.countCompletedAccessible(userId, c.getId(), tiers);
+        long done = progressRepo.countCompleted(userId, c.getId(), ProgressStatus.COMPLETED);
         return (int) (done * 100 / total);
     }
 
@@ -357,6 +351,11 @@ public class LearningPathService {
                 requiredPlan = null;
             }
 
+            UUID userId = userPath != null ? userPath.getUser().getId() : null;
+            int doneLessons = userId != null
+                    ? (int) progressRepo.countCompleted(userId, c.getId(), ProgressStatus.COMPLETED)
+                    : 0;
+
             result.add(LearningPathResponse.StepResponse.builder()
                     .stepId(step.getId())
                     .stepOrder(step.getStepOrder())
@@ -367,6 +366,7 @@ public class LearningPathService {
                     .note(step.getNote())
                     .isRequired(step.getIsRequired())
                     .courseProgressPercent(pct)
+                    .completedLessons(doneLessons)
                     .isUnlocked(isUnlocked)
                     .canAccess(canAccess)
                     .requiredPlan(requiredPlan)
