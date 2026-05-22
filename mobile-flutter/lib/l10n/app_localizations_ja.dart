@@ -54,6 +54,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get path => 'ルート';
 
   @override
+  String get courses => 'コース';
+
+  @override
+  String get allTopics => 'すべて';
+
+  @override
   String get continueLesson => '学習を続ける';
 
   @override

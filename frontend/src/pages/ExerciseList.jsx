@@ -126,7 +126,7 @@ function LessonCombobox({ courseId, value, onChange, disabled }) {
         aria-disabled={disabled}
       >
         <span className={`course-combobox__selected-text ${!selectedLabel ? 'placeholder' : ''}`}>
-          {selectedLabel || (courseId ? 'Select lesson…' : 'Select course first')}
+          {selectedLabel || (courseId ? 'Chọn bài học…' : 'Chọn khoá học trước')}
         </span>
         <div className="course-combobox__actions">
           {value && !disabled && (
@@ -252,8 +252,8 @@ const ExerciseList = () => {
     try {
       await deleteExercise(selectedCourse, selectedLesson, id);
       setExercises((prev) => prev.filter((e) => e.id !== id));
-    } catch {
-      alert('Xóa thất bại.');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Xóa thất bại.');
     } finally {
       setDeletingId(null);
     }
@@ -294,12 +294,12 @@ const ExerciseList = () => {
       <div className="ex-inner mx-auto">
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div>
-            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Exercises</h2>
-            <p className="text-muted small mb-0">Manage exercises within each lesson</p>
+            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Bài tập</h2>
+            <p className="text-muted small mb-0">Quản lý bài tập trong từng bài học</p>
           </div>
           {canManage && selectedLesson && (
             <button type="button" className="btn btn-primary-purple px-4 d-flex align-items-center gap-2" onClick={openCreate}>
-              <FiPlus size={16} /> New Exercise
+              <FiPlus size={16} /> Bài tập mới
             </button>
           )}
         </div>
@@ -391,7 +391,7 @@ const ExerciseList = () => {
             <div className="modal-dialog modal-lg">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">{editId ? 'Edit Exercise' : 'New Exercise'}</h5>
+                  <h5 className="modal-title">{editId ? 'Sửa bài tập' : 'Bài tập mới'}</h5>
                   <button type="button" className="btn-close" aria-label="Đóng" onClick={() => setShowModal(false)} />
                 </div>
                 <form onSubmit={handleSubmit} noValidate>

@@ -70,10 +70,17 @@ public class FirebasePushService {
                     .setBody(body)
                     .build();
 
+            AndroidConfig androidConfig = AndroidConfig.builder()
+                    .setNotification(AndroidNotification.builder()
+                            .setChannelId("study_reminder")
+                            .build())
+                    .build();
+
             for (String token : tokens) {
                 Message message = Message.builder()
                         .setToken(token)
                         .setNotification(notification)
+                        .setAndroidConfig(androidConfig)
                         .putAllData(data != null ? data : Collections.emptyMap())
                         .build();
 
@@ -174,10 +181,17 @@ public class FirebasePushService {
             Map<String, String> data = new HashMap<>();
             data.put("type", type != null ? type : "SYSTEM");
 
+            AndroidConfig androidConfig = AndroidConfig.builder()
+                    .setNotification(AndroidNotification.builder()
+                            .setChannelId("study_reminder")
+                            .build())
+                    .build();
+
             for (FcmTokenDocument tokenDoc : tokens) {
                 Message message = Message.builder()
                         .setToken(tokenDoc.getToken())
                         .setNotification(notification)
+                        .setAndroidConfig(androidConfig)
                         .putAllData(data)
                         .build();
 

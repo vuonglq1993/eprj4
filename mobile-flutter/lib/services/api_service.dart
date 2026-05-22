@@ -201,7 +201,8 @@ class ApiService {
         body: jsonEncode({'idToken': idToken}),
       );
       return await _parseAndSaveAuth(res);
-    } catch (_) {
+    } catch (e) {
+      print('loginWithGoogle error: $e');
       return null;
     }
   }
@@ -347,6 +348,23 @@ class ApiService {
     if (res == null) return 'Lỗi mạng';
     if (res.statusCode == 200) return null;
     return (jsonDecode(res.body) as Map)['message'] as String? ?? 'Đổi mật khẩu thất bại';
+  }
+
+  static Future<List<Map<String, dynamic>>> getCourses() async {
+    try {
+      final res = await _client.get(
+        Uri.parse('$_base/courses?size=50'),
+        headers: await _authHeaders(),
+      );
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        if (body is Map && body['content'] is List) {
+          return (body['content'] as List).cast<Map<String, dynamic>>();
+        }
+        if (body is List) return body.cast<Map<String, dynamic>>();
+      }
+    } catch (_) {}
+    return [];
   }
 
   static Future<List<Map<String, dynamic>>> getCoursesByTopic(String topicId) async {

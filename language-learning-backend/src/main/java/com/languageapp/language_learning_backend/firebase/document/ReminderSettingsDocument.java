@@ -12,4 +12,5 @@ public class ReminderSettingsDocument {
     private int hour;
     private int minute;
     private String timezone;
+    private String lastSentDate; // "yyyy-MM-dd" in user's timezone
 }

@@ -26,7 +26,7 @@ function StatusBadge({ status }) {
     : status === 'IN_PROGRESS' ? 'ls-status--progress'
     : status === 'NOT_STARTED' ? 'ls-status--locked'
     : 'ls-status--pub';
-  return <span className={`ls-status ${cls}`}>{status?.replace('_', ' ') || 'Unknown'}</span>;
+  return <span className={`ls-status ${cls}`}>{status?.replace('_', ' ') || 'Không rõ'}</span>;
 }
 
 const LessonList = () => {
@@ -91,8 +91,8 @@ const LessonList = () => {
     try {
       await deleteLesson(selectedCourse, lessonId);
       setLessons((prev) => prev.filter((l) => l.id !== lessonId));
-    } catch {
-      alert('Xóa thất bại.');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Xóa thất bại.');
     }
   };
 
@@ -126,19 +126,19 @@ const LessonList = () => {
       <div className="ls-inner mx-auto">
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div>
-            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Lessons</h2>
-            <p className="text-muted small mb-0">Organize lessons within each course</p>
+            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Bài học</h2>
+            <p className="text-muted small mb-0">Quản lý bài học trong từng khoá học</p>
           </div>
           {canManage && selectedCourse && (
             <button type="button" className="btn btn-primary-purple px-4 d-flex align-items-center gap-2" onClick={openCreate}>
-              <FiPlus size={16} /> New Lesson
+              <FiPlus size={16} /> Bài học mới
             </button>
           )}
         </div>
 
         {canManage && (
           <div className="mb-3">
-            <label className="form-label small fw-semibold">Course</label>
+            <label className="form-label small fw-semibold">Khoá học</label>
             <CourseCombobox value={selectedCourse} onChange={setSelectedCourse} />
           </div>
         )}
@@ -207,7 +207,7 @@ const LessonList = () => {
             <div className="modal-dialog modal-lg">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">{editId ? 'Edit Lesson' : 'New Lesson'}</h5>
+                  <h5 className="modal-title">{editId ? 'Sửa bài học' : 'Bài học mới'}</h5>
                   <button type="button" className="btn-close" aria-label="Đóng" onClick={() => setShowModal(false)} />
                 </div>
                 <form onSubmit={handleSubmit} noValidate>

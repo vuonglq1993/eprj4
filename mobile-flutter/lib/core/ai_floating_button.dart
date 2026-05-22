@@ -7,6 +7,7 @@ import '../screens/ai/ai_grammar_screen.dart';
 import '../screens/ai/ai_vocab_screen.dart';
 import '../screens/ai/ai_recommend_screen.dart';
 import '../screens/ai/ai_pronunciation_screen.dart';
+import '../screens/profile/ai_review_screen.dart';
 
 // ── Menu item definition ───────────────────────────────────────────────────
 
@@ -76,6 +77,12 @@ class _AiFloatingButtonState extends State<AiFloatingButton>
       icon: Icons.lightbulb_rounded,
       color: const Color(0xFFFFB300),
       onTap: (nav) => () => _push(nav, const AiRecommendScreen()),
+    ),
+    _AiMenuItem(
+      label: 'Ôn tập',
+      icon: Icons.auto_awesome_rounded,
+      color: const Color(0xFFE11D48),
+      onTap: (nav) => () => _push(nav, const AiReviewScreen()),
     ),
   ];
 

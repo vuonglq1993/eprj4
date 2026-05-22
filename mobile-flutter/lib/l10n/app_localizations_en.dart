@@ -54,6 +54,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get path => 'Path';
 
   @override
+  String get courses => 'Courses';
+
+  @override
+  String get allTopics => 'All';
+
+  @override
   String get continueLesson => 'Continue Learning';
 
   @override

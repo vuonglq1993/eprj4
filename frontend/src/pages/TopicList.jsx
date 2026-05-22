@@ -83,8 +83,11 @@ function TopicList() {
     try {
       await deleteTopic(id);
       setTopics((prev) => prev.filter((t) => t.id !== id));
-    } catch {
-      alert('Xóa thất bại.');
+    } catch (err) {
+      const msg = err.response?.data?.message;
+      alert(msg === 'Cannot delete topic that has courses'
+        ? 'Không thể xóa chủ đề đang có khoá học.'
+        : (msg || 'Xóa thất bại.'));
     } finally {
       setDeletingId(null);
     }
@@ -135,12 +138,12 @@ function TopicList() {
       <div className="tl-inner mx-auto">
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div>
-            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Topics</h2>
-            <p className="text-muted small mb-0">Manage learning topics and categories</p>
+            <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', color: '#1e293b' }}>Chủ đề</h2>
+            <p className="text-muted small mb-0">Quản lý các chủ đề học tập</p>
           </div>
           {admin && (
             <button type="button" className="btn btn-primary-purple px-4 d-flex align-items-center gap-2" onClick={openCreate}>
-              <FiPlus size={16} /> Add Topic
+              <FiPlus size={16} /> Thêm chủ đề
             </button>
           )}
         </div>
@@ -214,7 +217,7 @@ function TopicList() {
           <button type="button" className="tl-modal-backdrop" aria-label="Đóng" onClick={() => setShowModal(false)} />
           <div className="tl-modal-panel" role="dialog" aria-modal="true">
             <div className="tl-modal-panel__header">
-              <h5 className="tl-modal-panel__title">{editId ? 'Edit Topic' : 'Add Topic'}</h5>
+              <h5 className="tl-modal-panel__title">{editId ? 'Sửa chủ đề' : 'Thêm chủ đề'}</h5>
               <button type="button" className="tl-modal-panel__close" onClick={() => setShowModal(false)} aria-label="Đóng">
                 <FiX size={22} />
               </button>

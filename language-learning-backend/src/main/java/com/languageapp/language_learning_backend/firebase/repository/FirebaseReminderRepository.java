@@ -24,7 +24,7 @@ public class FirebaseReminderRepository {
         data.put("hour", doc.getHour());
         data.put("minute", doc.getMinute());
         data.put("timezone", doc.getTimezone() != null ? doc.getTimezone() : "Asia/Ho_Chi_Minh");
-        db.collection(COLLECTION).document(doc.getUserId()).set(data).get();
+        db.collection(COLLECTION).document(doc.getUserId()).set(data, SetOptions.merge()).get();
     }
 
     public Optional<ReminderSettingsDocument> findByUserId(String userId)
@@ -97,6 +97,13 @@ public class FirebaseReminderRepository {
                 .collect(Collectors.toList());
     }
 
+    public void updateLastSentDate(String userId, String date)
+            throws ExecutionException, InterruptedException {
+        FirestoreClient.getFirestore()
+                .collection(COLLECTION).document(userId)
+                .update("lastSentDate", date).get();
+    }
+
     private ReminderSettingsDocument toDocument(DocumentSnapshot doc) {
         return ReminderSettingsDocument.builder()
                 .userId(doc.getString("userId"))
@@ -104,6 +111,7 @@ public class FirebaseReminderRepository {
                 .hour(Objects.requireNonNull(doc.getLong("hour"), "hour").intValue())
                 .minute(Objects.requireNonNull(doc.getLong("minute"), "minute").intValue())
                 .timezone(doc.getString("timezone"))
+                .lastSentDate(doc.getString("lastSentDate"))
                 .build();
     }
 }

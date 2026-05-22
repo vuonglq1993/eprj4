@@ -98,8 +98,8 @@ export default function SubscriptionPlansAdminPage() {
       } else {
         fetchPlans();
       }
-    } catch {
-      alert('Thay đổi trạng thái thất bại.');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Thay đổi trạng thái thất bại.');
     } finally {
       setTogglingId(null);
     }

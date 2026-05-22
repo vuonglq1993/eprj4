@@ -36,6 +36,7 @@ public class ExerciseService {
     private final ObjectMapper mapper;
 
     private final RecordRepository recordRepo;
+    private final ExerciseAttemptRepository attemptRepo;
 
     private final SpeechService speechService;
     private final ScoringService scoringService;
@@ -151,6 +152,8 @@ public class ExerciseService {
             progress.setCompletedAt(null);
         }
 
+        ProgressStatus statusBeforeSubmit = progress.getStatus();
+
         progress.setAttempts(progress.getAttempts() + 1);
         progress.setScore(progress.getScore() + pointsEarned);
 
@@ -167,16 +170,52 @@ public class ExerciseService {
             }
         }
 
+        boolean justCompleted = statusBeforeSubmit != ProgressStatus.COMPLETED
+                && progress.getStatus() == ProgressStatus.COMPLETED;
+
         progress.setBestScore(Math.max(progress.getBestScore(), progress.getScore()));
         progressRepo.save(progress);
 
-        // Award XP only on first-time attempt, not replays
+        // Save exercise attempt for history / AI review
+        try {
+            String selectedAnswerJson = mapper.writeValueAsString(req.getAnswer());
+            Integer timeSpent = (req.getClientStartTime() != null && req.getClientSubmitTime() != null)
+                    ? (int) ((req.getClientSubmitTime() - req.getClientStartTime()) / 1000) : null;
+            attemptRepo.save(ExerciseAttempt.builder()
+                    .user(userRepo.getReferenceById(p.getUserId()))
+                    .exercise(ex)
+                    .lesson(lessonRepo.getReferenceById(lessonId))
+                    .selectedAnswer(selectedAnswerJson)
+                    .isCorrect(effectivelyCorrect)
+                    .score(pointsEarned)
+                    .timeSpentSeconds(timeSpent)
+                    .build());
+        } catch (Exception e) {
+            log.warn("Failed to save exercise attempt: {}", e.getMessage());
+        }
+
+        // Award XP per correct exercise (not on replays)
         if (pointsEarned > 0 && !wasAlreadyCompleted) {
             try {
                 User user = userRepo.getReferenceById(p.getUserId());
                 gamificationService.awardXp(user, pointsEarned);
             } catch (Exception e) {
                 log.warn("Failed to award XP to user {}: {}", p.getUserId(), e.getMessage());
+            }
+        }
+
+        // Award lesson completion bonus (first time only)
+        if (justCompleted) {
+            try {
+                User user = userRepo.getReferenceById(p.getUserId());
+                boolean isPerfect = totalPoints > 0 && progress.getScore() >= totalPoints;
+                int lessonXp = GamificationService.XP_COMPLETE_LESSON
+                        + (isPerfect ? GamificationService.XP_PERFECT_LESSON : 0);
+                gamificationService.awardXp(user, lessonXp);
+                if (isPerfect) gamificationService.awardPerfectScoreBadge(user);
+                log.info("Lesson completed XP: user={} xp={} perfect={}", p.getUserId(), lessonXp, isPerfect);
+            } catch (Exception e) {
+                log.warn("Failed to award lesson XP: {}", e.getMessage());
             }
         }
 
